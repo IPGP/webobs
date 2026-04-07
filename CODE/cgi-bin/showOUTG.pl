@@ -428,7 +428,7 @@ if ($QryParm->{'ts'} eq 'map') {
         print "<A href=\"$MAPurn/$mapname.eps\"><IMG alt=\"$mapname.eps\" src=\"/icons/feps.png\"></A><BR>\n";
     }
     if  ( -e "$MAPpath/$mapname.png" ) {
-        print "<IMG style=\"margin-bottom: 15px; background-color: beige;\" src=\"$MAPurn/$mapname.png\" usemap=\"#map\"><BR>\n";
+        print "\n<IMG style=\"margin-bottom: 15px; background-color: beige;\" src=\"$MAPurn/$mapname.png\" usemap=\"#map\"><BR>\n";
         if (-e "$MAPpath/$mapname.map") {
             @htmlarea = readFile("$MAPpath/$mapname.map");
             print "<map name=\"map\">\n@htmlarea</map>\n";

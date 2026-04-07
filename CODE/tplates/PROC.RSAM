@@ -128,6 +128,8 @@ ALARM_LINEWIDTH|2
 NOTIFY_EVENT|rsamalert.
 
 # --- per node graphs
+# comma separated list of channels to plot (default is all channels)
+PERNODE_CHANNELS|
 # graph title
 PERNODE_TITLE|{\fontsize{14}{\bf$node_alias: $node_name} ($timescale)}
 # line style
@@ -135,7 +137,7 @@ PERNODE_LINESTYLE|-
 
 # --- summary graph (all nodes together)
 # comment this key to not plot the summary graph
-SUMMARYLIST|SOURCEMAP
+SUMMARYLIST|SUMMARY,SOURCEMAP
 
 # comma separated list of channels to plot (default is all channels)
 SUMMARY_CHANNELS|1
@@ -145,6 +147,8 @@ SUMMARY_TITLE|{\fontsize{14}{\bf${NAME}} ($timescale)}
 SUMMARY_LINESTYLE|-
 
 # --- source mapping
+# comma separated list of channels to plot (default is all channels)
+SOURCEMAP_CHANNELS|1
 SOURCEMAP_EXCLUDED_NODELIST|
 SOURCEMAP_EXCLUDED_FROM_TARGET_KM|
 SOURCEMAP_INCLUDED_NODELIST|

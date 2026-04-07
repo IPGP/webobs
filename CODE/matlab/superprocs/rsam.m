@@ -22,7 +22,7 @@ function DOUT=rsam(varargin)
 %
 %       In addition to each single node graph, a summary graph with all nodes can
 %       be set with 'SUMMARYLIST|SUMMARY' parameter. RSAM will compute the mean of
-%        all channels for each node.
+%        all channels for each node, or mean of SUMMARY_CHANNELS list.
 %
 %       Other specific paramaters are described in CODE/tplates/PROC.RSAM.
 %
@@ -104,16 +104,20 @@ topt = {'BackgroundColor','w','Margin',.1,'HorizontalAlignment','center','Vertic
 
 % common unit for all channels
 clb = cat(1,D.CLB);
-un = strcommon(cat(1,clb.un));
+nxm = 0; % max number of channels
 
 for n = 1:length(N)
 
 	C = D(n).CLB;
 	nx = C.nx;
+    nmn = strcommon(C.nm);
+    unn = strcommon(C.un);
+	nxm = max(nxm,nx);
 	V.node_name = N(n).NAME;
 	V.node_alias = N(n).ALIAS;
 	V.last_data = datestr(D(n).tfirstlast(2));
 
+    pernode_channels = field2num(P,'PERNODE_CHANNELS',1:nx,'notempty');
     threshold = field2num(N(n),'THRESHOLD',alarm_threshold_level);
 
 	% ===================== makes the proc's job
@@ -136,63 +140,81 @@ for n = 1:length(N)
 		dk = nan(0,nx);
 		if ~isempty(k)
 			[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,:),P.GTABLE(r).DECIMATE,P);
-			if isok(P,'PERNODE_RELATIVE')
-				dk = rf(dk);
-			end
 		end
 
-		% loop for each data column
-		for i = 1:nx
-
+        % --- linear time series
+        subplot(4,1,1:2), extaxes(gca,[.07,.01])
+        if threshold > 0 && alarm_linewidth > 0
+            plot(tlim,repmat(threshold,1,2),alarm_linestyle,'Color',alarm_color,'LineWidth',alarm_linewidth)
+            OPT.IMAP(1).d = [tlim(1),threshold,tlim(2),threshold];
+            OPT.IMAP(1).gca = gca;
+            OPT.IMAP(1).s = {sprintf('''Level = %g %s'',CAPTION,''Alarm threshold'',BGCOLOR,''%s'',FGCOLOR,''#EEEEEE''',threshold,unn,char(rgb2hex(alarm_color)))};
+            OPT.IMAP(1).l = {''};
+        end
+        hold on
+        ylim = [0,Inf];
+		
+		aliases = [];
+		ncolors = [];
+		for i = pernode_channels
 			col = scolor(i);
-			col2 = .5+col/2;
-
-			% linear time series
-			subplot(nx*4,1,4*(i-1) + (1:2)), extaxes(gca,[.07,.01])
-			if threshold > 0 && alarm_linewidth > 0
-				plot(tlim,repmat(threshold,1,2),alarm_linestyle,'Color',alarm_color,'LineWidth',alarm_linewidth)
-			end
-			hold on
+			col2 = .5+col/2; % light color
+            aliases = cat(2,aliases,C.nm(i));
+            ncolors = cat(2,ncolors,i);
 			if ~isempty(k)
 				if isok(P,'CONTINUOUS_PLOT')
 					samp = 0;
 				else
-					samp = D(n).CLB.sf(i);
+					samp = C.sf(i);
 				end
 				timeplot(tk,dk(:,i),samp,pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH, ...
 					'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',col,'MarkerFaceColor',col)
 				if movingaverage > 1
-					hold on
 					timeplot(tk,mavr(dk(:,i),movingaverage),samp,'-', ...
 						'MarkerSize',P.GTABLE(r).MARKERSIZE,'LineWidth',P.GTABLE(r).LINEWIDTH,'Color',col2,'MarkerFaceColor',col2)
-					hold off
 				end
-			end
-			hold off; box on
-            ylim = [0,Inf];
-            if numel(ymax) == 2
-                ylim(2) = minmax([dk(:,i);threshold],ymax(1));
-                ylim(2) = ylim(2)*(1+ymax(2));
-                if isnan(ylim(2))
-                    ylim(2) = Inf;
+                if numel(ymax) == 2
+                    ylim(2) = rmax([minmax(dk(:,i),ymax(1));ylim(2);threshold]);
+                    ylim(2) = ylim(2)*(1+ymax(2));
+                    if isnan(ylim(2))
+                        ylim(2) = Inf;
+                    end
                 end
             end
-			set(gca,'XLim',tlim,'YLim',ylim,'FontSize',8,'TickDir','out')
-			if ylogscale
-				set(gca,'YScale','log')
-			end
-			datetick2('x',P.GTABLE(r).DATESTR)
-			ylabel(sprintf('%s %s',D(n).CLB.nm{i},regexprep(D(n).CLB.un{i},'(.+)','($1)')))
-			if isempty(D(n).d) || all(isnan(D(n).d(k,i)))
-				nodata(tlim)
-			end
+        end
+        hold off; box on
+        set(gca,'XLim',tlim,'YLim',ylim,'FontSize',8,'TickDir','out')
+        if ylogscale
+            set(gca,'YScale','log')
+        end
+        datetick2('x',P.GTABLE(r).DATESTR)
+        ylabel(sprintf('%s %s',nmn,regexprep(unn,'(.+)','($1)')))
+        if isempty(k)
+            nodata(tlim)
+        end
+		tlabel(tlim,P.TZ)
 
-			% 1/x time series (Y-axis linear scale forced)
-			subplot(nx*4,1,4*(i-1) + (3:4)), extaxes(gca,[.07,.01])
-			if threshold > 0 && alarm_linewidth > 0
-				plot(tlim,1./repmat(threshold,1,2),alarm_linestyle,'Color',alarm_color,'LineWidth',alarm_linewidth)
-			end
-			hold on
+		% legend: channel aliases
+		for i = 1:length(aliases)
+			text(tlim(1)+i*diff(tlim)/(length(aliases)+1),ylim(2),aliases(i), ...
+                'Color',scolor(ncolors(i)),topt{:})
+		end
+
+        % --- 1/x time series (Y-axis linear scale forced)
+        subplot(4,1,3:4), extaxes(gca,[.07,.01])
+        if threshold > 0 && alarm_linewidth > 0
+            plot(tlim,repmat(1/threshold,1,2),alarm_linestyle,'Color',alarm_color,'LineWidth',alarm_linewidth)
+            OPT.IMAP(2).d = [tlim(1),1/threshold,tlim(2),1/threshold];
+            OPT.IMAP(2).gca = gca;
+            OPT.IMAP(2).s = {sprintf('''Level = %g %s'',CAPTION,''Alarm threshold'',BGCOLOR,''%s'',FGCOLOR,''#EEEEEE''',threshold,unn,char(rgb2hex(alarm_color)))};
+            OPT.IMAP(2).l = {''};
+        end
+        hold on
+        ylim = [0,Inf];
+		
+		for i = pernode_channels
+			col = scolor(i);
+			col2 = .5+col/2; % light color
 			if ~isempty(k)
 				if isok(P,'CONTINUOUS_PLOT')
 					samp = 0;
@@ -204,30 +226,33 @@ for n = 1:length(N)
 				timeplot(tk,invdk,samp,pernode_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH, ...
 					'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',col,'MarkerFaceColor',col)
 				if movingaverage > 1
-					hold on
 					timeplot(tk,mavr(invdk,movingaverage),samp,'-', ...
 						'MarkerSize',P.GTABLE(r).MARKERSIZE,'LineWidth',P.GTABLE(r).LINEWIDTH,'Color',col2,'MarkerFaceColor',col2)
-					hold off
 				end
-			end
-			hold off; box on
-            ylim = [0,Inf];
-            if numel(ymax) == 2
-                ylim(2) = minmax([invdk;threshold],ymax(1));
-                ylim(2) = ylim(2)*(1+ymax(2));
-                if isnan(ylim(2))
-                    ylim(2) = Inf;
+                if numel(ymax) == 2
+                    ylim(2) = rmax([minmax(invdk,ymax(1));ylim(2);1/threshold]);
+                    ylim(2) = ylim(2)*(1+ymax(2));
+                    if isnan(ylim(2))
+                        ylim(2) = Inf;
+                    end
                 end
-            end
-			set(gca,'XLim',tlim,'Ylim',ylim,'FontSize',8,'TickDir','out')
-			datetick2('x',P.GTABLE(r).DATESTR)
-			ylabel(sprintf('%s %s',D(n).CLB.nm{i},regexprep(D(n).CLB.un{i},'(.+)','(1/($1))')))
-			if isempty(D(n).d) || all(isnan(D(n).d(k,i)))
-				nodata(tlim)
 			end
 		end
+        hold off; box on
+        set(gca,'XLim',tlim,'Ylim',ylim,'FontSize',8,'TickDir','out')
+        datetick2('x',P.GTABLE(r).DATESTR)
+        ylabel(sprintf('1/(%s) %s',nmn,regexprep(unn,'(.+)','(1/($1))')))
+        if isempty(k)
+            nodata(tlim)
+        end
 
 		tlabel(tlim,P.TZ)
+
+		% legend: channel aliases
+		for i = 1:length(aliases)
+			text(tlim(1)+i*diff(tlim)/(length(aliases)+1),ylim(2),aliases(i), ...
+                'Color',scolor(ncolors(i)),topt{:})
+		end
 
 		% title, status and additional information
 		OPT.GTITLE = varsub(pernode_title,V);
@@ -265,6 +290,8 @@ end
 summary = 'SUMMARY';
 if any(strcmp(P.SUMMARYLIST,summary))
 	G = cat(1,D.G);
+    summary_channels = field2num(P,'SUMMARY_CHANNELS',1:nxm,'notempty');
+    un = strcommon(cat(2,clb.un));
 
 	% -------------------------------------------------------------------------------------
 	% --- Summary timeseries graph
@@ -279,6 +306,7 @@ if any(strcmp(P.SUMMARYLIST,summary))
         OPT.STATUS = P.GTABLE(r).STATUS;
 		OPT.GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
 		OPT.INFOS = {''};
+        OPT.IMAP = [];
 
 		figure
 		orient tall
@@ -288,9 +316,6 @@ if any(strcmp(P.SUMMARYLIST,summary))
 
 		% linear/log time series
 		subplot(4,1,1:2), extaxes(gca,[.07,.01])
-		if alarm_threshold_level > 0
-			plot(tlim,repmat(alarm_threshold_level,1,2),'--','Color',alarm_color,'LineWidth',1)
-		end
 		hold on
         dmax = NaN;
 		for n = 1:length(N)
@@ -302,7 +327,7 @@ if any(strcmp(P.SUMMARYLIST,summary))
 					samp = D(n).CLB.sf(1);
 				end
 				% computes the mean of all channels
-				[tk,dk] = treatsignal(D(n).t(k),rmean(D(n).d(k,:),2),P.GTABLE(r).DECIMATE,P);
+				[tk,dk] = treatsignal(D(n).t(k),rmean(D(n).d(k,summary_channels),2),P.GTABLE(r).DECIMATE,P);
                 dmax = max(dmax,minmax(dk,ymax(1)));
 				col = scolor(n);
 				timeplot(tk,dk,samp,summary_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH, ...
@@ -325,7 +350,7 @@ if any(strcmp(P.SUMMARYLIST,summary))
 		end
 		box on
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel(sprintf('All channels %s',regexprep(un,'(.+)','($1)')))
+		ylabel(sprintf('RSAM %s',regexprep(un,'(.+)','($1)')))
 
 		% legend: station aliases
 		xlim = get(gca,'XLim');
@@ -343,7 +368,7 @@ if any(strcmp(P.SUMMARYLIST,summary))
 
 		subplot(4,1,3:4), extaxes(gca,[.07,.01])
 		if alarm_threshold_level > 0
-			plot(tlim,1./repmat(alarm_threshold_level,1,2),'--','Color',alarm_color,'LineWidth',1)
+			plot(tlim,1./repmat(alarm_threshold_level,1,2),alarm_linestyle,'Color',alarm_color,'LineWidth',alarm_linewidth)
 		end
 		hold on
         dmax = NaN;
@@ -376,7 +401,7 @@ if any(strcmp(P.SUMMARYLIST,summary))
 		set(gca,'XLim',tlim,'Ylim',ylim,'FontSize',8,'TickDir','out')
 		box on
 		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel(sprintf('1/x %s',regexprep(un,'(.+)','1/($1)')))
+		ylabel(sprintf('1/RSAM %s',regexprep(un,'(.+)','1/($1)')))
 
 		% legend: station aliases
 		xlim = get(gca,'XLim');
@@ -398,6 +423,7 @@ end
 summary = 'SOURCEMAP';
 if any(strcmp(P.SUMMARYLIST,summary))
 	G = cat(1,D.G);
+    sourcemap_channels = field2num(P,'SOURCEMAP_CHANNELS',1:nxm,'notempty');
     refstring = 'Processing by Taisne et al., IPGP/EOS';
     geo = [cat(1,N.LAT_WGS84),cat(1,N.LON_WGS84),cat(1,N.ALTITUDE)];
 
@@ -428,9 +454,6 @@ if any(strcmp(P.SUMMARYLIST,summary))
 
         % linear/log time series (1/4 upper part of the page)
         subplot(4,1,1), extaxes(gca,[.07,.01])
-        if alarm_threshold_level > 0
-            plot(tlim,repmat(alarm_threshold_level,1,2),'--','Color',alarm_color,'LineWidth',1)
-        end
         hold on
         dmax = NaN;
         for i = 1:length(kn)
@@ -442,8 +465,8 @@ if any(strcmp(P.SUMMARYLIST,summary))
                 else
                     samp = D(n).CLB.sf(1);
                 end
-                % computes the mean of all channels
-                [tk,dk] = treatsignal(D(n).t(k),rmean(D(n).d(k,:),2),P.GTABLE(r).DECIMATE,P);
+                % computes the mean of all sourcemap_channels
+                [tk,dk] = treatsignal(D(n).t(k),rmean(D(n).d(k,sourcemap_channels),2),P.GTABLE(r).DECIMATE,P);
                 col = scolor(n);
                 dmax = max(dmax,minmax(dk,ymax(1)));
                 timeplot(tk,dk,samp,summary_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH, ...
