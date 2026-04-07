@@ -565,7 +565,7 @@ if any(strcmp(P.SUMMARYLIST,summary))
             for n = 1:numel(IMAP(m).s)
                 IMAP(m).s{n} = sprintf('''<i>start:</i> %s<br><i>end:</i> %s<br>average = %g %s'',CAPTION,''%s: %s''', ...
                     datestr(tlim(1),'dd-mmm-yyyy HH:MM'),datestr(tlim(2),'dd-mmm-yyyy HH:MM'), ...
-                    roundsd(dz(n),3),un,N(n).ALIAS,regexprep(N(n).NAME,'"',''));
+                    roundsd(dz(n),3),un,N(n).ALIAS,regexprep(regexprep(N(n).NAME,'"',''),'('')','\\$1'));
             end
 
         end
