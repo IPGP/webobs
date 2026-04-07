@@ -119,6 +119,7 @@ for n = 1:length(N)
 
     pernode_channels = field2num(P,'PERNODE_CHANNELS',1:nx,'notempty');
     threshold = field2num(N(n),'THRESHOLD',alarm_threshold_level);
+    OPT.IMAP = [];
 
 	% ===================== makes the proc's job
 
@@ -430,6 +431,19 @@ if any(strcmp(P.SUMMARYLIST,summary))
     % selects stations
     kn = selectnode(N,tlim,sourcemap_excluded,sourcemap_included,[targetll,sourcemap_excluded_target]);
 
+    % load topo and compute basemap limits: a square that includes all nodes
+    lat0 = mean(minmax(geo(kn,1)));
+    lon0 = mean(minmax(geo(kn,2)));
+    xylim = xyw2lim([lon0,lat0,1.1*max(diff(minmax(geo(kn,1))),diff(minmax(geo(kn,2)))/cosd(lat0))],1/cosd(lat0));
+    DEM = loaddem(WO,xylim,P);
+    I = dem(DEM.lon,DEM.lat,DEM.z,'latlon','noplot','decim',sourcemap_n,sourcemap_dem_opt{:});
+    [xx,yy] = meshgrid(I.x,I.y);
+    % adds distances from target
+    if numel(targetll) == 2
+        [xdt,ydt] = meshgrid(DEM.lon,DEM.lat);
+        DEM.dist = greatcircle(targetll(1),targetll(2),ydt,xdt);
+    end
+
     for r = 1:length(P.GTABLE)
 
         V.timescale = timescales(P.GTABLE(r).TIMESCALE);
@@ -506,19 +520,6 @@ if any(strcmp(P.SUMMARYLIST,summary))
         plotevt(tbin,'-.','Color',.5*ones(1,3),'LineWidth',1)
 
         % --- maps of source location
-        % computes map limits: a square that includes all nodes
-        lat0 = mean(minmax(geo(:,1)));
-        lon0 = mean(minmax(geo(:,2)));
-        xylim = xyw2lim([lon0,lat0,1.1*max(diff(minmax(geo(:,1))),diff(minmax(geo(:,2)))/cosd(lat0))],1/cosd(lat0));
-        DEM = loaddem(WO,xylim,P);
-        I = dem(DEM.lon,DEM.lat,DEM.z,'latlon','noplot','decim',sourcemap_n,sourcemap_dem_opt{:});
-        [xx,yy] = meshgrid(I.x,I.y);
-  
-		% adds distance from target
-		if numel(targetll) == 2
-			[xdt,ydt] = meshgrid(DEM.lon,DEM.lat);
-			DEM.dist = greatcircle(targetll(1),targetll(2),ydt,xdt);
-		end
 
         clear IMAP
         for m = 1:(sourcemap_n^2)
