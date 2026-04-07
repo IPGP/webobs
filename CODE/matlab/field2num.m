@@ -32,7 +32,7 @@ function y = field2num(x,f,y0,varargin)
 %
 %	 Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2015-09-07 at Pos Dukono, Halmahera Utara (Indonesia)
-%	Updated: 2026-04-06
+%	Updated: 2026-04-07
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 D = struct('s',1/86400,'n',1/1440,'h',1/24,'d',1,'w',7,'m',30,'y',365.25);
@@ -45,11 +45,11 @@ if isstruct(x) && nargin > 1 && isfield(x,f) && (~isempty(x.(f)) || ~notempty)
 	val = x.(f);
 	if ischar(val)
 		% RGB or color name
-		if ~isempty(regexp(f,'_(RGB|COLOR)$')) && numel(str2num(val)) ~= 3
+		if ~isempty(regexp(f,'_(RGB|COLOR)$','once')) && numel(str2num(val)) ~= 3
 			y = rgb(val);
 
 		% any datenum compatible date
-		elseif ~isempty(regexp(f,'_(DATE|TLIM)$')) && ~isempty(val)
+		elseif ~isempty(regexp(f,'_(DATE|TLIM)$','once')) && ~isempty(val)
 			try
 				y = isodatenum(split(val,','));
 			catch
@@ -62,8 +62,8 @@ if isstruct(x) && nargin > 1 && isfield(x,f) && (~isempty(x.(f)) || ~notempty)
 			end
 
 		% colormap name or .cpt filename
-		elseif ~isempty(regexp(f,'COLORMAP$'))
-			if ~isempty(regexpi(val,'\.cpt$')) && exist(val,'file')
+		elseif ~isempty(regexp(f,'COLORMAP$','once'))
+			if ~isempty(regexpi(val,'\.cpt$','once')) && exist(val,'file')
 				y = cpt2cmap(val);
 			else
 				y = sstr2num(val);
@@ -78,7 +78,7 @@ if isstruct(x) && nargin > 1 && isfield(x,f) && (~isempty(x.(f)) || ~notempty)
 			end
 
 		% opacity scalar or 2-element vector
-		elseif ~isempty(regexp(f,'_ALPHA$'))
+		elseif ~isempty(regexp(f,'_ALPHA$','once'))
 			y = sstr2num(val);
 			if isscalar(y)
 				y = repmat(y,1,2); % allows scalar definition of opacity
@@ -91,7 +91,7 @@ if isstruct(x) && nargin > 1 && isfield(x,f) && (~isempty(x.(f)) || ~notempty)
 		% time duration (converted in days)
 		% [NOTE]: this test must be located after the color names to avoid NaN
 		% when color name ends with one of the suffix letter...
-		elseif ~isempty(regexp(val,'[snhdwmy]$'))
+		elseif ~isempty(regexp(val,'[snhdwmy]$','once'))
 			y = str2double(val(1:end-1))*D.(val(end));
 
 		elseif trueval
