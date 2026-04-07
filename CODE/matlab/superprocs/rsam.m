@@ -163,7 +163,7 @@ for n = 1:length(N)
 			hold off; box on
             ylim = [0,Inf];
             if numel(ymax) == 2
-                ylim(2) = minmax(dk(:,i),ymax(1));
+                ylim(2) = minmax([dk(:,i);threshold],ymax(1));
                 ylim(2) = ylim(2)*(1+ymax(2));
                 if isnan(ylim(2))
                     ylim(2) = Inf;
@@ -205,7 +205,7 @@ for n = 1:length(N)
 			hold off; box on
             ylim = [0,Inf];
             if numel(ymax) == 2
-                ylim(2) = minmax(invdk,ymax(1));
+                ylim(2) = minmax([invdk;threshold],ymax(1));
                 ylim(2) = ylim(2)*(1+ymax(2));
                 if isnan(ylim(2))
                     ylim(2) = Inf;
