@@ -76,6 +76,8 @@ sourcemap_colormap = field2num(P,'SOURCEMAP_COLORMAP',spectral(256));
 sourcemap_alpha = field2num(P,'SOURCEMAP_COLORMAP_ALPHA',[0,1]);
 sourcemap_caxis = field2num(P,'SOURCEMAP_CAXIS');
 sourcemap_dem_opt = field2cell(P,'SOURCEMAP_DEM_OPT','colormap',white);
+sourcemap_station_marker = field2str(P,'SOURCEMAP_STATION_MARKER','^');
+sourcemap_station_size = field2num(P,'SOURCEMAP_STATION_SIZE',6);
 
 ylogscale = isok(P,'YLOGSCALE');
 ymax = field2num(P,'YMAX_MEDIAN',[0.99,0.1]);
@@ -521,6 +523,8 @@ if any(strcmp(P.SUMMARYLIST,summary))
 
         % --- maps of source location
 
+        cmap = shademap(sourcemap_colormap,sourcemap_alpha);
+
         clear IMAP
         for m = 1:(sourcemap_n^2)
             tlim  = tbin(m+(0:1));
@@ -597,11 +601,11 @@ if any(strcmp(P.SUMMARYLIST,summary))
                 clabel(c,h,'FontSize',8,'Color',.5*ones(1,3));
             end
             % plot stations
-            plot(geo(kn,2),geo(kn,1),'^k','MarkerSize',4)
+            target(geo(kn,2),geo(kn,1),sourcemap_station_size,'w',sourcemap_station_marker)
             % plot max value
             if isok(P,'SOURCEMAP_PLOT_MAX')
                 k = find(zz == max(zz(:)));
-                plot(mean(xx(k)),mean(yy(k)),'pk','MarkerSize',5,'LineWidth',2)
+                plot(mean(xx(k)),mean(yy(k)),'pk','MarkerSize',6,'LineWidth',2)
             end
             hold off
             xlabel({sprintf('{\\bf%s} {\\it%+g}',datestr(tlim(1)),P.TZ), ...
@@ -629,7 +633,7 @@ if any(strcmp(P.SUMMARYLIST,summary))
         patch([0,.5,1,0],ylim(1) - diff(ylim)*[0,.05,0,0],'k','FaceColor','w','Clipping','off')
         axis xy
         set(gca,'XLim',[0,1],'XTick',[],'FontSize',8)
-        colormap(shademap(sourcemap_colormap,sourcemap_alpha))
+        colormap(cmap)
         caxis(clim);
         title({un,''},'FontWeight','bold')
 
@@ -637,7 +641,7 @@ if any(strcmp(P.SUMMARYLIST,summary))
         hold on
         plot(.5,.25,'pk','MarkerSize',5,'LineWidth',2)
         text(.5,.25,{'','max.','amplitude'},'FontSize',8,'FontWeight','bold','HorizontalAlignment','center','VerticalAlignment','top')
-        plot(.5,.15,'^k','MarkerSize',4)
+        target(.5,.15,sourcemap_station_size,'w',sourcemap_station_marker)
         text(.5,.15,{'','station'},'FontSize',8,'FontWeight','bold','HorizontalAlignment','center','VerticalAlignment','top')
         hold off
         set(gca,'XLim',[0,1],'YLim',[0,1]);
