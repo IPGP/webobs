@@ -24,9 +24,10 @@ function [D,P] = readfmtdata(WO,P,N)
 %
 %	Authors: François Beauducel, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2013-12-29, in Guadeloupe, French West Indies
-%	Updated: 2026-03-30
+%	Updated: 2026-04-14
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
+debug = isok(P,'DEBUG');
 
 % creates temporary directory
 F.ptmp = sprintf('%s/%s/%s',WO.PATH_TMP_WEBOBS,P.SELFREF,randname(16));
@@ -49,6 +50,10 @@ for n = 1:length(N)
 
     fprintf('%s: loading data [%s] for node "%s" {%s} from %s to %s ...', ...
         wofun,F.fmt,N(n).FID,N(n).ID,datestr(F.datelim(1)),datestr(F.datelim(2)));
+    
+    if debug
+        fprintf('\nRAWDATA = %s',F.raw{1});
+    end
 
     % -------------------------------------------------------------
     switch F.fmt
