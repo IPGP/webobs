@@ -85,7 +85,7 @@ PDFOUTPUT|NO
 # main logo file
 LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
 # main copyright
-COPYRIGHT|Processing by Taisne et al./IPGP/EOS
+COPYRIGHT|
 # optional secondary logo file
 LOGO2_FILE|
 # optional secondary copyright
@@ -128,10 +128,10 @@ ALARM_LINEWIDTH|2
 NOTIFY_EVENT|rsamalert.
 
 # --- per node graphs
+# pernode graph title
+PERNODE_TITLE|{\fontsize{14}{\bf$node_alias: $node_name} ($timescale)}
 # comma separated list of channels to plot (default is all channels)
 PERNODE_CHANNELS|
-# graph title
-PERNODE_TITLE|{\fontsize{14}{\bf$node_alias: $node_name} ($timescale)}
 # line style
 PERNODE_LINESTYLE|-
 
@@ -139,16 +139,20 @@ PERNODE_LINESTYLE|-
 # comment this key to not plot the summary graph
 SUMMARYLIST|SUMMARY,SOURCEMAP
 
+# summary graph title
+SUMMARY_TITLE|{\fontsize{14}{\bf${NAME}} ($timescale)}
 # comma separated list of channels to plot (default is all channels)
 SUMMARY_CHANNELS|1
-# graph title
-SUMMARY_TITLE|{\fontsize{14}{\bf${NAME}} ($timescale)}
 # line style
 SUMMARY_LINESTYLE|-
 
 # --- source mapping
+# sourcemap graph title
+SOURCEMAP_TITLE|{\fontsize{14}{\bf$name - Source Map $chan_name} ($timescale)}
 # comma separated list of channels to plot (default is all channels)
-SOURCEMAP_CHANNELS|1
+SOURCEMAP_CHANNELS|
+# set YES to plot on map per channel (default is averaging channels for each station)
+SOURCEMAP_PERCHANNEL|Y
 SOURCEMAP_EXCLUDED_NODELIST|
 SOURCEMAP_EXCLUDED_FROM_TARGET_KM|
 SOURCEMAP_INCLUDED_NODELIST|
@@ -158,8 +162,11 @@ SOURCEMAP_METHOD|mean
 SOURCEMAP_N|2
 SOURCEMAP_COLORMAP|spectral(256)
 SOURCEMAP_COLORMAP_ALPHA|0,1
-SOURCEMAP_CAXIS|0,2e-5
+# 2-values min,max: will fix the colorscale for all graphs
+SOURCEMAP_CAXIS|
+# max value for colorscale (min is zero): scalar or comma-separated list for channels (in case of SOURCEMAP_PERCHANNEL)
+SOURCEMAP_CMAX|10
 SOURCEMAP_PLOT_MAX|Y
-SOURCEMAP_DEM_OPT|'Colormap',white
+SOURCEMAP_DEM_OPT|'colormap',.9*ones(64,3)
 SOURCEMAP_STATION_MARKER|^
 SOURCEMAP_STATION_SIZE|6

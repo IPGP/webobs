@@ -30,7 +30,7 @@ function DOUT=rsam(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2017-07-19
-%	Updated: 2026-04-07
+%	Updated: 2026-04-14
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -69,12 +69,14 @@ end
 sourcemap_excluded = field2str(P,'SOURCEMAP_EXCLUDED_NODELIST');
 sourcemap_included = field2str(P,'SOURCEMAP_INCLUDED_NODELIST');
 sourcemap_excluded_target = field2num(P,'SOURCEMAP_EXCLUDED_FROM_TARGET_KM',0,'notempty');
+sourcemap_perchannel = isok(P,'SOURCEMAP_PERCHANNEL');
 sourcemap_method = field2str(P,'SOURCEMAP_METHOD','mean');
 sourcemap_n = field2num(P,'SOURCEMAP_N',2);
-sourcemap_title = field2str(P,'SOURCEMAP_TITLE','{\fontsize{14}{\bf$name - Source Map} ($timescale)}');
+sourcemap_title = field2str(P,'SOURCEMAP_TITLE','{\fontsize{14}{\bf$name - Source Map $chan_name} ($timescale)}');
 sourcemap_colormap = field2num(P,'SOURCEMAP_COLORMAP',spectral(256));
 sourcemap_alpha = field2num(P,'SOURCEMAP_COLORMAP_ALPHA',[0,1]);
 sourcemap_caxis = field2num(P,'SOURCEMAP_CAXIS');
+sourcemap_cmax = field2num(P,'SOURCEMAP_CMAX');
 sourcemap_dem_opt = field2cell(P,'SOURCEMAP_DEM_OPT','colormap',white);
 sourcemap_station_marker = field2str(P,'SOURCEMAP_STATION_MARKER','^');
 sourcemap_station_size = field2num(P,'SOURCEMAP_STATION_SIZE',6);
@@ -102,7 +104,7 @@ if ~isempty(alarm_xml) && exist(alarm_xml,'file')
 end
 
 % text options for station legend
-topt = {'BackgroundColor','w','Margin',.1,'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',6,'FontWeight','bold'};
+topt = {'BackgroundColor','w','Margin',.1,'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',7,'FontWeight','bold'};
 
 % common unit for all channels
 clb = cat(1,D.CLB);
@@ -432,6 +434,12 @@ if any(strcmp(P.SUMMARYLIST,summary))
 
     % selects stations
     kn = selectnode(N,tlim,sourcemap_excluded,sourcemap_included,[targetll,sourcemap_excluded_target]);
+    
+    if sourcemap_perchannel
+        nc = length(sourcemap_channels);
+    else
+        nc = 1;
+    end
 
     % load topo and compute basemap limits: a square that includes all nodes
     lat0 = mean(minmax(geo(kn,1)));
@@ -453,206 +461,226 @@ if any(strcmp(P.SUMMARYLIST,summary))
         if any(isnan(tlim))
             tlim = minmax(cat(1,D.tfirstlast));
         end
-        OPT.GTITLE = varsub(sourcemap_title,V);
         OPT.STATUS = P.GTABLE(r).STATUS;
         OPT.GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
         OPT.INFOS = { ...
             sprintf('Average method: {\\bf %s}',sourcemap_method), ...
             sprintf('Reference: {\\bf %s}',refstring), ...
-            };
+        };
 
-        % --- Time series graph
-        figure
-        orient tall
-
-        aliases = [];
-        ncolors = [];
-
-        % linear/log time series (1/4 upper part of the page)
-        subplot(4,1,1), extaxes(gca,[.07,.01])
-        hold on
-        dmax = NaN;
-        for i = 1:length(kn)
-            n = kn(i);
-            k = D(n).G(r).k;
-            if ~isempty(k)
-                if isok(P,'CONTINUOUS_PLOT')
-                    samp = 0;
-                else
-                    samp = D(n).CLB.sf(1);
-                end
-                % computes the mean of all sourcemap_channels
-                [tk,dk] = treatsignal(D(n).t(k),rmean(D(n).d(k,sourcemap_channels),2),P.GTABLE(r).DECIMATE,P);
-                col = scolor(n);
-                dmax = max(dmax,minmax(dk,ymax(1)));
-                timeplot(tk,dk,samp,summary_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH, ...
-                    'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',col,'MarkerFaceColor',col)
-                aliases = cat(2,aliases,{N(n).ALIAS});
-                ncolors = cat(2,ncolors,n);
+        for c = 1:nc
+            if sourcemap_perchannel
+                cnm = cat(1,clb(kn).nm);
+                V.chan_name = strcommon(cnm(:,sourcemap_channels(c)));
+            else
+                V.chan_name = strcommon(cnm(sourcemap_channels));
             end
-        end
-        hold off
-        ylim = [0,Inf];
-        if numel(ymax) == 2
-            ylim(2) = dmax*(1+ymax(2));
-            if isnan(ylim(2))
-                ylim(2) = Inf;
-            end
-        end
-        set(gca,'XLim',tlim,'YLim',ylim,'FontSize',8,'TickDir','out')
-        if ylogscale
-            set(gca,'YScale','log')
-        end
-        box on
-        datetick2('x',P.GTABLE(r).DATESTR)
-        ylabel(sprintf('All channels (%s)',un))
+            OPT.GTITLE = varsub(sourcemap_title,V);
 
-        % legend: station aliases
-        xlim = get(gca,'XLim');
-        nn = length(aliases);
-        for n = 1:nn
-            text(xlim(1)+n*diff(xlim)/(nn+1),ylim(2),aliases(n), ...
-                'Color',scolor(ncolors(n)),topt{:});
-        end
+            % --- Time series graph
+            figure
+            orient tall
 
-        tlabel(xlim,P.TZ)
+            aliases = [];
+            ncolors = [];
 
-        % plots maps time limits
-        tbin = linspace(xlim(1),xlim(2),sourcemap_n^2+1);
-        plotevt(tbin,'-.','Color',.5*ones(1,3),'LineWidth',1)
-
-        % --- maps of source location
-
-        cmap = shademap(sourcemap_colormap,sourcemap_alpha);
-
-        clear IMAP
-        for m = 1:(sourcemap_n^2)
-            tlim  = tbin(m+(0:1));
-            x0 = 0.18;
-            dx = 0.75;
-            y0 = 0.1;
-            dy = 0.62;
-            ddy = 0.03; % margin Y
-            switch sourcemap_n
-                case 2
-                    ddx = 0.08; % margin X
-                    width  = (dx-ddx)/2;
-                    height = (dy-ddy)/2;
-                    left   = x0 + mod(m-1,2)*(width + ddx);
-                    bottom = y0 + (2-ceil(m/2))*(height + ddy);
-                case 3
-                    ddx = 0.05; % margin X
-                    width  = (dx-2*ddx)/3;
-                    height = (dy-2*ddy)/3;
-                    left   = x0 + mod(m-1,3)*(width + ddx);
-                    bottom = y0 + (3-ceil(m/3))*(height + ddy);
-                otherwise
-                    left   = x0;
-                    width  = dx;
-                    bottom = y0;
-                    height = dy;
-            end
-            axes('Position',[left bottom width height]);
-            % extaxes tries to fit dataaspect ratio
-            extaxes(gca,[repmat(1-cosd(lat0),1,2),0,0])
-
-            % computes the mean value for each node
-            dx = [geo(kn,2);xylim([1,2,1,2])'];
-            dy = [geo(kn,1);xylim([3,3,4,4])'];
-            dz = nan(length(kn)+4,1); % init with NaN
-            dz(end-3:end) = 0; % 4 last to fix map corners to 0
+            % linear/log time series (1/4 upper part of the page)
+            subplot(4,1,1), extaxes(gca,[.07,.01])
+            hold on
+            dmax = NaN;
             for i = 1:length(kn)
                 n = kn(i);
                 k = D(n).G(r).k;
                 if ~isempty(k)
-                    switch sourcemap_method
-                        case 'median'
-                            dz(n) = rmedian(D(n).d(isinto(D(n).t,tlim)));
-                        otherwise
-                            dz(n) = rmean(D(n).d(isinto(D(n).t,tlim)));
+                    if isok(P,'CONTINUOUS_PLOT')
+                        samp = 0;
+                    else
+                        samp = D(n).CLB.sf(1);
                     end
+                    if sourcemap_perchannel
+                        dd = D(n).d(k,sourcemap_channels(c));
+                    else
+                        dd = rmean(D(n).d(k,sourcemap_channels),2);
+                    end
+                    [tk,dk] = treatsignal(D(n).t(k),dd,P.GTABLE(r).DECIMATE,P);
+                    col = scolor(n);
+                    dmax = max(dmax,minmax(dk,ymax(1)));
+                    timeplot(tk,dk,samp,summary_linestyle,'LineWidth',P.GTABLE(r).LINEWIDTH, ...
+                        'MarkerSize',P.GTABLE(r).MARKERSIZE,'Color',col,'MarkerFaceColor',col)
+                    aliases = cat(2,aliases,{N(n).ALIAS});
+                    ncolors = cat(2,ncolors,n);
                 end
             end
-            k = find(~isnan(dz));
-            zz = griddata(dx(k),dy(k),dz(k),xx,yy,'v4');
-
-            % computed mixed map with shaded relied
-            if numel(sourcemap_caxis) == 2
-                clim = sourcemap_caxis;
-            else
-                clim = minmax(dz);
-            end
-            inorm = zz/diff(clim) + clim(1); % normalized values (0,1)
-            inorm(inorm<0) = 0;
-            inorm(inorm>1) = 1;
-            I.msk = ind2rgb(round(size(sourcemap_colormap,1)*inorm),sourcemap_colormap); % RGB map
-            A = repmat(interp1(linspace(0,1,length(sourcemap_alpha)),sourcemap_alpha,inorm),[1,1,3]);
-            I.tot = I.rgb.*(1 - A) + I.msk.*A;
-            imagesc(xx(1,:),yy(:,1),I.tot);
-            axis xy
-
-            %set(gca,'XTick',[],'YTick',[],'DataAspectRatio',[1,cosd(lat0),1],'FontSize',8)
-            set(gca,'XTick',[],'YTick',[],'FontSize',8)
-            hold on
-            % adds distance from target
-            if numel(targetll) == 2
-                [c,h] = contour(DEM.lon,DEM.lat,DEM.dist,'k');
-                set(h,'LineColor',.5*ones(1,3),'LineWidth',.1);
-                clabel(c,h,'FontSize',8,'Color',.5*ones(1,3));
-            end
-            % plot stations
-            target(geo(kn,2),geo(kn,1),sourcemap_station_size,'w',sourcemap_station_marker)
-            % plot max value
-            if isok(P,'SOURCEMAP_PLOT_MAX')
-                k = find(zz == max(zz(:)));
-                plot(mean(xx(k)),mean(yy(k)),'pk','MarkerSize',6,'LineWidth',2)
-            end
             hold off
-            xlabel({sprintf('{\\bf%s} {\\it%+g}',datestr(tlim(1)),P.TZ), ...
-                sprintf('{\\bf%s} {\\it%+g}',datestr(tlim(2)),P.TZ)});
+            ylim = [0,Inf];
+            if numel(ymax) == 2
+                ylim(2) = dmax*(1+ymax(2));
+                if isnan(ylim(2))
+                    ylim(2) = Inf;
+                end
+            end
+            set(gca,'XLim',tlim,'YLim',ylim,'FontSize',8,'TickDir','out')
+            if ylogscale
+                set(gca,'YScale','log')
+            end
+            box on
+            datetick2('x',P.GTABLE(r).DATESTR)
+            ylabel(sprintf('All stations (%s)',un))
 
-            % interactive map with max value per station
-            IMAP(m).d = [dx(1:length(kn)),dy(1:length(kn)),repmat(5,length(kn),1)];
-            IMAP(m).gca = gca;
-            IMAP(m).s = cell(length(kn),1);
-            IMAP(m).l = cell(length(kn),1);
-            for n = 1:numel(IMAP(m).s)
-                IMAP(m).s{n} = sprintf('''<i>start:</i> %s<br><i>end:</i> %s<br>average = %g %s'',CAPTION,''%s: %s''', ...
-                    datestr(tlim(1),'dd-mmm-yyyy HH:MM'),datestr(tlim(2),'dd-mmm-yyyy HH:MM'), ...
-                    roundsd(dz(n),3),un,N(n).ALIAS,regexprep(regexprep(N(n).NAME,'"',''),'('')','\\$1'));
+            % legend: station aliases
+            xlim = get(gca,'XLim');
+            nn = length(aliases);
+            for n = 1:nn
+                text(xlim(1)+n*diff(xlim)/(nn+1),ylim(2),aliases(n), ...
+                    'Color',scolor(ncolors(n)),topt{:});
             end
 
+            tlabel(xlim,P.TZ)
+
+            % plots maps time limits
+            tbin = linspace(xlim(1),xlim(2),sourcemap_n^2+1);
+            plotevt(tbin,'-.','Color',.5*ones(1,3),'LineWidth',1)
+
+            % --- maps of source location
+
+            cmap = shademap(sourcemap_colormap,sourcemap_alpha);
+
+            clear IMAP
+            for m = 1:(sourcemap_n^2)
+                wlim  = tbin(m+(0:1));
+                x0 = 0.18;
+                dx = 0.75;
+                y0 = 0.1;
+                dy = 0.62;
+                ddy = 0.03; % margin Y
+                switch sourcemap_n
+                    case 2
+                        ddx = 0.08; % margin X
+                        width  = (dx-ddx)/2;
+                        height = (dy-ddy)/2;
+                        left   = x0 + mod(m-1,2)*(width + ddx);
+                        bottom = y0 + (2-ceil(m/2))*(height + ddy);
+                    case 3
+                        ddx = 0.05; % margin X
+                        width  = (dx-2*ddx)/3;
+                        height = (dy-2*ddy)/3;
+                        left   = x0 + mod(m-1,3)*(width + ddx);
+                        bottom = y0 + (3-ceil(m/3))*(height + ddy);
+                    otherwise
+                        left   = x0;
+                        width  = dx;
+                        bottom = y0;
+                        height = dy;
+                end
+                axes('Position',[left bottom width height]);
+                % extaxes tries to fit dataaspect ratio
+                extaxes(gca,[repmat(1-cosd(lat0),1,2),0,0])
+
+                % computes the mean value for each node
+                dx = [geo(kn,2);xylim([1,2,1,2])'];
+                dy = [geo(kn,1);xylim([3,3,4,4])'];
+                dz = nan(length(kn)+4,1); % init with NaN
+                dz(end-3:end) = 0; % 4 last to fix map corners to 0
+                for i = 1:length(kn)
+                    n = kn(i);
+                    k = D(n).G(r).k;
+                    if ~isempty(k)
+                        if sourcemap_perchannel
+                            dd = D(n).d(isinto(D(n).t,wlim),sourcemap_channels(c));
+                        else
+                            dd = rmean(D(n).d(isinto(D(n).t,wlim),:),2);
+                        end
+                        switch sourcemap_method
+                            case 'median'
+                                dz(n) = rmedian(dd);
+                            otherwise
+                                dz(n) = rmean(dd);
+                        end
+                    end
+                end
+                k = find(~isnan(dz));
+                zz = griddata(dx(k),dy(k),dz(k),xx,yy,'v4');
+
+                % computed mixed map with shaded relied
+                clim = minmax(dz);
+                if numel(sourcemap_caxis) == 2
+                    clim = sourcemap_caxis;
+                end
+                if ~any(isnan(sourcemap_cmax)) && length(sourcemap_cmax) == nc
+                    clim = [0,sourcemap_cmax(c)];
+                end
+                inorm = zz/diff(clim) + clim(1); % normalized values (0,1)
+                inorm(inorm<0) = 0;
+                inorm(inorm>1) = 1;
+                I.msk = ind2rgb(round(size(sourcemap_colormap,1)*inorm),sourcemap_colormap); % RGB map
+                A = repmat(interp1(linspace(0,1,length(sourcemap_alpha)),sourcemap_alpha,inorm),[1,1,3]);
+                I.tot = I.rgb.*(1 - A) + I.msk.*A;
+                imagesc(xx(1,:),yy(:,1),I.tot);
+                axis xy
+
+                %set(gca,'XTick',[],'YTick',[],'DataAspectRatio',[1,cosd(lat0),1],'FontSize',8)
+                set(gca,'XTick',[],'YTick',[],'FontSize',8)
+                hold on
+                % adds distance from target
+                if numel(targetll) == 2
+                    [ct,h] = contour(DEM.lon,DEM.lat,DEM.dist,'k');
+                    set(h,'LineColor',.5*ones(1,3),'LineWidth',.1);
+                    clabel(ct,h,'FontSize',8,'Color',.5*ones(1,3));
+                end
+                % plot stations
+                target(geo(kn,2),geo(kn,1),sourcemap_station_size,'w',sourcemap_station_marker)
+                % plot max value
+                if isok(P,'SOURCEMAP_PLOT_MAX') && max(zz(:)) ~= 0
+                    km = find(zz == max(zz(:)));
+                    plot(mean(xx(km)),mean(yy(km)),'pk','MarkerSize',6,'LineWidth',2)
+                end
+                hold off
+                xlabel({sprintf('{\\bf%s} {\\it%+g}',datestr(wlim(1)),P.TZ), ...
+                    sprintf('{\\bf%s} {\\it%+g}',datestr(wlim(2)),P.TZ)});
+
+                % interactive map with max value per station
+                IMAP(m).d = [dx(1:length(kn)),dy(1:length(kn)),repmat(sourcemap_station_size,length(kn),1)];
+                IMAP(m).gca = gca;
+                IMAP(m).s = cell(length(kn),1);
+                IMAP(m).l = cell(length(kn),1);
+                for n = 1:numel(IMAP(m).s)
+                    IMAP(m).s{n} = sprintf('''<i>start:</i> %s<br><i>end:</i> %s<br>average = %g %s'',CAPTION,''%s: %s''', ...
+                        datestr(wlim(1),'dd-mmm-yyyy HH:MM'),datestr(wlim(2),'dd-mmm-yyyy HH:MM'), ...
+                        roundsd(dz(n),3),un,N(n).ALIAS,regexprep(regexprep(N(n).NAME,'"',''),'('')','\\$1'));
+                end
+
+            end
+
+            % legend (colorscale)
+            axes('position',[0.05,0.3,0.02,0.2]);
+            clin = linspace(clim(1),clim(2));
+            imagesc([0,1],clin,repmat(clin',[1,2]));
+            ylim = get(gca,'Ylim');
+            patch([0,.5,1,0],ylim(2) + diff(ylim)*[0,.05,0,0],'k','FaceColor','k','Clipping','off')
+            patch([0,.5,1,0],ylim(1) - diff(ylim)*[0,.05,0,0],'k','FaceColor','w','Clipping','off')
+            axis xy
+            set(gca,'XLim',[0,1],'XTick',[],'FontSize',8)
+            colormap(cmap)
+            caxis(clim);
+            title({un,''},'FontWeight','bold')
+
+            axes('position',[0.05,0.1,0.02,0.6]);
+            hold on
+            plot(.5,.25,'pk','MarkerSize',5,'LineWidth',2)
+            text(.5,.25,{'','max.','amplitude'},'FontSize',8,'FontWeight','bold','HorizontalAlignment','center','VerticalAlignment','top')
+            target(.5,.15,sourcemap_station_size,'w',sourcemap_station_marker)
+            text(.5,.15,{'','station'},'FontSize',8,'FontWeight','bold','HorizontalAlignment','center','VerticalAlignment','top')
+            hold off
+            set(gca,'XLim',[0,1],'YLim',[0,1]);
+            axis off
+
+            OPT.FIXEDPP = true;
+            OPT.IMAP = IMAP;
+            f = sprintf('%s%s_%s',summary,repmat(sprintf('_%d',c),c>1),P.GTABLE(r).TIMESCALE);
+            mkgraph(WO,f,P,OPT)
+            close
         end
-
-        % legend (colorscale)
-        axes('position',[0.05,0.3,0.02,0.2]);
-        clin = linspace(clim(1),clim(2));
-        imagesc([0,1],clin,repmat(clin',[1,2]));
-        ylim = get(gca,'Ylim');
-        patch([0,.5,1,0],ylim(2) + diff(ylim)*[0,.05,0,0],'k','FaceColor','k','Clipping','off')
-        patch([0,.5,1,0],ylim(1) - diff(ylim)*[0,.05,0,0],'k','FaceColor','w','Clipping','off')
-        axis xy
-        set(gca,'XLim',[0,1],'XTick',[],'FontSize',8)
-        colormap(cmap)
-        caxis(clim);
-        title({un,''},'FontWeight','bold')
-
-        axes('position',[0.05,0.1,0.02,0.6]);
-        hold on
-        plot(.5,.25,'pk','MarkerSize',5,'LineWidth',2)
-        text(.5,.25,{'','max.','amplitude'},'FontSize',8,'FontWeight','bold','HorizontalAlignment','center','VerticalAlignment','top')
-        target(.5,.15,sourcemap_station_size,'w',sourcemap_station_marker)
-        text(.5,.15,{'','station'},'FontSize',8,'FontWeight','bold','HorizontalAlignment','center','VerticalAlignment','top')
-        hold off
-        set(gca,'XLim',[0,1],'YLim',[0,1]);
-        axis off
-
-        OPT.FIXEDPP = true;
-        OPT.IMAP = IMAP;
-        mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
-        close
     end
-
 end
 
 
