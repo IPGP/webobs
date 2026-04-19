@@ -114,7 +114,7 @@ for n = 1:length(N)
 
 	C = D(n).CLB;
 	nx = C.nx;
-    nmn = strcommon(C.nm);
+    nmn = strcommon(C.nm,'All channels');
     unn = strcommon(C.un);
 	nxm = max(nxm,nx);
 	V.node_name = N(n).NAME;
@@ -471,9 +471,9 @@ if any(strcmp(P.SUMMARYLIST,summary))
         for c = 1:nc
             if sourcemap_perchannel
                 cnm = cat(1,clb(kn).nm);
-                V.chan_name = strcommon(cnm(:,sourcemap_channels(c)));
+                V.chan_name = strcommon(cnm(:,sourcemap_channels(c)),'All channels');
             else
-                V.chan_name = strcommon(cnm(sourcemap_channels));
+                V.chan_name = strcommon(cnm(sourcemap_channels),'Channel mean');
             end
             OPT.GTITLE = varsub(sourcemap_title,V);
 
