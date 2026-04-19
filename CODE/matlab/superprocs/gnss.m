@@ -1069,15 +1069,15 @@ for r = 1:numel(P.GTABLE)
             if strcmpi(strainmap_colorref,'strain')
                 ncol = size(cmap,1)-1;
                 if ~isnan(B(n).def)
-                    col = cmap(floor(ncol*(B(n).def-clim(1))/diff(clim))+1,:);
+                    B(n).col = cmap(floor(ncol*(B(n).def-clim(1))/diff(clim))+1,:);
                 else
-                    col = cmap(round(ncol/2),:);
+                    B(n).col = cmap(round(ncol/2),:);
                     lw = .1;
                 end
             else
-                col = scolor(n);
+                B(n).col = scolor(n);
             end
-            plot(geo([a,b],2),geo([a,b],1),'-','Color',col,'LineWidth',lw)
+            plot(geo([a,b],2),geo([a,b],1),'-','Color',B(n).col,'LineWidth',lw)
         end
         hold off
         target(geo(kn,2),geo(kn,1),8,.5*ones(1,3))
@@ -1115,6 +1115,7 @@ for r = 1:numel(P.GTABLE)
         text(0,1,txt,'VerticalAlignment','top','FontSize',9)
         
         bstab = {'',{'{\bfDist.}','(km)',''},{'{\bfVel.}','(mm/yr)',''},{'{\bfDisp.}','(mm)',''},{'{\bfDef.}',sprintf('(%cstr)',char(181)),''}};
+        bscol = repmat({'none'},length(B)+1,size(bstab,2));
 
         for i = 1:length(B)
             n = ix(i);
@@ -1135,8 +1136,9 @@ for r = 1:numel(P.GTABLE)
                     sprintf('{%s%+g}',b3,roundsd(B(n).def,2)), ...
                 };
             end
+            bscol(i+1,[1,5]) = repmat({B(n).col},1,2);
         end
-        plottable(bstab,[.1,.3,.5,.7,.9],[.85,0],'ccccc','FontSize',8)
+        plottable(bstab,[.1,.3,.5,.7,.9],[.85,0],'ccccc',bscol,'FontSize',8)
         set(gca,'YLim',[0,1])
         axis off
 
@@ -2254,7 +2256,7 @@ for r = 1:numel(P.GTABLE)
 				end
 				rowlim = [.7,.3];
 			end
-			plottable(bstab,[.25,.5,.85],rowlim,'rcc','FontSize',8)
+			plottable(bstab,[.25,.5,.85],rowlim,'rcc',[],'FontSize',8)
 		else
 			info = cat(2,info,' ','   No source found.');
 		end
