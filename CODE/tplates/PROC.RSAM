@@ -166,7 +166,10 @@ SOURCEMAP_COLORMAP_ALPHA|0,1
 SOURCEMAP_CAXIS|
 # max value for colorscale (min is zero): scalar or comma-separated list for channels (in case of SOURCEMAP_PERCHANNEL)
 SOURCEMAP_CMAX|10
+# plots a marker at maximum amplitude
 SOURCEMAP_PLOT_MAX|Y
+# plots all sources using center of mass method
+SOURCEMAP_PLOT_ALLMAX|N
 SOURCEMAP_DEM_OPT|'colormap',.9*ones(64,3)
 SOURCEMAP_STATION_MARKER|^
 SOURCEMAP_STATION_SIZE|6

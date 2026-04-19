@@ -584,11 +584,12 @@ if any(strcmp(P.SUMMARYLIST,summary))
                 for i = 1:length(kn)
                     n = kn(i);
                     k = D(n).G(r).k;
+                    kw = isinto(D(n).t,wlim);
                     if ~isempty(k)
                         if sourcemap_perchannel
-                            dd = D(n).d(isinto(D(n).t,wlim),sourcemap_channels(c));
+                            dd = D(n).d(kw,sourcemap_channels(c));
                         else
-                            dd = rmean(D(n).d(isinto(D(n).t,wlim),:),2);
+                            dd = rmean(D(n).d(kw,:),2);
                         end
                         switch sourcemap_method
                             case 'median'
@@ -629,10 +630,36 @@ if any(strcmp(P.SUMMARYLIST,summary))
                 end
                 % plot stations
                 target(geo(kn,2),geo(kn,1),sourcemap_station_size,'w',sourcemap_station_marker)
+                % plot all max values
+                if isok(P,'SOURCEMAP_PLOT_ALLMAX')
+                    sf = cat(1,clb(kn).sf);
+                    dt = rmin(sf(:)); % minimum delta t
+                    tw = wlim(1):dt:wlim(2);
+                    if length(tw) > 100
+                        tw = linspace(wlim(1),wlim(2),100);
+                    end
+                    xyv = nan(length(tw),2);
+                    for i = 1:length(tw)
+                        dz = nan(length(kn)+4,1);
+                        for ii = 1:length(kn)
+                            n = kn(ii);
+                            kw = isinto(D(n).t,wlim);
+                            if sum(kw) > 1
+                                dz(ii) = interp1(D(n).t(kw),D(n).d(kw,c),tw(i),'nearest');
+                            end
+                        end
+                        w = dz.^2;
+                        x0 = rsum(w.*dx) / rsum(w);
+                        y0 = rsum(w.*dy) / rsum(w);
+                        %xyv(i,:) = fminsearch(fx, [x0 y0]);
+                        xyv(i,:) = [x0 y0];
+                    end
+                    plot(xyv(:,1),xyv(:,2),'.','Color',.3*ones(1,3),'MarkerSize',5)
+                end
                 % plot max value
                 if isok(P,'SOURCEMAP_PLOT_MAX') && max(zz(:)) ~= 0
                     km = find(zz == max(zz(:)));
-                    plot(mean(xx(km)),mean(yy(km)),'pk','MarkerSize',6,'LineWidth',2)
+                    plot(mean(xx(km)),mean(yy(km)),'pk','MarkerSize',10,'MarkerFaceColor','k')
                 end
                 hold off
                 xlabel({sprintf('{\\bf%s} {\\it%+g}',datestr(wlim(1)),P.TZ), ...
@@ -666,7 +693,7 @@ if any(strcmp(P.SUMMARYLIST,summary))
 
             axes('position',[0.05,0.1,0.02,0.6]);
             hold on
-            plot(.5,.25,'pk','MarkerSize',5,'LineWidth',2)
+            plot(.5,.25,'pk','MarkerSize',10,'MarkerFaceColor','k')
             text(.5,.25,{'','max.','amplitude'},'FontSize',8,'FontWeight','bold','HorizontalAlignment','center','VerticalAlignment','top')
             target(.5,.15,sourcemap_station_size,'w',sourcemap_station_marker)
             text(.5,.15,{'','station'},'FontSize',8,'FontWeight','bold','HorizontalAlignment','center','VerticalAlignment','top')
