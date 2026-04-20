@@ -30,7 +30,7 @@ function DOUT=rsam(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2017-07-19
-%	Updated: 2026-04-14
+%	Updated: 2026-04-20
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -80,6 +80,9 @@ sourcemap_cmax = field2num(P,'SOURCEMAP_CMAX');
 sourcemap_dem_opt = field2cell(P,'SOURCEMAP_DEM_OPT','colormap',white);
 sourcemap_station_marker = field2str(P,'SOURCEMAP_STATION_MARKER','^');
 sourcemap_station_size = field2num(P,'SOURCEMAP_STATION_SIZE',6);
+sourcemap_max_opt = field2cell(P,'SOURCEMAP_MAX_OPT','pk','MarkerFaceColor','k','MarkerSize',10);
+sourcemap_allmax_exp = field2num(P,'SOURCEMAP_ALLMAX_EXPONENT',2);
+sourcemap_allmax_opt = field2cell(P,'SOURCEMAP_ALLMAX_OPT','.','Color',.3*ones(1,3),'MarkerSize',3);
 
 ylogscale = isok(P,'YLOGSCALE');
 ymax = field2num(P,'YMAX_MEDIAN',[0.99,0.1]);
@@ -469,8 +472,8 @@ if any(strcmp(P.SUMMARYLIST,summary))
         };
 
         for c = 1:nc
+            cnm = cat(1,clb(kn).nm);
             if sourcemap_perchannel
-                cnm = cat(1,clb(kn).nm);
                 V.chan_name = strcommon(cnm(:,sourcemap_channels(c)),'All channels');
             else
                 V.chan_name = strcommon(cnm(sourcemap_channels),'Channel mean');
@@ -638,28 +641,27 @@ if any(strcmp(P.SUMMARYLIST,summary))
                     if length(tw) > 100
                         tw = linspace(wlim(1),wlim(2),100);
                     end
-                    xyv = nan(length(tw),2);
+                    xy = nan(length(tw),2);
                     for i = 1:length(tw)
-                        dz = nan(length(kn)+4,1);
+                        v = nan(length(kn)+4,1);
                         for ii = 1:length(kn)
                             n = kn(ii);
                             kw = isinto(D(n).t,wlim);
                             if sum(kw) > 1
-                                dz(ii) = interp1(D(n).t(kw),D(n).d(kw,c),tw(i),'nearest');
+                                v(ii) = interp1(D(n).t(kw),rmean(D(n).d(kw,c),2),tw(i),'nearest');
                             end
                         end
-                        w = dz.^2;
+                        w = v.^sourcemap_allmax_exp;
                         x0 = rsum(w.*dx) / rsum(w);
                         y0 = rsum(w.*dy) / rsum(w);
-                        %xyv(i,:) = fminsearch(fx, [x0 y0]);
-                        xyv(i,:) = [x0 y0];
+                        xy(i,:) = [x0 y0];
                     end
-                    plot(xyv(:,1),xyv(:,2),'.','Color',.3*ones(1,3),'MarkerSize',5)
+                    plot(xy(:,1),xy(:,2),sourcemap_allmax_opt{:})
                 end
                 % plot max value
                 if isok(P,'SOURCEMAP_PLOT_MAX') && max(zz(:)) ~= 0
                     km = find(zz == max(zz(:)));
-                    plot(mean(xx(km)),mean(yy(km)),'pk','MarkerSize',10,'MarkerFaceColor','k')
+                    plot(mean(xx(km)),mean(yy(km)),sourcemap_max_opt{:})
                 end
                 hold off
                 xlabel({sprintf('{\\bf%s} {\\it%+g}',datestr(wlim(1)),P.TZ), ...
