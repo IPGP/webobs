@@ -128,7 +128,7 @@ function openPopupProducer(ux) {
             if (last_mgr[0] === undefined) {
                 for (var i = 0; i < count_contacts - 1; i++) {
                     console.log(i);
-                    addMgr();
+                    addProducerItem('mgr');
                     form.firstName[i + 1].value = emails[i + 1].split(' ')[2];
                     form.lastName[i + 1].value = emails[i + 1].split(' ')[3];
                     form.emails[i + 1].value = emails[i + 1].split(': ')[1].trim();
@@ -153,7 +153,7 @@ function openPopupProducer(ux) {
             form.typeFunders.value = funders[0].split(re)[2];
             if (last_fnd[0] === undefined) {
                 for (var i = 0; i < count_funders - 1; i++) {
-                    addFnd();
+                    addProducerItem('fnd');
                     form.nameFunders[i + 1].value = funders[i + 1].split(re3)[2].trim();
                     form.acronyms[i + 1].value = funders[i + 1].split(re2)[2].trim();
                     form.scanR[i + 1].value = funders[i + 1].split(': ')[1].trim();
@@ -174,7 +174,7 @@ function openPopupProducer(ux) {
             form.nameRes.value = res[0].split('@')[1];
             if (last_res[0] === undefined) {
                 for (var i = 0; i < count_res - 1; i++) {
-                    addRes();
+                    addProducerItem('res');
                     form.typeRes[i + 1].value = res[i + 1].split('@')[0] + '@';
                     form.nameRes[i + 1].value = res[i + 1].split('@')[1];
                 }
@@ -340,3 +340,4 @@ function closePopup() {
 //$("td",job.jid).each(function() {
 //    console.log(this.textContent) ;
 //});
+

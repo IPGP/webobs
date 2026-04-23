@@ -171,62 +171,31 @@ function delEvent(vedit, obj, evt) {
 }
 
 // data producer form
-function addMgr() {
-    var form = $('#overlay_form_producer')[0];
-    form.count_mgr.value = parseInt(form.count_mgr.value) + 1;
-    var new_div = document.createElement('div');
-    new_div.id = 'new_mgr' + form.count_mgr.value;
-    new_div.innerHTML = $('#div_mgr')[0].innerHTML;
-    $('#div_mgr_add')[0].append(new_div);
-}
-
-function removeMgr() {
-    var form = $('#overlay_form_producer')[0];
-    var id = '#new_mgr' + form.count_mgr.value;
-    if ($(id)[0] === null) {
-        return false;
-    } else if (form.count_mgr.value > 1) {
-        $(id)[0].remove();
-        form.count_mgr.value -= 1;
+function addProducerItem(type) {
+    const types = ["mgr", "fnd", "res"];
+    if (types.includes(type)) {
+        const propName = `count_${type}`;
+        var form = $('#overlay_form_producer')[0];
+        form[propName].value = parseInt(form[propName].value) + 1;
+        var new_div = document.createElement('div');
+        new_div.id = 'new_' + type + form[propName].value;
+        new_div.innerHTML = $('#div_' + type)[0].innerHTML;
+        $('#div_' + type + '_add')[0].append(new_div);
     }
 }
 
-function addFnd() {
-    var form = $('#overlay_form_producer')[0];
-    form.count_fnd.value = parseInt(form.count_fnd.value) + 1;
-    var new_div = document.createElement('div');
-    new_div.id = 'new_fnd' + form.count_fnd.value;
-    new_div.innerHTML = $('#div_fnd')[0].innerHTML;
-    $('#div_fnd_add')[0].append(new_div);
-}
-
-function removeFnd() {
-    var form = $('#overlay_form_producer')[0];
-    var id = '#new_fnd' + form.count_fnd.value;
-    if ($(id)[0] === null) {
-        return false;
-    } else if (form.count_fnd.value > 1) {
-        $(id)[0].remove();
-        form.count_fnd.value -= 1;
+function removeProducerItem(type) {
+    const types = ["mgr", "fnd", "res"];
+    if (types.includes(type)) {
+        const propName = `count_${type}`;
+        var form = $('#overlay_form_producer')[0];
+        var id = '#new_' + type + form[propName].value;
+        if ($(id)[0] === null) {
+            return false;
+        } else if (form[propName].value > 1) {
+            $(id)[0].remove();
+            form[propName].value -= 1;
+        }
     }
 }
 
-function addRes() {
-    var form = $('#overlay_form_producer')[0];
-    form.count_res.value = parseInt(form.count_res.value) + 1;
-    var new_div = document.createElement('div');
-    new_div.id = 'new_res' + form.count_res.value;
-    new_div.innerHTML = $('#div_res')[0].innerHTML;
-    $('#div_res_add')[0].append(new_div);
-}
-
-function removeRes() {
-    var form = $('#overlay_form_producer')[0];
-    var id = '#new_res' + form.count_res.value;
-    if ($(id)[0] === null) {
-        return false;
-    } else if (form.count_res.value > 1) {
-        $(id)[0].remove();
-        form.count_res.value -= 1;
-    }
-}

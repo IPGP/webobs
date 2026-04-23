@@ -150,6 +150,7 @@ if ( $GRIDType ne "" && $GRIDName ne "" && $NODEName ne "") {
 #
 my $theiaAuth = $WEBOBS{THEIA_USER_FLAG};
 my $saveAuth   = $cgi->param('saveAuth')    // '';
+my $theia_selected   = $cgi->param('theia_selected')    // '';
 
 # ---- where are the NODE's directory and NODE's conf file ?
 my %allNodeGrids = WebObs::Grids::listNodeGrids(node=>$NODEName);
@@ -479,7 +480,7 @@ if ($geojson ne "") {
     } else { htmlMsgNotOK("$geojsonfile $!") }
 }
 
-if ( isok($theiaAuth) and $saveAuth == 1 ) {
+if ( isok($theiaAuth) and isok($theia_selected) and $saveAuth == 1 ) {
 
     # --- connecting to the database
     my $driver   = "SQLite";

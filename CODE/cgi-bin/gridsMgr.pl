@@ -547,8 +547,8 @@ Producers&nbsp;$go2top
     <input type="text" name="email" value=""/><br/><br/>
 
     <label>Contacts:</label>
-    <button onclick="addMgr();return false;">Add a contact</button>
-    <button onclick="removeMgr();return false;">Remove a contact</button></br></br>
+    <button onclick="addProducerItem('mgr');return false;">Add a contact</button>
+    <button onclick="removeProducerItem('mgr');return false;">Remove a contact</button></br></br>
     <input type='hidden' name="count_mgr" value='1'></input>
     <input type='hidden' name="contacts" value=''></input>
     <div id='div_mgr'>
@@ -564,8 +564,8 @@ Producers&nbsp;$go2top
     </div><div id='div_mgr_add'></div>
     
     <label>Funders:</label>
-    <button onclick="addFnd();return false;">Add a funder</button>
-    <button onclick="removeFnd();return false;">Remove a funder</button></br></br>
+    <button onclick="addProducerItem('fnd');return false;">Add a funder</button>
+    <button onclick="removeProducerItem('fnd');return false;">Remove a funder</button></br></br>
     <input type='hidden' name='count_fnd' value='1'></input>
     <input type='hidden' name='funders' value=''></input>
     <div id='div_fnd'>
@@ -599,8 +599,8 @@ Producers&nbsp;$go2top
     <!-- Champs optionnels du formulaire -->
     <p><b><i>Edit producer definition</i><span class="small">Optional fields</span></b></p>
     <label>Online resources:</label>
-    <button onclick="addRes();return false;">Add a resource</button>
-    <button onclick="removeRes();return false;">Remove a resource</button></br></br>
+    <button onclick="addProducerItem('res');return false;">Add a resource</button>
+    <button onclick="removeProducerItem('res');return false;">Remove a resource</button></br></br>
     <input type='hidden' name="count_res" value='1'></input>
     <input type='hidden' name='onlineRes' value=''></input>
     <div id='div_res'>
