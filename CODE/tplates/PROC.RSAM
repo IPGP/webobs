@@ -160,6 +160,8 @@ SOURCEMAP_INCLUDED_NODELIST|
 SOURCEMAP_METHOD|mean
 # number of maps will be N*N (allowed values are 1,2, or 3)
 SOURCEMAP_N|2
+# max length (in pixels) of DEM basemap (for SOURCEMAP_N = 1)
+SOURCEMAP_LMAX|1000
 SOURCEMAP_COLORMAP|spectral(256)
 SOURCEMAP_COLORMAP_ALPHA|0,1
 # 2-values min,max: will fix the colorscale for all graphs

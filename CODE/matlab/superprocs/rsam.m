@@ -77,6 +77,7 @@ sourcemap_colormap = field2num(P,'SOURCEMAP_COLORMAP',spectral(256));
 sourcemap_alpha = field2num(P,'SOURCEMAP_COLORMAP_ALPHA',[0,1]);
 sourcemap_caxis = field2num(P,'SOURCEMAP_CAXIS');
 sourcemap_cmax = field2num(P,'SOURCEMAP_CMAX');
+sourcemap_lmax = field2num(P,'SOURCEMAP_LMAX',1000);
 sourcemap_dem_opt = field2cell(P,'SOURCEMAP_DEM_OPT','colormap',white);
 sourcemap_station_marker = field2str(P,'SOURCEMAP_STATION_MARKER','^');
 sourcemap_station_size = field2num(P,'SOURCEMAP_STATION_SIZE',6);
@@ -450,7 +451,7 @@ if any(strcmp(P.SUMMARYLIST,summary))
     xylim = xyw2lim([lon0,lat0,1.1*max(diff(minmax(geo(kn,1))),diff(minmax(geo(kn,2)))/cosd(lat0))],1/cosd(lat0));
     DEM = loaddem(WO,xylim,P);
     wolog('Making the basemap. ');
-    I = dem(DEM.lon,DEM.lat,DEM.z,'latlon','noplot','maxlength',1500/sourcemap_n,sourcemap_dem_opt{:});
+    I = dem(DEM.lon,DEM.lat,DEM.z,'latlon','noplot','maxlength',sourcemap_lmax/sourcemap_n,sourcemap_dem_opt{:});
     [xx,yy] = meshgrid(I.x,I.y);
     % adds distances from target
     if numel(targetll) == 2
