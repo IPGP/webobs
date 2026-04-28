@@ -27,10 +27,8 @@ function DEM = loaddem(WO,xylim,OPT)
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2014-07-16
-%	Updated: 2022-02-03
+%	Updated: 2026-04-28
 
-
-wofun = sprintf('WEBOBS{%s}',mfilename);
 
 dlon = xylim(1:2);
 dlat = xylim(3:4);
@@ -62,13 +60,13 @@ setenv('LD_LIBRARY_PATH', '');
 userdem = 0;
 if nargin > 2 && isfield(OPT,'DEM_FILE')
 	f = OPT.DEM_FILE;
-	fprintf('%s: loading user DEM file "%s"... ',wofun,f);
+	wolog('loading user DEM file "%s"... ',f);
 	if exist(f,'file')
 		[x,y,z] = igrd(f);
 		fprintf('done.\n');
 		forced = isok(OPT,'DEM_FORCED');
 		if isfield(OPT,'DEM_TYPE') && strcmp(OPT.DEM_TYPE,'UTM')
-			fprintf('%s: converting user''s DEM from UTM to lat/lon... ',wofun);
+			wolog('converting user''s DEM from UTM to lat/lon... ');
 			[dx,dy,zone] = ll2utm(repmat(dlat,2,1),repmat(dlon,2,1));
 			epsxy = 2*max(abs(diff(x(1:2))),abs(diff(y(1:2))));
 			kx = (x >= min(dx(:,1) - epsxy) & x <= max(dx(:,2) + epsxy));
@@ -87,10 +85,10 @@ if nargin > 2 && isfield(OPT,'DEM_FILE')
 				userdem = 1;
 			end
 		else
-			fprintf('%s: ** WARNING ** user DEM does not match the entire area map; uses global data...\n',wofun);
+			fprintf(' ** WARNING ** user DEM does not match the entire area map; uses global data...\n');
 		end
 	else
-		fprintf('\n%s: ** WARNING ** file does not exist!\n',wofun);
+		fprintf(' ** WARNING ** file does not exist!\n');
 	end
 end
 
@@ -98,13 +96,13 @@ if ~userdem
 	% if max SRTM tiles exceeded, loads ETOPO
 	n = (abs(diff(floor(dlon))) + 1)*(abs(diff(floor(dlat))) + 1);
 	if n > srtmmax || min(dlat) < -60 || max(dlat) > 59
-		fprintf('%s: loading ETOPO data for area lat (%g,%g) lon (%g,%g)...\n',wofun,dlat,dlon);
+		wolog('loading ETOPO data for area lat (%g,%g) lon (%g,%g)...\n',dlat,dlon);
 		DEM = ibil(sprintf('%s/%s',WO.PATH_DATA_DEM_ETOPO,WO.ETOPO_NAME),xylim + 5/60*[-1,1,-1,1]);
 		DEM.z = double(DEM.z);
 		DEM.COPYRIGHT = field2str(WO,'ETOPO_COPYRIGHT','DEM: ETOPO/NOOA');
 		etopo = true;
 	else
-		fprintf('%s: loading SRTM data for area lat (%g,%g) lon (%g,%g)...\n',wofun,dlat,dlon);
+		wolog('loading SRTM data for area lat (%g,%g) lon (%g,%g)...\n',dlat,dlon);
 		if srtm1 && exist(psrtm1,'dir') && n <= srtm1max && ~isempty(nasalogin)
 			DEM = readhgt([dlat,dlon],'outdir',psrtm1,'interp','srtm1','wget','login',nasalogin{1},nasalogin{2});
 		else

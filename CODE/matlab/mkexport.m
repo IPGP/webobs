@@ -22,7 +22,7 @@ function mkexport(WO,f,E,P,r,N);
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2003-03-10
-%	Updated: 2026-03-27
+%	Updated: 2026-04-28
 
 
 ptmp = sprintf('%s/%s/%s',WO.PATH_TMP_WEBOBS,P.SELFREF,randname(16));
@@ -43,7 +43,7 @@ node_keylist = split(field2str(P,'EXPORT_HEADER_NODE_KEYLIST',''),',');
 
 wosystem(sprintf('mkdir -p %s',pout));
 
-fprintf('WEBOBS{mkexport}: updating %s/%s.txt ... ',pout,f);
+wolog('updating %s/%s.txt ... ',pout,f);
 ftmp = sprintf('%s/%s.txt',ptmp,f);
 fid = fopen(ftmp,'wt');
 if fid > 0

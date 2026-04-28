@@ -449,7 +449,8 @@ if any(strcmp(P.SUMMARYLIST,summary))
     lon0 = mean(minmax(geo(kn,2)));
     xylim = xyw2lim([lon0,lat0,1.1*max(diff(minmax(geo(kn,1))),diff(minmax(geo(kn,2)))/cosd(lat0))],1/cosd(lat0));
     DEM = loaddem(WO,xylim,P);
-    I = dem(DEM.lon,DEM.lat,DEM.z,'latlon','noplot','decim',sourcemap_n,sourcemap_dem_opt{:});
+    wolog('Making the basemap. ');
+    I = dem(DEM.lon,DEM.lat,DEM.z,'latlon','noplot','maxlength',1500/sourcemap_n,sourcemap_dem_opt{:});
     [xx,yy] = meshgrid(I.x,I.y);
     % adds distances from target
     if numel(targetll) == 2

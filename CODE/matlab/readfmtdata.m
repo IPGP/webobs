@@ -24,9 +24,8 @@ function [D,P] = readfmtdata(WO,P,N)
 %
 %	Authors: François Beauducel, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2013-12-29, in Guadeloupe, French West Indies
-%	Updated: 2026-04-14
+%	Updated: 2026-04-28
 
-wofun = sprintf('WEBOBS{%s}',mfilename);
 debug = isok(P,'DEBUG');
 
 % creates temporary directory
@@ -48,8 +47,8 @@ for n = 1:length(N)
     % datelim is finite dates limits of PROC (or NODE) expressed in the NODE's TZ
     F.datelim = [max([P.DATELIM(1),N(n).INSTALL_DATE - N(n).UTC_DATA + P.TZ/24,P.BANG]), min([P.DATELIM(2),N(n).END_DATE - N(n).UTC_DATA + P.TZ/24,P.NOW + P.TZ/24])] - P.TZ/24 + N(n).UTC_DATA;
 
-    fprintf('%s: loading data [%s] for node "%s" {%s} from %s to %s ...', ...
-        wofun,F.fmt,N(n).FID,N(n).ID,datestr(F.datelim(1)),datestr(F.datelim(2)));
+    wolog('loading data [%s] for node "%s" {%s} from %s to %s ...', ...
+        F.fmt,N(n).FID,N(n).ID,datestr(F.datelim(1)),datestr(F.datelim(2)));
     
     if debug
         fprintf('\nRAWDATA = %s',F.raw{1});
@@ -104,11 +103,11 @@ for n = 1:length(N)
         D(n) = readfmtdata_mc3(WO,P,N(n),F);
 
     otherwise
-        fprintf('%s: ** WARNING ** unknown format "%s", will try to read it anyway...\n',wofun,F.fmt);
+        fprintf(' ** WARNING ** unknown format "%s", will try to read it anyway...\n',F.fmt);
     	D(n).t = [];
         [D(n).d,D(n).CLB] = calib([],[],N(n).CLB);
         D(n).e = ones(size(D(n).d));
-        fprintf('%s: ** WARNING ** unknown format "%s". Nothing to do!\n',wofun,F.fmt);
+        fprintf(' ** WARNING ** unknown format "%s". Nothing to do!\n',F.fmt);
 
     end
 end
@@ -171,7 +170,7 @@ for n = 1:length(N)
 			if ~any(isnan([N(n).LAST_DELAY,N(n).ACQ_RATE]))
 				mkstatus(WO,struct('NODE',sprintf('%s.%s',P.SELFREF,N(n).ID),'STA',last,'ACQ',samp,'TS',D(n).tfirstlast(2),'TZ',P.TZ,'COMMENT',sd(3:end)));
 			else
-				fprintf('%s: ** WARNING ** cannot compute status for node %s. Please set "Acq. period" (ACQ_RATE) and "Acq. delay" (LAST_DELAY) fields.\n',wofun,N(n).ID);
+				wolog('** WARNING ** cannot compute status for node %s. Please set "Acq. period" (ACQ_RATE) and "Acq. delay" (LAST_DELAY) fields.\n',N(n).ID);
 			end
 		end
 

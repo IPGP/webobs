@@ -20,12 +20,10 @@ function varargout = mkgraph(WO,f,P,OPT);
 %
 %	Authors: F. Beauducel - D. Lafon, WEBOBS/IPGP
 %	Created: 2002-12-03 in Gourbeyre, Guadeloupe
-%	Updated: 2026-04-06
+%	Updated: 2026-04-28
 
 
 set(gcf, 'Visible', 'off');
-
-wofun = sprintf('WEBOBS{%s}',mfilename);
 
 if nargin <  4
     OPT = struct;
@@ -162,12 +160,12 @@ end
 wosystem(sprintf('mkdir -p %s',pout))
 
 % creates the main EPS image
-fprintf('%s: exporting %s/%s.eps ...',wofun,ptmp,f);
+wolog('exporting %s/%s.eps ...',ptmp,f);
 print(gcf,'-depsc','-loose','-painters',sprintf('%s/%s.eps',ptmp,f));
 fprintf(' done.\n');
 
 % converts to PNG
-fprintf('%s: converting EPS image to PNG ',wofun);
+wolog('converting EPS image to PNG ');
 wosystem(sprintf('%s %s -density %dx%d %s/%s.eps %s/%s.png',convert,convertopt,P.PPI,P.PPI,ptmp,f,ptmp,f))
 fprintf('ok,');
 
@@ -184,7 +182,7 @@ wosystem(sprintf('mv -f %s/%s.jpg %s/',ptmp,f,pout));
 fprintf('ok.\n');
 
 if isok(P,'SVGOUTPUT')
-	fprintf('%s: exporting %s/%s.svg ...',wofun,ptmp,f);
+	wolog('exporting %s/%s.svg ...',ptmp,f);
 	%fig2svg(sprintf('%s/%s.svg',ptmp,f))
 	plot2svg(sprintf('%s/%s.svg',ptmp,f))
 	%print(gcf,'-dsvg',sprintf('%s/%s.svg',ptmp,f))
@@ -250,10 +248,10 @@ for g = 1:length(I)
 end
 %fprintf(fid,'<AREA nohref shape=default>\n');
 fclose(fid);
-fprintf('%s: interactive map %s/%s.map created.\n',wofun,pout,f);
+wolog('interactive map %s/%s.map created.\n',pout,f);
 
 wosystem(sprintf('mv -f %s/%s.* %s/',ptmp,f,pout));
-fprintf('%s: %s/%s.* copied.\n',wofun,pout,f);
+wolog('%s/%s.* copied.\n',pout,f);
 
 % removes the temporary directory
 wosystem(sprintf('rm -rf %s',ptmp));

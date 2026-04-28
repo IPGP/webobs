@@ -17,7 +17,7 @@ function k=selectnode(N,tlim,excl,incl,llr)
 %
 %	Author: F. Beauducel
 %	Created: 2021-01-17 in Yogyakarta, Indonesia
-%	Updated: 2022-07-22
+%	Updated: 2026-04-28
 
 % selects from lifetime dates
 date1 = cat(1,N.INSTALL_DATE);
@@ -46,4 +46,4 @@ if nargin > 3 && ~isempty(incl)
 	ki = find(ismemberlist({N.FID},split(incl,',')));
 	k = unique([k;ki(:)]);
 end
-fprintf('---> %d/%d nodes selected.\n',numel(k),numel(N));
+wolog('%d/%d nodes selected.\n',numel(k),numel(N));
