@@ -34,14 +34,13 @@ function DOUT=genplot(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2014-07-13
-%	Updated: 2026-02-17
+%	Updated: 2026-04-28
 
 WO = readcfg;
-wofun = sprintf('WEBOBS{%s}',mfilename);
 
 % --- checks input arguments
 if nargin < 1
-	error('%s: must define PROC name.',wofun);
+	error('must define PROC name.');
 end
 
 procmsg = any2str(mfilename,varargin{:});

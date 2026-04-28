@@ -13,5 +13,8 @@ function wolog(s,varargin)
 
 ST = dbstack;
 n = min(2,length(ST));
+if nargin < 1
+    s = '';
+end
 
 fprintf(['%s - WEBOBS{%s}: ' s],datestr(now),ST(n).name,varargin{:})

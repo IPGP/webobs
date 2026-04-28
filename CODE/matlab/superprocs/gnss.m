@@ -40,14 +40,13 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-03-31
+%   Updated: 2026-04-28
 
 WO = readcfg;
-wofun = sprintf('WEBOBS{%s}',mfilename);
 
 % --- checks input arguments
 if nargin < 1
-	error('%s: must define PROC name.',wofun);
+	error('must define PROC name.');
 end
 
 proc = varargin{1};
@@ -746,7 +745,7 @@ for r = 1:numel(P.GTABLE)
 					B(np).kr = kr;
 					B(np).kn = kn;
 				else
-					fprintf('%s: ** WARNING ** invalid node pairs for %s!\n',wofun,pairgraphs{nn});
+					wolog('** WARNING ** invalid node pairs for %s!\n',pairgraphs{nn});
 				end
 			end
 		end
@@ -900,7 +899,7 @@ for r = 1:numel(P.GTABLE)
                         np = np + 1;
                     end
 				else
-					fprintf('%s: ** WARNING ** invalid node pairs for %s!\n',wofun,pairref{nn});
+					wolog('** WARNING ** invalid node pairs for %s!\n',pairref{nn});
 				end
 			end
 		end
@@ -908,7 +907,7 @@ for r = 1:numel(P.GTABLE)
 		% will build automatic node pairs from Delaunay's triangles
 		if isempty(B)
 			kn = selectnode(N,tlim,strainmap_excluded,strainmap_included,[targetll,strainmap_excluded_target]);
-            fprintf('%s: no pairs defined for summary STRAINMAP. Set automatic Delaunay triangles from %g nodes.\n',wofun,length(kn));
+            wolog('no pairs defined for summary STRAINMAP. Set automatic Delaunay triangles from %g nodes.\n',length(kn));
             DT = delaunay(geo(kn,2),geo(kn,1));
             % 1) constructs a 2-column array of all pairs (sorted)
             ab = zeros(size(DT,1),2);
@@ -1357,7 +1356,7 @@ for r = 1:numel(P.GTABLE)
 			% last time must contain data
 			tlast = max(max(cat(1,D.tfirstlast)));
 			W(m).t(W(m).t > tlast) = [];
-			fprintf('%s: computing %d vector flows (%s @ %s) ',wofun,numel(W(m).t),vtlabel{m},days2h(vflow_sampling,'round'));
+			wolog('computing %d vector flows (%s @ %s) ',numel(W(m).t),vtlabel{m},days2h(vflow_sampling,'round'));
 
             % initiates the vectors matrix
             W(m).v = nan(numel(W(m).t),numel(kn),6); % time x station x components
@@ -1937,7 +1936,7 @@ for r = 1:numel(P.GTABLE)
 
 		if isok(P,'MODELLING_EXPORT_MAT')
 			f = sprintf('%s_%s.mat',summary,P.GTABLE(r).TIMESCALE);
-			fprintf('%s: saving workspace in %s...',wofun,f);
+			wolog('saving workspace in %s...',f);
 			save(sprintf('%s/%s/%s',P.OUTDIR,WO.PATH_OUTG_EXPORT,f),'-v6')
 			fprintf(' done.\n');
 		end
@@ -2372,7 +2371,7 @@ for r = 1:numel(P.GTABLE)
 			% last time must contain data
 			tlast = max(max(cat(1,D.tfirstlast)));
 			M(m).t(M(m).t > tlast) = [];
-			fprintf('%s: computing %d %s models (%s @ %s) ',wofun,numel(M(m).t),mst{1},mtlabel{m},days2h(dt));
+			wolog('computing %d %s models (%s @ %s) ',numel(M(m).t),mst{1},mtlabel{m},days2h(dt));
 
 			% initiates the model result matrix
 			M(m).d = nan(numel(M(m).t),5 + 5*strcmp(mt,'pcdm'));
@@ -2811,7 +2810,7 @@ for r = 1:numel(P.GTABLE)
 
         if isok(P,'MODELTIME_EXPORT_MAT')
             f = sprintf('%s_%s.mat',summary,P.GTABLE(r).TIMESCALE);
-            fprintf('%s: saving workspace in %s...',wofun,f);
+            wolog('saving workspace in %s...',f);
             save(sprintf('%s/%s/%s',P.OUTDIR,WO.PATH_OUTG_EXPORT,f),'-v6')
             fprintf(' done.\n');
         end
