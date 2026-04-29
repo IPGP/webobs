@@ -17,10 +17,8 @@ function varargout=plotevent(tz,evtfile,evt)
 %
 %   Authors: F. Beauducel + D. Lafon + B. Taisne, WEBOBS/IPGP
 %   Created : 2004-07-21 (from ploterup.m)
-%   Updated : 2026-02-23
+%   Updated : 2026-04-28
 
-
-wofun = sprintf('WEBOBS{%s}',mfilename);
 
 if isnan(tz) || ~isnumeric(tz)
 	tz = 0;
@@ -38,12 +36,12 @@ if nargin > 1 & ~isempty(evtfile)
 		end
 		fid = fopen(f);
 		if fid == -1
-			fprintf('%s: ** WARNING ** file %s cannot be opened.\n',wofun,f);
+			wolog('** WARNING ** file %s cannot be opened.\n',f);
 		else
 			data = textscan(fid,'%s%s%n%s%s%s','Delimiter','|','CommentStyle','#');
 			fclose(fid);
 			if size(data{1},1) == 0
-				fprintf('%s: ** WARNING ** file %s is empty.\n',wofun,f);
+				wolog('** WARNING ** file %s is empty.\n',f);
 			else
 				E(n).dt1 = isodatenum(data{1});
 				E(n).dt2 = isodatenum(data{2});
@@ -53,7 +51,7 @@ if nargin > 1 & ~isempty(evtfile)
 				E(n).nam = data{5};
 				E(n).com = data{6};
 				E(n).out = false(size(data{1}));
-				fprintf('%s: %s imported...',wofun,f);
+				wolog('%s imported...',f);
 			end
 		end
 	end
@@ -139,7 +137,9 @@ for n = 1:numel(E)
         uistack(ax_bg,'bottom');
         set(ax_bg,'Visible','off','XLim',xlim,'YLim',ylim)
 	end
-	fprintf(' events added to all time series axes in current figure.\n');
+end
+if numel(E) > 0
+    fprintf(' %d events added to all time series axes.\n',numel(E));
 end
 
 if nargout > 0

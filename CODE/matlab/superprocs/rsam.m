@@ -83,7 +83,8 @@ sourcemap_station_marker = field2str(P,'SOURCEMAP_STATION_MARKER','^');
 sourcemap_station_size = field2num(P,'SOURCEMAP_STATION_SIZE',6);
 sourcemap_max_opt = field2cell(P,'SOURCEMAP_MAX_OPT','pk','MarkerFaceColor','k','MarkerSize',10);
 sourcemap_allmax_exp = field2num(P,'SOURCEMAP_ALLMAX_EXPONENT',2);
-sourcemap_allmax_opt = field2cell(P,'SOURCEMAP_ALLMAX_OPT','.','Color',.3*ones(1,3),'MarkerSize',3);
+sourcemap_allmax_marker = field2str(P,'SOURCEMAP_ALLMAX_MARKER','.');
+sourcemap_allmax_size = field2num(P,'SOURCEMAP_ALLMAX_SIZE',5);
 
 ylogscale = isok(P,'YLOGSCALE');
 ymax = field2num(P,'YMAX_MEDIAN',[0.99,0.1]);
@@ -643,7 +644,7 @@ if any(strcmp(P.SUMMARYLIST,summary))
                     if length(tw) > 100
                         tw = linspace(wlim(1),wlim(2),100);
                     end
-                    xy = nan(length(tw),2);
+                    xy = nan(length(tw),3);
                     for i = 1:length(tw)
                         v = nan(length(kn)+4,1);
                         for ii = 1:length(kn)
@@ -656,9 +657,11 @@ if any(strcmp(P.SUMMARYLIST,summary))
                         w = v.^sourcemap_allmax_exp;
                         x0 = rsum(w.*dx) / rsum(w);
                         y0 = rsum(w.*dy) / rsum(w);
-                        xy(i,:) = [x0 y0];
+                        v0 = rsum(v.^2) / rsum(v);
+                        xy(i,:) = [x0 y0 v0];
                     end
-                    plot(xy(:,1),xy(:,2),sourcemap_allmax_opt{:})
+                    col = linspace(1,0,length(tw))'*ones(1,3);
+                    scatter(xy(:,1),xy(:,2),sourcemap_allmax_size^2*xy(:,3)/max(xy(:,3)),col,sourcemap_allmax_marker,'filled')
                 end
                 % plot max value
                 if isok(P,'SOURCEMAP_PLOT_MAX') && max(zz(:)) ~= 0
