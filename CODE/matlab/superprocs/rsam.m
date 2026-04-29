@@ -30,7 +30,7 @@ function DOUT=rsam(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2017-07-19
-%	Updated: 2026-04-20
+%	Updated: 2026-04-29
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -637,7 +637,7 @@ if any(strcmp(P.SUMMARYLIST,summary))
                 % plot stations
                 target(geo(kn,2),geo(kn,1),sourcemap_station_size,'w',sourcemap_station_marker)
                 % plot all max values
-                if isok(P,'SOURCEMAP_PLOT_ALLMAX')
+                if isok(P,'SOURCEMAP_ALLMAX')
                     sf = cat(1,clb(kn).sf);
                     dt = rmin(sf(:)); % minimum delta t
                     tw = wlim(1):dt:wlim(2);
