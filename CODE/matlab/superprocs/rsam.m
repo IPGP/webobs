@@ -661,7 +661,7 @@ if any(strcmp(P.SUMMARYLIST,summary))
                         xy(i,:) = [x0 y0 v0];
                     end
                     col = linspace(1,0,length(tw))'*ones(1,3);
-                    scatter(xy(:,1),xy(:,2),sourcemap_allmax_size^2*xy(:,3)/max(xy(:,3)),col,sourcemap_allmax_marker,'filled')
+                    scatter(xy(:,1),xy(:,2),sourcemap_allmax_size^2*xy(:,3)/clim(2),col,sourcemap_allmax_marker,'filled')
                 end
                 % plot max value
                 if isok(P,'SOURCEMAP_PLOT_MAX') && max(zz(:)) ~= 0
