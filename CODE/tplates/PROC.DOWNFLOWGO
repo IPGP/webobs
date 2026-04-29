@@ -1,0 +1,123 @@
+=key|value
+# Generic PROC template for superproc DOWNFLOWGO
+
+# name of the PROC
+NAME|DOWNFLOWGO
+
+# description of what the proc does
+DESCRIPTION|DOWNFLOWGO
+
+RAWFORMAT|
+RAWDATA|
+DATALINK_DELAY_SECONDS|300
+
+# proc TYPE and OWNER code (see OWNERS.conf for OWNCODEs)
+TYPE|
+OWNCODE|?
+LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
+TZ|0
+
+# lists of parameters (number of comma-separated rows must be consistent)
+TIMESCALELIST|
+DECIMATELIST|1
+CUMULATELIST|1
+DATESTRLIST|-1
+MARKERSIZELIST|4
+LINEWIDTHLIST|1
+STATUSLIST|1
+# defines a reference date to use with 'r01' timescale in TIMESCALELIST
+REF01_DATE|2000-01-01
+# year and month timescales use true durations
+TIMESCALE_TRUEVALUE|Y
+
+#SUMMARYLIST|
+
+# execution command (for runproc shell)
+SUBMIT_COMMAND|$WEBOBS{PYTHON_PRGM} $WEBOBS{PYTHON_PATH}/downflowgo/downflowgo.py $SELFREF -
+SUBMIT_RESOURCE|request
+# list of keys editable in requests
+REQUEST_KEYLIST|NAME
+
+# node parameters
+NODE_NAME|station
+NODE_SIZE|15
+NODE_RGB|1,0,0
+NODE_FONTSIZE|10
+NODE_MARKER|o
+
+# auto refresh of graphic display
+DISPLAY_AUTOREFRESH_SECONDS|300
+
+# file for background time referenced events 
+EVENTS_FILE|$WEBOBS{ROOT_CONF}/events_World.conf
+
+# graphical density for PNG outputs (in pixel per inches)
+PPI|100
+# landscape format for all outputs
+LANDSCAPE|N
+# exports text data files
+EXPORTS|YES
+# outputs further vector files (in addition to EPS) for each graph. SVG is experimental
+SVGOUTPUT|NO
+PDFOUTPUT|NO
+# main logo file
+LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
+# secondary logo file
+LOGO2_FILE|
+# main copyright
+COPYRIGHT|Processing by Beauducel et al./IPGP
+# secondary copyright
+COPYRIGHT2|
+
+
+# ----------------------------------------------------------------------------------------
+# ------------------------------ SPECIFIC PROC'S PARAMETERS ------------------------------
+# ----------------------------------------------------------------------------------------
+
+### Parameters must be prefixed with the section name in the DownFlowGo configuration file
+### Underscores in section name must be replaced by double dashes
+
+##[config_general]
+#yes or short or no
+CONFIG--GENERAL_USE_GUI|no
+#Chose either downflow or downflowgo
+CONFIG--GENERAL_MODE|downflowgo
+CONFIG--GENERAL_MAPPING_DISPLAY|yes
+
+
+##[paths]
+PATHS_ERUPTIONS_FOLDER|/opt/webobs/OUTG/PROC.DOWNFLOWGO
+PATHS_DELETE_EXISTING_RESULTS|yes
+PATHS_DEM|/opt/webobs/CODE/python/downflowgo/src/test/srtm_48_17_utm.asc
+#csv_vent_file is 0 it will take the UTM coordinate below, if path to a file it will take the file
+PATHS_CSV_VENT_FILE|0
+
+##[downflow]
+DOWNFLOW_NAME_VENT|Vent_1
+DOWNFLOW_EASTING|369082.7
+DOWNFLOW_NORTHING|7647204.29
+DOWNFLOW_DH|2
+DOWNFLOW_N_PATH|10000
+DOWNFLOW_SLOPE_STEP|10
+#EPSG_code are usually La Réunion 32740, Galapagos 32715; Iceland 32627;
+DOWNFLOW_EPSG_CODE|32740
+
+
+##[pyflowgo]
+PYFLOWGO_JSON|/opt/webobs/CODE/python/downflowgo/src/test/PdF_template.json
+#effusion_rates_input should be either O, or a number or 3 numbers representing starting, ending and step
+PYFLOWGO_EFFUSION_RATES_INPUT|5,20,5
+
+##[mapping]
+MAPPING_IMG_TIF_MAP_BACKGROUND_PATH|/opt/webobs/CODE/python/downflowgo/src/test/HS_srtm_48_17_utm.tif
+#lava_flow_outline_path must be point geometry
+MAPPING_MONITORING_NETWORK_PATH|0
+#lava_flow_outline_path must be polygone geometry
+MAPPING_LAVA_FLOW_OUTLINE_PATH|0
+MAPPING_LOGO_PATH|0
+MAPPING_SOURCE_IMG_TIF_MAP_BACKGROUND|
+# Set motion about data, e.g 'UNVERIFIED DATA - NOT FOR DISTRIBUTION' or 'DONNEES NON VALIDES - NE PAS DIFFUSER' or 0 for nothing
+MAPPING_UNVERIFIED_DATA|DONNEES NON VALIDES - NE PAS DIFFUSER
+
+##[language]
+LANGUAGE_LANGUAGE|FR
