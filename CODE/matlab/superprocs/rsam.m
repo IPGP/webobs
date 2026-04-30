@@ -440,6 +440,11 @@ if any(strcmp(P.SUMMARYLIST,summary))
     % selects stations
     kn = selectnode(N,tlim,sourcemap_excluded,sourcemap_included,[targetll,sourcemap_excluded_target]);
     
+    % sampling interval (for ALLMAX plot)
+    sf = cat(1,clb(kn).sf);
+    dtmin = rmin(sf(:)); % minimum delta t (sf must be defined at least in one node'clb !)
+    wolog('minimum sampling interval for %d nodes = %g s\n',length(kn),dtmin*86400);
+    
     if sourcemap_perchannel
         nc = length(sourcemap_channels);
     else
@@ -622,7 +627,7 @@ if any(strcmp(P.SUMMARYLIST,summary))
                 I.msk = ind2rgb(round(size(sourcemap_colormap,1)*inorm),sourcemap_colormap); % RGB map
                 A = repmat(interp1(linspace(0,1,length(sourcemap_alpha)),sourcemap_alpha,inorm),[1,1,3]);
                 I.tot = I.rgb.*(1 - A) + I.msk.*A;
-                imagesc(xx(1,:),yy(:,1),I.tot);
+                image(xx(1,:),yy(:,1),I.tot);
                 axis xy
 
                 %set(gca,'XTick',[],'YTick',[],'DataAspectRatio',[1,cosd(lat0),1],'FontSize',8)
@@ -638,9 +643,7 @@ if any(strcmp(P.SUMMARYLIST,summary))
                 target(geo(kn,2),geo(kn,1),sourcemap_station_size,'w',sourcemap_station_marker)
                 % plot all max values
                 if isok(P,'SOURCEMAP_ALLMAX')
-                    sf = cat(1,clb(kn).sf);
-                    dt = rmin(sf(:)); % minimum delta t
-                    tw = wlim(1):dt:wlim(2);
+                    tw = wlim(1):dtmin:wlim(2);
                     if length(tw) > 100
                         tw = linspace(wlim(1),wlim(2),100);
                     end
