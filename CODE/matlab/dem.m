@@ -3,10 +3,10 @@ function varargout=dem(x,y,z,varargin)
 %
 %	DEM(X,Y,Z) plots the Digital Elevation Model defined by X and Y
 %	coordinate vectors and elevation matrix Z, as a lighted image using
-%	specific "landcolor" and "seacolor" colormaps. DEM uses IMAGESC
-%	function which is much faster than SURFL when dealing with large
-%	high-resolution DEM. It produces also high-quality and moderate-size
-%	Postscript image adapted for publication.
+%	specific "landcolor" and "seacolor" colormaps. DEM uses IMAGE
+%	function with RGB true-color matrix which is much faster than SURFL
+%   when dealing with large high-resolution DEM. It produces also 
+%   high-quality and moderate-size Postscript image adapted for publication.
 %
 %	DEM(X,Y,Z,'Param1',Value1,'Param2',Value2,...) specifies options or
 %	parameter/value couple (case insensitive):
@@ -1018,7 +1018,7 @@ if scale || zlegend
 
 	ysc = ylim(1);
 	hold on
-	imagesc(xsc + wsc*[-1,1]/2,ysc + yscale,repmat(rgbscale,1,2),'clipping','off');
+	image(xsc + wsc*[-1,1]/2,ysc + yscale,repmat(rgbscale,1,2),'clipping','off');
 	patch(xsc + wsc*[-1,1,1,-1],ysc + yscale(end)*[0,0,1,1],'k','FaceColor','none','Clipping','off')
 	text(xsc + 2*wsc + zeros(size(ztick)),ysc + (ztick - zscale(1))*0.5*diff(ylim)/diff(zscale([1,end])),num2str(ztick'), ...
 		'HorizontalAlignment','left','VerticalAlignment','middle','FontSize',fs*.75)
