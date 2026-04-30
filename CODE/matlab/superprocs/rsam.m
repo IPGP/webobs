@@ -644,6 +644,7 @@ if any(strcmp(P.SUMMARYLIST,summary))
                     if length(tw) > 100
                         tw = linspace(wlim(1),wlim(2),100);
                     end
+                    wolog('plotting %d sources on map #%d... ',length(tw),m);
                     xy = nan(length(tw),3);
                     for i = 1:length(tw)
                         v = nan(length(kn)+4,1);
@@ -663,6 +664,7 @@ if any(strcmp(P.SUMMARYLIST,summary))
                     end
                     col = linspace(1,0,length(tw))'*ones(1,3);
                     scatter(xy(:,1),xy(:,2),sourcemap_allmax_size^2*xy(:,3)/clim(2),col,sourcemap_allmax_marker,'filled')
+                    fprintf(' done.\n');
                 end
                 % plot max value
                 if isok(P,'SOURCEMAP_PLOT_MAX') && max(zz(:)) ~= 0
