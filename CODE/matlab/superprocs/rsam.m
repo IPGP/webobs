@@ -30,7 +30,7 @@ function DOUT=rsam(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2017-07-19
-%	Updated: 2026-04-29
+%	Updated: 2026-04-30
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -650,8 +650,9 @@ if any(strcmp(P.SUMMARYLIST,summary))
                         for ii = 1:length(kn)
                             n = kn(ii);
                             kw = isinto(D(n).t,wlim);
-                            if sum(kw) > 1
-                                v(ii) = interp1(D(n).t(kw),rmean(D(n).d(kw,c),2),tw(i),'nearest');
+                            dd = rmean(D(n).d(kw,c),2);
+                            if sum(kw) > 1 && ~all(isnan(dd))
+                                v(ii) = interp1(D(n).t(kw),dd,tw(i),'nearest');
                             end
                         end
                         w = v.^sourcemap_allmax_exp;
