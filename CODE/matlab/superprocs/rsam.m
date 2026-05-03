@@ -665,8 +665,10 @@ if any(strcmp(P.SUMMARYLIST,summary))
                         v0 = rsum(v.^2) / rsum(v);
                         xy(i,:) = [x0 y0 v0];
                     end
-                    col = linspace(1,0,length(tw))'*ones(1,3);
+                    col = linspace(0,1,length(tw));
                     scatter(xy(:,1),xy(:,2),sourcemap_allmax_size^2*xy(:,3)/clim(2),col,sourcemap_allmax_marker,'filled')
+                    colormap(gray)
+                    caxis(clim)
                     fprintf(' done.\n');
                 end
                 % plot max value
@@ -693,15 +695,14 @@ if any(strcmp(P.SUMMARYLIST,summary))
 
             % legend (colorscale)
             axes('position',[0.05,0.3,0.02,0.2]);
-            clin = linspace(clim(1),clim(2));
-            imagesc([0,1],clin,repmat(clin',[1,2]));
+            clin = linspace(clim(1),clim(2),size(cmap,1))';
+            crgb = ind2rgb(repmat(1:size(cmap,1),2,1)',cmap); % RGB map
+            image([0,1],clin,crgb);
             ylim = get(gca,'Ylim');
             patch([0,.5,1,0],ylim(2) + diff(ylim)*[0,.05,0,0],'k','FaceColor','k','Clipping','off')
             patch([0,.5,1,0],ylim(1) - diff(ylim)*[0,.05,0,0],'k','FaceColor','w','Clipping','off')
             axis xy
             set(gca,'XLim',[0,1],'XTick',[],'FontSize',8)
-            colormap(cmap)
-            caxis(clim);
             title({un,''},'FontWeight','bold')
 
             axes('position',[0.05,0.1,0.02,0.6]);
