@@ -665,10 +665,10 @@ if any(strcmp(P.SUMMARYLIST,summary))
                         v0 = rsum(v.^2) / rsum(v);
                         xy(i,:) = [x0 y0 v0];
                     end
-                    col = linspace(0,1,length(tw));
+                    col = linspace(1,0,length(tw));
                     scatter(xy(:,1),xy(:,2),sourcemap_allmax_size^2*xy(:,3)/clim(2),col,sourcemap_allmax_marker,'filled')
                     colormap(gray)
-                    caxis(clim)
+                    caxis([0,1])
                     fprintf(' done.\n');
                 end
                 % plot max value
