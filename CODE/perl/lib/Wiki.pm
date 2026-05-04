@@ -91,8 +91,10 @@ require Exporter;
 $VERSION    = "1.00";
 
 sub wiki2html {
+    my $html = ($_[0] =~ /^TITRE_HTML\|/ ? 1:0);
     (my $string = $_[0]) =~ s/^TITRE(_HTML)*\|.*\n//;
     (my $clean, my $meta) = stripMDmetadata($string);
+    if ($html) { return $string };
     if (length($meta) == 0) { wiki($clean) } else { markdown($string) };
 }
 
