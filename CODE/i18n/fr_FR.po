@@ -2237,3 +2237,16 @@ msgstr "Pour importer une couche shapefile, cliquez ici :"
 
 msgid "To save the area shape of the NODE as GeoJSON format, click here:"
 msgstr "Pour enregistrer la couverture spatiale du NODE au format GeoJSON, cliquez ici :"
+
+# --- elapsedTime.pl
+msgid "Elapsed time since"
+msgstr "Temps écoulé depuis"
+
+msgid "of event"
+msgstr "de l'événement"
+
+msgid "start"
+msgstr "le début"
+
+msgid "end"
+msgstr "la fin"

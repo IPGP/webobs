@@ -4,6 +4,5 @@ This is the demo/default version as bundled with the new WebObs package (whose r
 
 <!--
 <div id="clock-container"></div>
-<script src="/cgi-bin/elapsedTime.pl"></script>
+<script src="/cgi-bin/elapsedTime.pl?grid=PROC.GEOSCOPE"></script>
 -->
-

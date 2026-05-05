@@ -20,12 +20,14 @@ elapedTime.pl
 use strict;
 use warnings;
 use Time::Local;
+use POSIX qw/strftime/;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw/:standard/;
 my $cgi = new CGI;
 
 use WebObs::Config;
+use WebObs::Grids;
 use WebObs::Utils;
 use WebObs::Users;
 use WebObs::i18n;
@@ -39,10 +41,55 @@ if (!WebObs::Users::clientIsValid) {
     exit(1);
 }
 
+my $QryParm   = $cgi->Vars;
+my $grid   = $QryParm->{'grid'}   // "";
+my $name   = $QryParm->{'name'}   // "";
+
+my $today = strftime('%F',localtime());
+
+my $readOK;
+my %GRID;
+my @EVENTS;
+my @last;
+my $startend = 'end';
+my $comment;
+my $datetime;
+
+my ($GRIDType,$GRIDName) = split(/[\.\/]/, trim($grid));
+if ( WebObs::Users::clientHasRead(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")) {
+    my %G;
+    if     (uc($GRIDType) eq 'VIEW') { %G = readView($GRIDName) }
+    elsif  (uc($GRIDType) eq 'PROC') { %G = readProc($GRIDName) }
+    elsif  (uc($GRIDType) eq 'FORM') { %G = readForm($GRIDName) }
+    if (%G) {
+        %GRID = %{$G{$GRIDName}};
+        @EVENTS = readCfgFile($GRID{EVENTS_FILE});
+        @EVENTS = grep(/(.*\|){4}$name\|/, @EVENTS) if ($name ne "");
+        if ($#EVENTS >= 0) {
+            @last = split(/\|/, @EVENTS[-1]);
+            $name = $last[4];
+            $comment = ($last[5] ne "" ? "($last[5])":"");
+            if ($last[1] eq "" || $last[1] gt $today) {
+                $startend = 'start';
+                $datetime = $last[0];
+            } else {
+                $datetime = $last[1];
+            }
+            $readOK = 1;
+        }
+    }
+}
+
+# print the javascript content
 print "Content-type: application/javascript\n\n";
 
-my $date_str = '2026-04-12 19:10:00';
-my $epoch = timelocal(0,10,19,12,3,2026);
+# ends here (return empty js content) if conditions are not met
+if (!$readOK) {
+    return;
+}
+
+my ($y,$m,$d,$H,$M) = $datetime =~ /(\d+)-(\d+)-(\d+) (\d+):(\d+)/;
+my $epoch = timelocal(0,$M,$H,$d,$m-1,$y);
 
 print qq{
 (function() {
@@ -55,7 +102,7 @@ print qq{
 
     loadScript('/js/FlipClock.umd.js', function() {
         const container = document.getElementById('clock-container');
-        container.innerHTML = '<h3>Elapsed time since last eruption</h3><div id="clock"></div>';
+        container.innerHTML = "<h3>$__{'Elapsed time since'} $__{$startend} $__{'of event'} $name $comment</h3><div id='clock'></div>";
         const start = $epoch * 1000;
         const { flipClock, elapsedTime, theme, css } = FlipClock;
         flipClock({
@@ -91,11 +138,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Francois Beauducel
+François Beauducel
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2026 - Institut de Physique du Globe Paris
+WebObs - 2012-2026 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
