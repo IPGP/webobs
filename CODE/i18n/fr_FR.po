@@ -2250,3 +2250,15 @@ msgstr "le début"
 
 msgid "end"
 msgstr "la fin"
+
+msgid "years"
+msgstr "années"
+
+msgid "weeks"
+msgstr "semaines"
+
+msgid "hours"
+msgstr "heures"
+
+msgid "seconds"
+msgstr "secondes"

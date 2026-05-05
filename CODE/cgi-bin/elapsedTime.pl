@@ -42,14 +42,19 @@ if (!WebObs::Users::clientIsValid) {
 }
 
 my $QryParm   = $cgi->Vars;
-my $grid   = $QryParm->{'grid'}   // "";
-my $name   = $QryParm->{'name'}   // "";
+my $grid      = $QryParm->{'grid'}       // "";
+my $name      = $QryParm->{'name'}       // "";
+my $format    = $QryParm->{'format'}     // "[YY]:[DDD]:[hh]:[mm]";
+my $size      = $QryParm->{'size'}       // "2rem";
+my $labelsize = $QryParm->{'labelsize'}  // ".8rem";
+my $debug     = $QryParm->{'debug'}      // "";
 
 my $today = strftime('%F',localtime());
 
 my $readOK;
 my %GRID;
 my @EVENTS;
+my @E;
 my @last;
 my $startend = 'end';
 my $comment;
@@ -63,9 +68,13 @@ if ( WebObs::Users::clientHasRead(type=>"auth".lc($GRIDType)."s",name=>"$GRIDNam
     elsif  (uc($GRIDType) eq 'FORM') { %G = readForm($GRIDName) }
     if (%G) {
         %GRID = %{$G{$GRIDName}};
-        @EVENTS = readCfgFile($GRID{EVENTS_FILE});
-        @EVENTS = grep(/(.*\|){4}$name\|/, @EVENTS) if ($name ne "");
+        foreach (split(/,/,$GRID{EVENTS_FILE})) {
+            @E = readCfgFile($_);
+            @E = grep(/(.*\|){4}$name\|/, @E) if ($name ne "");
+            push(@EVENTS, @E);
+        }
         if ($#EVENTS >= 0) {
+            @EVENTS = sort @EVENTS;
             @last = split(/\|/, @EVENTS[-1]);
             $name = $last[4];
             $comment = ($last[5] ne "" ? "($last[5])":"");
@@ -85,11 +94,32 @@ print "Content-type: application/javascript\n\n";
 
 # ends here (return empty js content) if conditions are not met
 if (!$readOK) {
-    return;
+    if ($debug) {
+        print "container.innerHTML = ".join(" ",@E).";";
+    }
+    exit;
 }
 
 my ($y,$m,$d,$H,$M) = $datetime =~ /(\d+)-(\d+)-(\d+) (\d+):(\d+)/;
 my $epoch = timelocal(0,$M,$H,$d,$m-1,$y);
+
+my @items = split(/:/,$format);
+my %T = (
+    'Y' => "$__{'years'}",
+    'W' => "$__{'weeks'}",
+    'D' => "$__{'days'}",
+    'h' => "$__{'hours'}",
+    'm' => "$__{'minutes'}",
+    's' => "$__{'seconds'}",
+);
+foreach my $k (keys %T) {
+    my $v = $T{$k};
+    @items = map {
+        s/\[$k+\]/['$v']/g;
+        $_;
+    } @items;
+}
+my $labels = join(",\n",@items);
 
 print qq{
 (function() {
@@ -109,25 +139,24 @@ print qq{
             parent: document.getElementById('clock'),
             face: elapsedTime({
                 from: new Date(start),
-                format: '[YY]:[DDD]:[hh]:[mm]'
+                format: '$format'
             }),
             theme: theme({
                 dividers: ':',
                 labels: [
-                    ['Years'],
-                    ['Days'],
-                    ['Hours'],
-                    ['Minutes'],
+                    $labels
                 ],
                 css: css({
-                    fontSize: '2rem',
-                    '.flip-clock-label': {
-                        fontSize: '.5rem',
-                        marginBottom: '0',
-                    }
+                    fontSize: '$size',
                 })
             })
-        });        
+        });
+        setTimeout(() => {
+            document.querySelectorAll('#clock .flip-clock-label').forEach(el => {
+                el.style.fontSize = '$labelsize';
+                el.style.marginBottom = '0';
+            });
+        }, 0);
     });
 })();
 };
