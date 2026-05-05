@@ -6,14 +6,27 @@ elapedTime.pl
 
 =head1 SYNOPSIS
 
+elapsedTime.pl?grid=
 
 =head1 DESCRIPTION
 
 
 =head1 Query string parameters
 
- type=
- optional, specifies which language to use
+grid=
+ full grid name GRIDTYPE.GRIDNAME to search EVENTS_FILE
+
+name=
+ optional, to select only events of a specific name
+
+format=
+ optional, to set the ElapsedTime format (default is [YY]:[DDD]:[hh]:[mm])
+
+size=
+ optional, size of the face characters (default is 2rem)
+
+labelsize=
+ optional, size of the labels (default is .8rem)
 
 =cut
 
@@ -44,9 +57,11 @@ if (!WebObs::Users::clientIsValid) {
 my $QryParm   = $cgi->Vars;
 my $grid      = $QryParm->{'grid'}       // "";
 my $name      = $QryParm->{'name'}       // "";
+my $header    = $QryParm->{'header'}     // "1";
 my $format    = $QryParm->{'format'}     // "[YY]:[DDD]:[hh]:[mm]";
 my $size      = $QryParm->{'size'}       // "2rem";
 my $labelsize = $QryParm->{'labelsize'}  // ".8rem";
+my $container = $QryParm->{'container'}  // "clock-container";
 my $debug     = $QryParm->{'debug'}      // "";
 
 my $today = strftime('%F',localtime());
@@ -120,6 +135,7 @@ foreach my $k (keys %T) {
     } @items;
 }
 my $labels = join(",\n",@items);
+my $title = ($header ? "<h3>$__{'Elapsed time since'} $__{$startend} $__{'of event'} $name $comment</h3>":"");
 
 print qq{
 (function() {
@@ -131,8 +147,8 @@ print qq{
     }
 
     loadScript('/js/FlipClock.umd.js', function() {
-        const container = document.getElementById('clock-container');
-        container.innerHTML = "<h3>$__{'Elapsed time since'} $__{$startend} $__{'of event'} $name $comment</h3><div id='clock'></div>";
+        const container = document.getElementById('$container');
+        container.innerHTML = "$title<div id='clock'></div>";
         const start = $epoch * 1000;
         const { flipClock, elapsedTime, theme, css } = FlipClock;
         flipClock({
