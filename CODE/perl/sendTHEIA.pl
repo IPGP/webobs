@@ -23,6 +23,8 @@ use Encode qw(decode encode);
 use File::Path qw(make_path rmtree);
 use IO::Compress::Zip qw(zip $ZipError);
 use Try::Tiny;
+use utf8;
+binmode(STDOUT, ":encoding(UTF-8)");
 
 # ---- webobs stuff
 use WebObs::Config;
@@ -37,6 +39,17 @@ my %conf = readCfg($filename);
 my @nodes = split(/,/, $conf{NODES});
 my @channels = split(/,/, $conf{CHANNELS});
 my $GRIDType = "PROC";  # grid type ("PROC" in the THEIA case use)
+my $date_field_count = 6;  # yyyy mm dd HH MM SS
+
+my @selected_nodes;
+foreach (@nodes) {
+    if ($_ =~ /(OBSE_DAT_)(.+\..+)/) {
+        my $name = $2;
+        if (grep { index($_, $name) != -1 } @channels) {
+            push(@selected_nodes, $_);
+        }
+    }
+}
 
 # ---- connecting to the database
 my $driver   = "SQLite";
@@ -52,8 +65,16 @@ sub compressTxtFiles {
     my $dataset = shift;
     my $dataName = (split /\_/, $dataset)[-1];
     my $tmpdir   = shift;
-    zip [ <$tmpdir/*$dataName\_*.txt> ] => "$tmpdir/$dataset.zip",
-      FilterName => sub { s[^$tmpdir/][] };
+    my @files = glob("$tmpdir/*$dataName*.txt");
+
+    if (@files) {
+        zip [ @files ] => "$tmpdir/$dataset.zip", FilterName => sub { s[^$tmpdir/][] } or die "zip failed: $ZipError\n";
+        # Suppression des fichiers après archivage
+        foreach my $file (@files) {
+            unlink $file or warn "Impossible de supprimer $file: $!";
+        }
+    }
+    return 1;
 }
 
 # ---- creating tmp and exports/theia directories if required
@@ -72,16 +93,13 @@ if ( ! -e $json_validator_path ) {
     die "Please install $json_validator_path\n";
 }
 
-my @zip_files;
-my $empty; # checking if empty ref or not
-
 # ---- start the creation of the JSON object ----------------------------------------------------
 #
 # ---- extracting producer data
 
 my $stmt = qq(SELECT * FROM producer INNER JOIN contacts ON producer.identifier = contacts.related_id);
-my $sth = $dbh->prepare( $stmt );
-my $rv = $sth->execute() or die $DBI::errstr;
+my $sth = $dbh->prepare($stmt);
+$sth->execute() or die $DBI::errstr;
 
 my %producer;
 
@@ -103,7 +121,7 @@ while( my @row = $sth->fetchrow_array() ) {
         # ---- parsing online resources
         my %resource;
         foreach(split(/_,/, $row[9])) {
-            my $typeUrl =(split '@', $_)[0];
+            my $typeUrl = (split '@', $_)[0];
             my $url = (split '@', $_)[1];
             if ($typeUrl =~ /download/) {
                 $resource{'urlDownload'} = $url;
@@ -119,12 +137,12 @@ while( my @row = $sth->fetchrow_array() ) {
     # ---- extracting contacts data
 
     my $stmt2 = qq(SELECT * FROM contacts;);
-    my $sth2 = $dbh->prepare( $stmt2 );
-    my $rv2 = $sth2->execute() or die $DBI::errstr;
+    my $sth2 = $dbh->prepare($stmt2);
+    $sth2->execute() or die $DBI::errstr;
 
     my @contacts;
 
-    while( my @row2 = $sth2->fetchrow_array() ) {
+    while ( my @row2 = $sth2->fetchrow_array() ) {
         if ($row2[4] eq $producer{'producerId'}) {
             # ---- parsing contacts
             my %contact = (
@@ -141,12 +159,12 @@ while( my @row = $sth->fetchrow_array() ) {
 }
 
 $stmt = qq(SELECT * FROM organisations;);
-$sth = $dbh->prepare( $stmt );
-$rv = $sth->execute() or die $DBI::errstr;
+$sth = $dbh->prepare($stmt);
+$sth->execute() or die $DBI::errstr;
 
 my @fundings;
 
-while( my @row = $sth->fetchrow_array() ) {
+while ( my @row = $sth->fetchrow_array() ) {
     # ---- parsing fundings
     my %funding = (
         type => $row[0],
@@ -164,96 +182,77 @@ $producer{'fundings'} = \@fundings;
 # ---- extracting observations data
 
 my @observations;
+my @colnames; # Liste de chaque variable sélectionnée avec son unité
 
 foreach (@channels) {
     print "$_\n";
-    $stmt  = "SELECT * FROM observations ";
-    $stmt .= "INNER JOIN sampling_features ON observations.stationname = sampling_features.identifier ";
-    $stmt .= "INNER JOIN observed_properties ON observations.observedproperty = observed_properties.identifier";
-    $stmt .= " WHERE observations.identifier = '$_'";
-    $stmt  = qq($stmt);
-    $sth   = $dbh->prepare( $stmt );
-    $rv    = $sth->execute() or die $DBI::errstr;
 
-    while( my @row = $sth->fetchrow_array() ) {
-        # print "\n", join(" ", @row[0 .. $#row-6]), "\n";
+    $stmt  = "SELECT o.identifier, o.processinglevel, o.datatype, o.temporalextent, o.observedproperty, o.stationname, o.datafilename, sf.geometry, op.name, op.unit, op.theiacategories ";
+    $stmt .= "FROM observations AS o ";
+    $stmt .= "INNER JOIN sampling_features AS sf ON o.stationname = sf.identifier ";
+    $stmt .= "INNER JOIN observed_properties AS op ON o.identifier = op.identifier ";
+    $stmt .= "WHERE o.identifier = '$_'";
+    $stmt  = qq($stmt);
+    $sth   = $dbh->prepare($stmt);
+    $sth->execute() or die $DBI::errstr;
+
+    while ( my @row = $sth->fetchrow_array() ) {
+        # print "\n", join(" ", @row[0 .. $#row]), "\n";
+
         # ---- data from observed_properties table
+        my $name = decode("utf-8", $row[8]);
+        my $unit = decode("utf-8", $row[9]);
         my %observedProperty = (
-            name => decode("utf8", $row[13]),
-            unit => decode("utf8", $row[14])
+            name => html_sup_sub_to_unicode($name),
+            unit => (defined $unit && $unit ne "") ? $unit : "N/A",
           );
+        push @colnames, $name . "(" . $unit . ")";
 
         my @theiaCategories;
-        foreach (split(',', $row[15])) {
+        foreach (split(',', $row[10])) {
             $_ =~ s/(\n)//g;
             push(@theiaCategories, $_);
         }
         $observedProperty{"theiaCategories"} = \@theiaCategories;
-
         # print $observation{'observedProperty'}{'theiaCategories'}->[0];
+
         # ---- data from sampling_features table
         # ---- parsing coordinates
-        my $geometry = (split ':', $row[11])[1];
+        my $geometry = (split ':', $row[7])[1];
         my $position = (split '\(|\)', $geometry)[1];
-        my @coordinates = split(',', $position);
+        my @coordinates = map { sprintf("%.7f", $_) } split(',', $position);
         $coordinates[0] += 0;
-        my $lat = $coordinates[0];
         $coordinates[1] += 0;
-        my $lon = $coordinates[1];
-        $coordinates[2] += 0;
         my $alt = $coordinates[2];
 
         my @new_crds = ($coordinates[1], $coordinates[0]);
+        if ($alt) {
+            $coordinates[2] += 0;
+            push @new_crds, $coordinates[2];
+        }
 
         my %geometry = (
             type => (split '\(|\)', $geometry)[0],
             coordinates => \@new_crds,
           );
         my %samplingFeature = (
-            name => $row[6],
+            name => $row[5],
             geometry => \%geometry,
             type => "Feature",
-            properties => {}
+            properties => {},
           );
         my %featureOfInterest = (
             samplingFeature => \%samplingFeature,
           );
 
-        my $GRIDType = 'PROC';
-        my $GRIDName = (split /\./, $row[6])[0];
-        my $NODEName = (split /\./, $row[6])[1];
-        my $timescale = (split /\_/, $row[8])[-1];
-        $timescale = (split /\./, $timescale)[0];
+        my $GRIDName = (split /\./, $row[5])[0];
+        my $NODEName = (split /\./, $row[5])[1];
         my %datafile = (
-            name => $producer{'producerId'}."_OBS_$GRIDName.$NODEName\_$observedProperty{'name'}.txt",
+            name => $row[6],
           );
         my %result = (
             dataFile => \%datafile,
           );
-
-        # ---- now generating the .txt file
-        my $dataname = "$NODEName\_$timescale.txt";
-        my $filepath = "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/exports/";
-        my $chan_nb = 5 + $row[16];
-        my $obsfile = "$tmpdir/$datafile{'name'}";
-
-        # ---- generating .txt files for the observed properties
-        # ---- header
-        my $header = "#Date_of_extraction;$today;\n";
-        $header .= "#Observation_ID;$row[0];\n";
-        $header .= "#Dataset_title;;\n";
-        $header .= "#Variable_name;".$row[5].";\n";
-        $header .= "dateBeg;dateEnd;latitude;longitude;altitude;value;qualityFlags;\n";
-
-        # ---- content
-        my $cmd = qq(grep -v '^#' $filepath$dataname | awk -v lat="$lat" -v lon="$lon" -v alt="$alt" -v chan_nb="$chan_nb" '{
-            printf \";%s-%s-%sT%s:%s:%sZ;%s;%s;%s;%s;\\n\", \$1,\$2,\$3,\$4,\$5,\$6,lat,lon,alt,\$chan_nb
-        }');
-        my $content = qx($cmd);
-        $header .= $content;
-        open(FILE, '>', $obsfile);
-        print FILE $header;
-        close(FILE);
 
         my %temporalExtent = (
             dateBeg => (split '/', $row[3])[0],
@@ -279,23 +278,24 @@ foreach (@channels) {
 
 my @datasets;
 
-foreach (@nodes) {
+foreach (@selected_nodes) {
     print "$_\n";
     chomp($_);
     $stmt = qq(SELECT * FROM datasets WHERE datasets.identifier = '$_';);
-    $sth = $dbh->prepare( $stmt );
-    $rv = $sth->execute() or die $DBI::errstr;
+    $sth = $dbh->prepare($stmt);
+    $sth->execute() or die $DBI::errstr;
 
-    while( my @row = $sth->fetchrow_array() ) {
+    while ( my @row = $sth->fetchrow_array() ) {
         my $datasetId = (split /_DAT_/, $row[0]) [1];
         (my $GRIDName, my $NODEName) = (split /\./, $datasetId);
         my %S = readNode($NODEName, "novsub");
+        my %G = readProc($GRIDName);
         my %NODE = %{$S{$NODEName}};
-        my $desc = $NODE{"$GRIDType.$GRIDName.DESCRIPTION"};
+        my %GRID = $G{$GRIDName} ? %{$G{$GRIDName}} : ("THEIA_SELECTED_TS" => "all");
 
         my $topicCategories = (split '_', $row[2])[0];
         my @topicCategories;
-        foreach(split('_,', $topicCategories)) {
+        foreach (split('_,', $topicCategories)) {
             my $category = (split(':', $_))[1];
             push(@topicCategories, $category);
         }
@@ -323,6 +323,7 @@ foreach (@nodes) {
             accessUseConstraint => "No conditions to access and use",
           );
 
+        my $desc = $NODE{"$GRIDType.$GRIDName.DESCRIPTION"};
         my %metadata = (
             title => decode("utf8", $row[1]),
             datasetLineage => $row[4],
@@ -340,8 +341,8 @@ foreach (@nodes) {
 
         # ---- extracting contacts data
         my $stmt2 = qq(SELECT * FROM contacts;);
-        my $sth2 = $dbh->prepare( $stmt2 );
-        my $rv2 = $sth2->execute() or die $DBI::errstr;
+        my $sth2 = $dbh->prepare($stmt2);
+        $sth2->execute() or die $DBI::errstr;
 
         my @contacts;
         while( my @row2 = $sth2->fetchrow_array() ) {
@@ -368,20 +369,6 @@ foreach (@nodes) {
                 my $datId = (split /\./, $row[0])[1];
                 if ($obsId eq $datId) {
                     push(@ds_obs, $_);
-                    my $filename = decode_json encode_json $_->{'result'}->{'dataFile'}->{'name'};
-
-                    # ---- adding the title dataset into $filename
-                    # ---- first we open $filename while creating a new $filename where we will write the line we want to insert
-                    open my $in, '<', "$tmpdir/$filename" or die "Can't read old file: $!";
-                    open my $out, '>', "$tmpdir/$filename.new" or die "Can't write new file: $!";
-                    my $title = decode("utf8", $row[1]);
-                    while( <$in> ) {
-                        s/Dataset_title;/Dataset_title;$title/; # ---- writing the dataset title in the right row
-                        print $out $_;
-                    }
-                    close $in;
-                    close $out;
-                    rename "$tmpdir/$filename.new", "$tmpdir/$filename";
                 }
             }
         }
@@ -390,21 +377,84 @@ foreach (@nodes) {
         $dataset{'observations'} = \@ds_obs;
 
         #print scalar(@{$dataset{'observations'}}), "\n";
-        $empty = $dataset{'observations'} ? "yup" : "nope";
+
+        # ---- now generating the .txt file
+        my $timescale = $GRID{"THEIA_SELECTED_TS"};
+        my $input_file = "$WEBOBS{ROOT_OUTG}/$GRIDType.$GRIDName/exports/$NODEName\_$timescale.txt";
+        my $output_file = "$tmpdir/OBSE_MULTIOBS_$GRIDName.$NODEName\_$timescale.txt";
+        open my $in, '<', $input_file or die "Impossible d'ouvrir $input_file: $!";
+        open my $out, '>:encoding(UTF-8)', $output_file or die "Impossible de créer $output_file: $!";
+
+        # Nouvelle entête
+        my $observationIds = join(";", map { $_->{'observationId'} } @ds_obs);
+        my @variables = map { $_->{'observedProperty'}{'name'} } @ds_obs;
+        my $vars = join(";", map { "value_" . ($_+1) } 0..$#variables);
+
+        my @position = @{ $ds_obs[0]->{'featureOfInterest'}{'samplingFeature'}{'geometry'}{'coordinates'} };
+        while (scalar(@position) < 3) {
+            push @position, "";
+        }
+        my $pos = join(";", @position);
+
+        my ($title) = $dbh->selectrow_array("SELECT TITLE FROM datasets WHERE IDENTIFIER = ?", undef, "OBSE_DAT_$GRIDName.$NODEName");
+        $title = "" unless defined $title;
+
+        print $out "#Date_of_extraction;$today\n";
+        print $out "#Observation_ID;$observationIds\n";
+        print $out "#Dataset_title;$title\n";
+        print $out "#Variable_name;" . join(";", @variables) . "\n";
+        print $out "date_begin;date_end;latitude;longitude;altitude;$vars;qualityFlags\n";
+
+        # Lire et transformer chaque ligne du fichier d'entrée vers le fichier de sortie
+        my $header;
+        my %dejavu;
+        my @indices;
+        while (<$in>) {
+            chomp;
+            if (/^#yyyy\s+mm\s+dd\s+HH\s+MM\s+SS/) {
+                $header = $_;
+                # Extrait, après le champ de date, chaque variable avec son unité
+                $header =~ s/#yyyy mm dd HH MM SS //g;
+                my @vars = $header =~ /[^)]*\)/g;
+                @vars = map { s/^\s+|\s+$//g; $_ } @vars;
+                @vars = map { proc_variable_to_html($_) } @vars;
+                # On cherche les indices correspondant aux variables sélectionnées
+                for my $i (0 .. $#vars) {
+                    if (grep { $_ eq $vars[$i] } @colnames) {
+                        push @indices, $i + $date_field_count;
+                    }
+                }
+            }
+
+            next if $_ =~ /^\s*#/;
+            my @rows = split;
+            next unless @rows >= $date_field_count + 1;
+
+            # Extraire la date et l'heure
+            my ($yyyy, $mm, $dd, $HH, $MM, $SS) = @rows[ 0 .. ($date_field_count-1) ];
+            my $date_end = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ", $yyyy, $mm, $dd, $HH, $MM, $SS);
+
+            next if $dejavu{$date_end};
+            $dejavu{$date_end} = 1;
+
+            my @values = map { $rows[$_] } @indices;
+            @values = map { $_ eq "NaN" ? "" : $_ } @values;
+            # Extraire les variables
+            my $values = join(";", @values);
+            print $out ";$date_end;$pos;$values;\n";
+        }
+
+        close $in;
+        close $out;
 
         # ---- compressing observations files into OBSE_DAT_PROC.NODE.zip
-        if ($empty eq "yup") {
-            if (@{$dataset{'observations'}}) {
-                push(@datasets, \%dataset);
-                compressTxtFiles("$dataset{'datasetId'}", $tmpdir)
-                # or die "$dataset{'datasetId'} needs to be associated with at least one observation !\n";
-            } else {
-                print "$datasetId was discarded. There are no observations for this dataset!\n";
-            }
-        } else {
+        if (@{$dataset{'observations'}}) {
+            push(@datasets, \%dataset);
             compressTxtFiles("$dataset{'datasetId'}", $tmpdir)
-              or die "zip failed: $ZipError\n";
+        } else {
+            print "$datasetId was discarded. There are no observations for this dataset!\n";
         }
+
     }
 }
 
@@ -429,9 +479,9 @@ my $filepath = "$tmpdir/$filename";
 #print "\n";
 
 chmod 0755, $filepath;
-open(FH, '>', $filepath) or die $!;
-print FH encode_json \%json;
-close(FH);
+open(my $fh, '>', $filepath) or die $!;
+print $fh encode_json \%json;
+close($fh);
 
 #print encode_json \%json;
 
@@ -442,14 +492,14 @@ my $output = qx(java -jar $json_validator_path $filepath);
 # ---- Create a data archive
 
 my $producerId = $producer{'producerId'};
-my $zipfile   = $producerId . "_THEIA.zip";
-if ( $output =~ /success/ ) {
-    zip [ <$tmpdir/*DAT*.zip>, $filepath ] => "$theiadir/$zipfile",
-      FilterName => sub { s[^$tmpdir/][] } or die "zip failed: $ZipError\n";
-    rmtree($tmpdir);
-} else {
-    print "The JSON metadata file is not valid :\n".$output;
-};
+my $zipfile = $producerId . "_THEIA.zip";
+zip [ <$tmpdir/*DAT*.zip>, $filepath ] => "$theiadir/$zipfile",
+  FilterName => sub { s[^$tmpdir/][] } or die "zip failed: $ZipError\n";
+rmtree($tmpdir);
+
+if ( $output !~ /success/ ) {
+    die "The JSON metadata file is not valid :\n" . $output;
+}
 
 # ---- Send archive to Theia/OZCAR
 
@@ -457,15 +507,45 @@ if ( $output =~ /success/ ) {
     my $url = "https://in-situ.theia-land.fr/data/$producerId/new/";
     my $password = $WEBOBS{PASSWORD_THEIA};
     my $response = qx(curl -T "$theiadir/$zipfile" -u $producerId:$password -s -o /dev/null -w "%{http_code}" $url);
-    if ( rindex($response,"2", 0) eq 0 ) {
-        print "Data upload successful. Data are available at https://in-situ.theia-land.fr/data/OBSE/previous/", "\n";
+    if ( rindex($response, "2", 0) eq 0 ) {
+        print "Data upload successful. Data are available at https://in-situ.theia-land.fr", "\n";
     } else {
-        print "Data upload failed: ", $response, "\n";
-        die;
+        die "Data upload failed: ", $response, "\n";
     }
 }
 
 #print $observations[1]{'featureOfInterest'}{'samplingFeature'}{'geometry'}{'coordinates'};
+
+sub html_sup_sub_to_unicode {
+    my ($html) = @_;
+
+    # Superscripts
+    my @sup_digits = qw(⁰ ¹ ² ³ ⁴ ⁵ ⁶ ⁷ ⁸ ⁹);
+    my %sup = map { $_ => $sup_digits[$_] } 0..9;
+    $sup{'+'} = '⁺';
+    $sup{'-'} = '⁻';
+
+    # Subscripts
+    my @sub_digits = qw(₀ ₁ ₂ ₃ ₄ ₅ ₆ ₇ ₈ ₉);
+    my %sub = map { $_ => $sub_digits[$_] } 0..9;
+    $sub{'+'} = '₊';
+    $sub{'-'} = '₋';
+
+    # Remplacement des tags
+    $html =~ s{<sup>([^<]+)</sup>}{join '', map {$sup{$_} // $_} (split //, $1)}ge;
+    $html =~ s{<sub>([^<]+)</sub>}{join '', map {$sub{$_} // $_} (split //, $1)}ge;
+
+    return $html;
+}
+
+sub proc_variable_to_html {
+    my ($name) = @_;
+
+    # Remplacement des indices (_{}) et des exposants (^{}) par des tags html
+    $name =~ s/_\{(.*?)\}/<sub>$1<\/sub>/g;
+    $name =~ s/\^\{(.*?)\}/<sup>$1<\/sup>/g;
+    return $name;
+}
 
 __END__
 
