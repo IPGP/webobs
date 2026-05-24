@@ -13,16 +13,8 @@ If you have any question which is not answered in the user manual, do not hesita
 ## v2.8.1  (June 2026)
 
 ### New features
-
 1. **Downflowgo**: The lava flow modeling software, [Downflowgo](https://github.com/oryalava/DOWNFLOWGO), can now be integrated to WebObs during the setup.
 
-### Enhancements and modifications
-
-1. **Theia/OZCAR interface**: Extensive rewriting of the Theia/OZCAR interface with improved database design and improved execution speed. The MULTIOBS format is now used.
-
-## v.2.8.0  (March 2026)
-
-### New features
 1. **New grids FORM**: manual databases (formerly dedicated forms) are now fully integrated as a grid type along with PROCs and VIEWs. A FORM is then associated to a DOMAIN and some NODES, appears in the GRIDs table and has its own page with description, nodes table list, map location, and events. FORM is based on the new GENFORM user-defined manual database tool (introduced in the previous release): a freely configurazble SQLite database managed through a GUI form (for entering new data, editing and deleting), a table data display with options and filters, data export as CSV file or as raw data source for PROCs. Creating a FORM becomes as simple as creating a PROC or VIEW, by selecting a template (a dozen are available), if necessary modifying it partially or completely, associating a DOMAIN, associating or creating NODES, and editing the configuration file to set the database structure (inputs and outputs) and the form layout. GENFORM is able to store numerical values, checkboxes, lists, text strings, images, and mathematical output formulas. It aims to replace spreadsheets files for (potentially) any structured scientific data. See the user manual for more details.
 
     `!!` **Update note**: This new feature replaces definitively all the previous forms (EAUX, GAZ, EXTENSO, FISSURO, DISTANCE, BOJAP, RIVERS, SOILSOLUTIONS, and RAINWATER) for which an automatic migration is made during the setup/update. PROCS using the legacy forms databases will be adapted to use new FORM which become a RAWFORMAT/RAWDATA attribute instead of hard link to legacy form. Each PROC will have its own FORM with the same grid name and the same associated nodes. Former configuration files `CONF/FORMS` and `CONF/GRIDS2FORMS` will be moved in `CONF/LEGACY_FORMS/`directory, and old data files `DATA/DB/*.DAT` will be moved to `DATA/BACKUP_LEGACY_FORMS/`. All these files are not necessary anymore and might be removed/backuped anywhere outside the WebObs architecture. Corresponding legacy scripts `CODE/cgi-bin/{form,post,show}FORMNAME.pl` have been removed from this release. Any link/URL (for example in the WebObs menu) pointing to these scripts must be modified as follows:
@@ -79,6 +71,7 @@ TREND_UNIT|mm/yr
     where `TREND_FACTOR` is a dimensionless factor applied to the trend value initially in m/day, and `TREND_UNIT` is the resulting unit string (for display purposes) for individual node timeseries and VECTORS graph. Also, the `VECTORS` summary map now have a displacement scale below the velocity scale.
 
 ### Enhancements and modifications
+1. **Theia/OZCAR interface**: Extensive rewriting of the Theia/OZCAR interface with improved database design and improved execution speed. The MULTIOBS format is now used.
 1. New CSS!
 1. `!!` setup will now check all Perl modules dependancies, and stop if any of them fails.
 1. `!!` if the auto-registration mode is enabled (`SQL_DB_USERS_AUTOREGISTER`), when a registration form is sent the new line added to `/opt/webobs.d/htpasswd` apache file is now commented. Administrator must uncomment it to fully activate the user access.
