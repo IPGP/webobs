@@ -201,10 +201,11 @@ strainmap_included = field2str(P,'STRAINMAP_INCLUDED_NODELIST');
 strainmap_excluded_target = field2num(P,'STRAINMAP_EXCLUDED_FROM_TARGET_KM',0,'notempty');
 strainmap_horizonly = isok(P,'STRAINMAP_HORIZONTAL_ONLY');
 strainmap_tol_days = field2num(P,'STRAINMAP_TOL_DAYS',1);
-strainmap_linestyle = field2str(P,'STRAINMAP_LINESTYLE','.');
-strainmap_mavr = field2num(P,'STRAINMAP_MOVING_AVERAGE',30,'notempty');
-strainmap_offset = field2num(P,'STRAINMAP_PAIRS_OFFSET_M',0.01);
-strainmap_sorting = isok(P,'STRAINMAP_PAIRS_SORT',1);
+strainmap_timeseries_type = field2str(P,'STRAINMAP_TIMESERIES_TYPE','strain');
+strainmap_timeseries_linestyle = field2str(P,'STRAINMAP_TIMESERIES_LINESTYLE','.');
+strainmap_timeseries_mavr = field2num(P,'STRAINMAP_TIMESERIES_MOVING_AVERAGE',30,'notempty');
+strainmap_timeseries_offset = field2num(P,'STRAINMAP_TIMESERIES_PAIRS_OFFSET_M',0);
+strainmap_timeseries_sorting = isok(P,'STRAINMAP_TIMESERIES_PAIRS_SORT',1);
 strainmap_win = field2num(P,'STRAINMAP_WINDOW_DAYS');
 strainmap_demopt = field2cell(P,'STRAINMAP_DEM_OPT','watermark',1.5,'interp','saturation',0,'hlegend');
 strainmap_linewidth = field2num(P,'STRAINMAP_LINEWIDTH',3);
@@ -984,23 +985,38 @@ for r = 1:numel(P.GTABLE)
             k = ~isnan(B(n).d);
             if sum(k)
                 lin = polyfit(B(n).t(k),B(n).d(k)-mean(B(n).d(k)),1); % global linear regression (for display purpose)
+                if ~strcmpi(strainmap_timeseries_type,'displacement')
+                    lin = 1e3*lin/B(n).length;
+                end
             else
                 lin = [NaN,0];
             end
             B(n).lin = lin(1);
-            B(n).std = rstd(B(n).d(k) - polyval(lin,B(n).t(k)));
+            if ~strcmpi(strainmap_timeseries_type,'displacement')
+                B(n).std = rstd(1e3*B(n).d(k)/B(n).length - polyval(lin,B(n).t(k)));
+            else
+                B(n).std = rstd(B(n).d(k) - polyval(lin,B(n).t(k)));
+            end
             fprintf('   velocity %s = %+g mm/yr, total displacement = %+g mm, total deformation = %+g µstrain\n', ...
                 B(n).name,roundsd([B(n).vel,B(n).dis,B(n).def],4));
         end
         fprintf('---> Baselines timeseries offset = ')
-        if strainmap_offset > 0
-            boffset = strainmap_offset;
-            fprintf('%g cm (fixed).\n',100*boffset);
+        if strainmap_timeseries_offset > 0
+            boffset = strainmap_timeseries_offset;
+            if ~strcmpi(strainmap_timeseries_type,'displacement')
+                fprintf('%g µstr (fixed).\n',boffset);
+            else
+                fprintf('%g cm (fixed).\n',100*boffset);
+            end
         else
             boffset = 2*rmean(cat(1,B.std));
-            fprintf('%g cm (auto).\n',100*boffset)
+            if ~strcmpi(strainmap_timeseries_type,'displacement')
+                fprintf('%g µstr (auto).\n',boffset)
+            else
+                fprintf('%g cm (auto).\n',100*boffset)
+            end
         end
-        if strainmap_sorting
+        if strainmap_timeseries_sorting
             [~,k] = sort(-cat(1,B.lin));
             B = B(k);
         end
@@ -1012,15 +1028,19 @@ for r = 1:numel(P.GTABLE)
         axes('Position',[.05,.5,.8,.43])
         ylim = [0,-boffset];
         for n = 1:length(B)
-            dd = B(n).d - rmedian(B(n).d) - boffset*n;
-            if strainmap_mavr > 1
-                da = mavr(dd,strainmap_mavr);
+            if ~strcmpi(strainmap_timeseries_type,'displacement')
+                dd = 1e3*(B(n).d - rmedian(B(n).d))/B(n).length - boffset*n;
+            else
+                dd = B(n).d - rmedian(B(n).d) - boffset*n;
+            end
+            if strainmap_timeseries_mavr > 1
+                da = mavr(dd,strainmap_timeseries_mavr);
             else
                 da = dd;
             end
-            plotorbit(B(n).t,dd,B(n).o,strainmap_linestyle,P.GTABLE(r).LINEWIDTH/2,P.GTABLE(r).MARKERSIZE/2,scolor(n)/2+1/2)
+            plotorbit(B(n).t,dd,B(n).o,strainmap_timeseries_linestyle,P.GTABLE(r).LINEWIDTH/2,P.GTABLE(r).MARKERSIZE/2,scolor(n)/2+1/2)
             hold on
-            plotorbit(B(n).t,da,B(n).o,strainmap_linestyle,P.GTABLE(r).LINEWIDTH,P.GTABLE(r).MARKERSIZE,scolor(n))
+            plotorbit(B(n).t,da,B(n).o,strainmap_timeseries_linestyle,P.GTABLE(r).LINEWIDTH,P.GTABLE(r).MARKERSIZE,scolor(n))
             if ~all(isnan(dd))
                 lda = da(find(~isnan(da),1,'last'));
                 if isempty(lda) || isnan(lda)
@@ -1040,7 +1060,12 @@ for r = 1:numel(P.GTABLE)
         x0 = tlim(1) - .02*diff(tlim);
         y0 = ylim(2) - 1.5*dy0;
         plot(x0 + [0,0],y0 - .5*dy0*[-1,1],'-k','LineWidth',2,'Clipping','off')
-        text(x0,y0,{sprintf('%g cm',dy0*100),'',''},'FontSize',10,'FontWeight','bold', ...
+        if ~strcmpi(strainmap_timeseries_type,'displacement')
+            txt = sprintf('%g %cstr',dy0,char(181));
+        else
+            txt = sprintf('%g cm',dy0*100);
+        end
+        text(x0,y0,{txt,'',''},'FontSize',10,'FontWeight','bold', ...
             'Rotation',90,'HorizontalAlignment','center')
 		plot(tvel,ylim(2)+0.01*diff(ylim)*[1,1],'-','LineWidth',2,'Color',.7*ones(1,3),'Clipping','off') % window for parameters
         hold off

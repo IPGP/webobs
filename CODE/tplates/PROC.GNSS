@@ -225,14 +225,16 @@ STRAINMAP_INCLUDED_NODELIST|
 STRAINMAP_TOL_DAYS|1
 # YES = 2-D baseline, NO = 3-D baselines
 STRAINMAP_HORIZONTAL_ONLY|NO
-# baseline timeseries linestyle
-STRAINMAP_LINESTYLE|.
+# type of timeseries: 'strain' (default) or 'displacement'
+STRAINMAP_TIMESERIES_TYPE|strain
+# timeseries baseline pairs line style/marker type (see user manual appendix). Linewidth and marker size will follow TIMESCALES parameters
+STRAINMAP_TIMESERIES_LINESTYLE|.
 # adds moving average lines (in data sampling)
-STRAINMAP_MOVING_AVERAGE|30
+STRAINMAP_TIMESERIES_MOVING_AVERAGE|30
 # baseline offset between pairs (in m), empty for automatic (computed from data STD)
-STRAINMAP_PAIRS_OFFSET_M|
+STRAINMAP_TIMESERIES_PAIRS_OFFSET_M|
 # sort baseline pairs from linear trend
-STRAINMAP_PAIRS_SORT|YES
+STRAINMAP_TIMESERIES_PAIRS_SORT|YES
 # window for linear trend parameters: all window (empty), number of days before the end (scalar), or days interval [min,max] from end (2 values)  
 STRAINMAP_WINDOW_DAYS|
 # DEM options for background basemap (see dem.m)
