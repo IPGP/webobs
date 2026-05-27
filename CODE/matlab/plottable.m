@@ -7,7 +7,7 @@ function plottable(t,x,y,halign,col,varargin)
 %
 %	Author: F. Beauducel, IPGP/IRD
 %	Created: 2019-07-31 in Yogyakarta (Indonesia)
-%   Updated: 2026-04-19
+%   Updated: 2026-05-27
 
 if ~all(size(col)==size(t))
     col = repmat({'none'},size(t))
@@ -16,7 +16,7 @@ end
 y = linspace(y(1),y(2),size(t,1));
 for c = 1:size(t,2)
 	for r = 1:size(t,1)
-        s = regexprep(t{r,c},'-([0-9])','−$1'); % replaces '-' by U-2212
+        s = regexprep(t{r,c},'-([0-9])',[char(8722) '$1']); % replaces '-' by U-2212
 		text(x(c),y(r),s,'HorizontalAlignment',halign(c),'VerticalAlignment','middle','EdgeColor',col{r,c},'margin',2,varargin{:})
 	end
 end
