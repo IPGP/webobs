@@ -22,13 +22,11 @@ function N=readnodes(WO,grids,tlim,valid);
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-23
-%   Updated: 2026-02-26
+%   Updated: 2026-04-28
 
 if nargin < 2
 	error('No few input arguments')
 end
-
-wofun = sprintf('WEBOBS{%s}',mfilename);
 
 NODES = readcfg(WO.CONF_NODES);
 
@@ -68,7 +66,7 @@ for i = 1:length(grids)
             cc = split(sfr{j},'.'); % NET.STA.LOC.CHA
             NN = struct('ID',sfr{j},'NAME',sfr{j},'ALIAS',sprintf('%s.%s',cc{1},cc{2}));
             if ~isempty(fdsnws)
-                fprintf('%s: get %s:%s station information from FDSNWS server %s... ',wofun,cc{1},cc{2},fdsnws);
+                wolog('get %s:%s station information from FDSNWS server %s... ',cc{1},cc{2},fdsnws);
                 % FDSNWS request returns: Network|Station|Latitude|Longitude|Elevation|SiteName|StartTime|EndTime
                 [s,w] = wosystem(sprintf('wget --timeout=5 -qO- "%s/fdsnws/station/1/query?net=%s&sta=%s&level=station&format=text"', ...
                     fdsnws,cc{1},cc{2}));
@@ -131,8 +129,8 @@ for i = 1:length(grids)
         end
 	end
 	if nargin > 0
-		fprintf('%s: %d/%d node(s) imported from grid %s.\n',wofun,n,length(k),g);
+		wolog('%d/%d node(s) imported from grid %s.\n',n,length(k),g);
 	end
 end
 
-fprintf('%s: %d node(s) returned from %s.\n',wofun,length(N),tlim2str(tlim));
+wolog('%d node(s) returned from %s.\n',length(N),tlim2str(tlim));

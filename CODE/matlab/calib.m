@@ -11,7 +11,7 @@ function [dc,C]=calib(t,d,CLB,cco)
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2004-09-01
-%	Updated: 2025-05-06
+%	Updated: 2026-04-28
 
 if isempty(t) || (isscalar(t) && isnan(t))
 	t = repmat(now,1,2);
@@ -61,7 +61,7 @@ for i = 1:length(nv)
                     col = i;
                 end
                 x = d(k,col); % the raw data 
-                fprintf('WEBOBS{calib}: channel %d ("%s") calibrated from %s column %d (%d data - min/max = %g/%g).\n', ...
+                wolog('channel %d ("%s") calibrated from %s column %d (%d data - min/max = %g/%g).\n', ...
                     i,CLB.nm{ki(ii)},datestr(tt(ii)),col,length(k),minmax(x));
                 % filtering of min/max values is computed on the raw data (before calibration)
                 if ~isnan(CLB.vn(ki(ii))) || ~isnan(CLB.vm(ki(ii)))

@@ -18,7 +18,7 @@ function locastat(sta)
 
 %   Author: F. Beauducel/WEBOBS, IPGP
 %   Created: 2007-05-15
-%   Updated: 2025-05-09
+%   Updated: 2026-04-09
 
 % this will force update of all maps older than this date
 forceupdate = datenum(2019,7,23);
@@ -489,7 +489,11 @@ if ~shp || isempty(N.GEOJSON)
     end
 	target(x,y,s)
 else
-    G = N.GEOJSON.features{1};
+    if isstruct(N.GEOJSON) && isfield(N.GEOJSON,'features')
+        G = N.GEOJSON.features{1};
+    else
+        G = N.GEOJSON{1};
+    end
     for n = 1:length(G)
         switch G.geometry.type
         case 'LineString'

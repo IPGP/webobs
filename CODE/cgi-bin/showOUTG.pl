@@ -163,6 +163,28 @@ print "<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}
 if ($QryParm->{'refresh'} gt 0) {
     print "<meta http-equiv=\"refresh\" content=\"$QryParm->{'refresh'}\">";
 }
+if ($QryParm->{'g'} eq "VFLOW") {
+    print qq(
+    <script type="text/javascript">
+    // PCB = Proc Control Block: javascript global variables shared with cgi
+    var PCB = {
+        PROC: '$GRIDName',
+        TS: '$QryParm->{ts}',
+        SCALE_FACTOR: $GRID{VFLOW_SCALE_FACTOR},
+        HORIZONTAL_COLOR: '$GRID{VFLOW_HORIZONTAL_COLOR}',
+        VERTICAL_COLOR: '$GRID{VFLOW_VERTICAL_COLOR}',
+        TILES: '$GRID{VFLOW_TILES}',
+        TILES_SOURCES: '$GRID{VFLOW_TILES_SOURCES}'
+    };
+    </script>
+    <script src="/js/leaflet/leaflet.js"></script>
+    <script src="/js/leaflet/ellipse.js"></script>
+    <script src="/js/leaflet/leaflet.geometryutil.js"></script>
+    <script src="/js/leaflet/leaflet-arrowheads.js"></script>
+    <link rel="stylesheet" href="/css/vflow.css">
+    <link rel="stylesheet" href="/js/leaflet/leaflet.css" />
+    );
+}
 print "</head><body>";
 print "<script language=\"JavaScript\" src=\"/js/jquery.js\" type=\"text/javascript\"></script>";
 print "<!-- overLIB (c) Erik Bosrup --><div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>
@@ -240,13 +262,15 @@ my @vlist;
 my @ilist;
 
 my $teHtml = "";
+# ======================== ts=events ========================
 if ($QryParm->{'ts'} eq 'events' ) {
     # lists all files
     @plist = grep { !-l } glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$QryParm->{'g'}".("/*" x (4 - $depth)).".jpg";
     # extracts all date/events ID
     @vlist = map { m{^$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/(.*)/[^/]+$};$1 } @plist;
-    # build @ilist = the list of unique IDs in events/*/*/*/* subdirectories
-    (@ilist) = uniq map { basename($_) } grep { -d } glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/*/*/*/*";
+    # build @ilist = the list of unique IDs in events g= subdirectories
+    my ($y,$m,$d,$id) = split(/\//,$QryParm->{'g'}.("/*" x (3 - $depth)));
+    (@ilist) = uniq map { basename($_) } grep { -d } glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$y/$m/$d/*";
 
     if ($QryParm->{'g'} eq "") {
         $QryParm->{'g'} = $ylist[$#ylist];
@@ -324,7 +348,12 @@ print " | <img src=\"/icons/refresh.png\" style=\"vertical-align:middle;cursor:p
 # $glistHtml is the corresponding string of html hrefs to these graphs
 # with each nodenames replaced with their alias if it is defined
 my (@glist) = sort glob "$OUTD/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.png";
+
+# specific for VFLOW summary graph (JS, no .png)
+unshift(@glist, "VFLOW") if (grep(/^VFLOW$/, @SummaryList));
+
 my $glistHtml = "";
+# ======================== events ========================
 if ($QryParm->{'ts'} eq 'events' ) {
     # build @nlist = the list of available nodes (only if exist in event ID)
     for my $n (@nlist) {
@@ -348,6 +377,7 @@ if ($QryParm->{'ts'} eq 'events' ) {
         $garg =~ s|/\*.*$||g;
         $glistHtml = " <A href=\"$baseurl&ts=events&g=$garg\"><B>$__{'All nodes'}</B></A> |".$glistHtml;
     }
+# ======================== timescales ========================
 } else {
     my $lnk = "$baseurl&ts=$tslist[$tsSelected]&g=";
     $glistHtml .= " <A href=\"$lnk\"> Overview</A> | ";
@@ -398,7 +428,7 @@ if ($QryParm->{'ts'} eq 'map') {
         print "<A href=\"$MAPurn/$mapname.eps\"><IMG alt=\"$mapname.eps\" src=\"/icons/feps.png\"></A><BR>\n";
     }
     if  ( -e "$MAPpath/$mapname.png" ) {
-        print "<IMG style=\"margin-bottom: 15px; background-color: beige;\" src=\"$MAPurn/$mapname.png\" usemap=\"#map\"><BR>\n";
+        print "\n<IMG style=\"margin-bottom: 15px; background-color: beige;\" src=\"$MAPurn/$mapname.png\" usemap=\"#map\"><BR>\n";
         if (-e "$MAPpath/$mapname.map") {
             @htmlarea = readFile("$MAPpath/$mapname.map");
             print "<map name=\"map\">\n@htmlarea</map>\n";
@@ -460,6 +490,32 @@ if ($QryParm->{'ts'} eq 'map') {
                   "onMouseOut=\"nd()\" onMouseOver=\"overlib('$msg',CAPTION,'$dte')\"></A>\n";
             }
         }
+        if (exists $GRID{'DOWNFLOW_NAME_VENT'}) {
+            sub list_files {
+                foreach(@_) {
+                    s/$root_dir/$urn_dir/g;
+                    print "<a href=$_>", basename($_), "<br></a>"
+                }
+            }
+
+            my @csvlist = glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$QryParm->{'g'}".("/*").".csv";
+            if (@csvlist) {
+                print "<br><br># RESULT FILES:<br>";
+                list_files(@csvlist)
+            }
+
+            my @jsonlist = glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$QryParm->{'g'}".("/*").".json";
+            if (@jsonlist) {
+                print "<br><br># PARAMETER FILES:<br>";
+                list_files(@jsonlist)
+            }
+
+            my @shapefiles = glob "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$QryParm->{'g'}".("/*").".zip";
+            if (@shapefiles) {
+                print "<br><br># SHAPE FILES:<br>";
+                list_files(@shapefiles)
+            }
+        }
 
 # single file: displays .png (or .jpg) and links to other files (.eps,.pdf,.gse,.txt)
 # note: @plist can content 1 file (direct access to the image), or 2 files (directory access = image + symlink)
@@ -468,11 +524,11 @@ if ($QryParm->{'ts'} eq 'map') {
         (my $short = $plist[0]) =~ s/\.jpg//g;
         (my $urn = $short) =~ s/$root_dir/$urn_dir/g;
         (my $EVENTid = $short) =~ s/$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\///g;
-        (my @evt) = split(/\//,$EVENTid);
-        my $dte = l2u(strftime("%A %d %B %Y",0,0,0,$evt[2],$evt[1] - 1,$evt[0] - 1900));
+        my ($y,$m,$d,$id,$im) = split(/\//,$EVENTid);
+        my $dte = l2u(strftime("%A %d %B %Y",0,0,0,$d,$m - 1,$y - 1900));
         # get the full list of images
         my @png_files = "";
-        my $ydir = "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$evt[0]";
+        my $ydir = "$OUTD/$WEBOBS{PATH_OUTG_EVENTS}/$y/$m/$d";
         find(sub {
             return if -l $_;
             return unless /\.png$/i;
@@ -481,16 +537,16 @@ if ($QryParm->{'ts'} eq 'map') {
         @png_files = sort(@png_files);
         # extract the previous and next
         my $target = "$short.png";
-        my $prev;
-        my $next;
+        my $prev = "";
+        my $next = "";
         my ($index) = grep { $png_files[$_] eq $target } 0 .. $#png_files;
         if (defined $index) {
             $prev = $index > 0            ? $png_files[$index - 1] : undef;
             $next = $index < $#png_files  ? $png_files[$index + 1] : undef;
             $prev =~ s/$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\/|\.png$//g if defined($prev);
             $next =~ s/$OUTD\/$WEBOBS{PATH_OUTG_EVENTS}\/|\.png$//g if defined($next);
-            $addlinks .= (defined $prev ? "<A href=\"$baseurl&ts=events&g=$prev\"><IMG src=\"/icons/l13.png\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$prev',CAPTION,'Previous image')\"></A>":"")
-                    .(defined $next ? "&nbsp;<A href=\"$baseurl&ts=events&g=$next\"><IMG src=\"/icons/r13.png\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$next',CAPTION,'Next image')\"></A>":"");
+            $addlinks .= ($prev ne "" ? "<A href=\"$baseurl&ts=events&g=$prev\"><IMG src=\"/icons/l13.png\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$prev',CAPTION,'Previous image')\"></A>":"")
+                    .($next ne "" ? "&nbsp;<A href=\"$baseurl&ts=events&g=$next\"><IMG src=\"/icons/r13.png\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$next',CAPTION,'Next image')\"></A>":"");
         }
         foreach ("eps","svg","pdf","gse","txt","kml") {
             if ( -e "$short.$_" ) {
@@ -503,7 +559,7 @@ if ($QryParm->{'ts'} eq 'map') {
             $addlinks .= " <A href=\"/cgi-bin/mailB3.pl?grid=$QryParm->{'grid'}&ts=events&g=$EVENTid\">"
               ."<IMG alt=\"$urn.msg\" src=\"/icons/fmail.png\"></A> ";
         }
-        print "<H2>$dte: <I>$evt[3]&nbsp;/&nbsp;$evt[4]</I></H2>\n";
+        print "<H2>$dte: <I>$id&nbsp;/&nbsp;$im</I></H2>\n";
         print "$addlinks<BR>" if ($QryParm->{'header'} ne 'no');
         my $img = "$urn.png";
         if ( ! -f "$short.png" ) {
@@ -523,7 +579,7 @@ if ($QryParm->{'ts'} eq 'map') {
         }
     }
 
-    # -- case 'Timescales'
+# ======================== timescales ========================
 } else {
 
     # i.e "only display requested g= in query-string"
@@ -606,18 +662,65 @@ if ($QryParm->{'ts'} eq 'map') {
             $addlinks .= " <A href=\"/cgi-bin/$NODES{CGI_SHOW}?node=PROC.$GRIDName.$ucg\"><IMG title=\"PROC.$GRIDName.$ucg\" src=\"/icons/fnode.png\"></A> ";
         }
 
-        # finally plots the image !
-        for my $g (@glist) {
-            (my $map = $g) =~ s/\.png/\.map/;
-            (my $urn  = $g) =~ s/$root_dir/$urn_dir/g;
-            $g =~ s/^$OUTD\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
-            $g =~ s/^$/SUMMARY/;
-            if ($g eq $QryParm->{'g'}) {
-                print "$addlinks<BR>" if ($QryParm->{'header'} ne 'no');
-                print "<IMG style=\"margin-bottom: 15px; margin-top: 5 px; background-color: beige;\" src=\"$urn\" usemap=\"#map\"><BR>";
-                if (-e "$map") {
-                    my @htmlarea = readFile("$map");
-                    print "<map name=\"map\">\n@htmlarea</map>\n";
+        # specific case for VFLOW
+        if ($QryParm->{'g'} eq "VFLOW") {
+            $addlinks .= " <A href=\"/cgi-bin/get_jsonVFLOW.pl?grid=PROC.$GRIDName&ts=$QryParm->{ts}\"><IMG title=\"JSON data\" src=\"/icons/fjson.png\"></A> ";
+            print "$addlinks<BR>\n" if ($QryParm->{'header'} ne 'no');
+            print qq(
+            <div class="container">
+                <h2 id="procTitle" style="color:black"></h2>
+
+                <!-- under development: single slider integrating date+period
+                <label for="slider" id="output">Date</label>
+                <div id="slider"></div>
+
+                <script src="https://cdn.jsdelivr.net/npm/nouislider/dist/nouislider.min.js"></script>
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider/dist/nouislider.min.css">
+                -->
+
+                <!-- Date Slider -->
+                <label for="dateSlider" id="dateLabel">Date</label>
+                <input type="range" id="dateSlider" >
+
+                <!-- Period Slider -->
+                <label for="periodSlider">Time Period</label>
+                <input type="range" id="periodSlider" >
+                <span id="selectedPeriodLabel"></span>
+            
+                
+                <!-- Scale Slider -->
+                <label for="scaleSlider">Vector scale</label>
+                <input type="range" id="scaleSlider" min="1" max="10" step ="1" value="5">
+                <span id="selectedScale"></span>
+
+                <!-- Leaflet map -->
+                <div id="map" style="height:400px;"></div>
+                
+            </div>
+            <!-- Show/hide buttons for horizontal/vertical vectors and errors-->
+            <div class="button-container">
+                Horizontal: <button id="toggleHorizontal">Hide vectors</button>
+                <button id="toggleHorizontalError">Hide errors</button>
+                - Vertical: <button id="toggleVertical">Hide vectors</button>
+                <button id="toggleVerticalError">Hide errors</button>
+            </div>
+            <!-- JavaScript file -->
+            <script src="/js/vflow.js"></script>
+            );
+        } else {
+            # finally plots the image !
+            for my $g (@glist) {
+                (my $map = $g) =~ s/\.png/\.map/;
+                (my $urn  = $g) =~ s/$root_dir/$urn_dir/g;
+                $g =~ s/^$OUTD\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
+                $g =~ s/^$/SUMMARY/;
+                if ($g eq $QryParm->{'g'}) {
+                    print "$addlinks<BR>" if ($QryParm->{'header'} ne 'no');
+                    print "<IMG style=\"margin-bottom: 15px; margin-top: 5 px; background-color: beige;\" src=\"$urn\" usemap=\"#map\"><BR>";
+                    if (-e "$map") {
+                        my @htmlarea = readFile("$map");
+                        print "<map name=\"map\">\n@htmlarea</map>\n";
+                    }
                 }
             }
         }

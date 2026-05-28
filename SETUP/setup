@@ -762,8 +762,40 @@ if $(confirm "Create Python environment [y/N] ?") ; then
     python3 -m venv ${DOCROOT}/venv/
     chown -R ${USERID}:${USERGID} ${DOCROOT}/venv/
     source ${DOCROOT}/venv/bin/activate
-    pip install -r "${DOCROOT}/CODE/python/requirements.txt"
+    PYTHON_CODE="${DOCROOT}/CODE/python"
+    pip install -r "${PYTHON_CODE}/requirements.txt"
+
+    # Downflowgo install ----------------------------------------------------------
+    # -----------------------------------------------------------------------------
+    echo
+    echo 'Downflowgo installation'
+    if $(confirm "Install Downflowgo [y/N] ?") ; then
+        # downflowgo repository install
+        DFGO="${PYTHON_CODE}/downflowgo/src"
+        rm -Rf "${DFGO}" && mkdir "${DFGO}"
+        git clone --filter=blob:none --no-checkout https://github.com/oryalava/DOWNFLOWGO.git "${DFGO}"
+        cd "${DFGO}" && git checkout 1de318da9ae5482b2f5b80c76d0ec41ba6b362c8 -q && cd -
+        rm -Rf "${DFGO}/assets/outputs"
+        pip install -r "${DFGO}/requirements.txt"
+        g++ "${DFGO}/downflowgo/DOWNFLOW/DOWNFLOW.cpp" -o "${DFGO}/downflowgo/DOWNFLOW/DOWNFLOW"
+        # pyflowgo repository install
+        git clone --filter=blob:none --no-checkout https://github.com/pyflowgo/pyflowgo.git /tmp/pyflowgo
+        cd /tmp/pyflowgo && git checkout b4297d52bdd240ed4e287744e708542c4b0d461d -q && cd -
+        cp -R /tmp/pyflowgo/pyflowgo "${DFGO}" && rm -Rf /tmp/pyflowgo
+        # update WEBOBSJOBS.db
+        SSMT="INSERT INTO JOBS VALUES('downflowgo','Y','downflowgo',"
+        SSMT+="'\$WEBOBS{PYTHON_PRGM} \$WEBOBS{PYTHON_PATH}/downflowgo/downflowgo.py',"
+        SSMT+="'',3600,0.8,'downflowgo',0) ON CONFLICT(JID) DO NOTHING;"
+        echo "$SSMT" | sqlite3 "${DOCROOT}/CONF/WEBOBSJOBS.db"
+        # Create DOWNFLOWGO Proc
+        SSMT="INSERT INTO grids2domains SELECT 'PROC','DOWNFLOWGO','O' WHERE NOT EXISTS (SELECT 1 FROM grids2domains WHERE TYPE = 'PROC' AND NAME = 'DOWNFLOWGO');"
+        SSMT+="INSERT INTO domains VALUES('O',5,'Observatory','s') ON CONFLICT(CODE) DO NOTHING;"
+        echo "$SSMT" | sqlite3 "${DOCROOT}/CONF/WEBOBSDOMAINS.db"
+        echo "DOWNFLOWGO Proc was created. Check carefully the Proc parameters especially the model used (PATHS_DEM parameter)."
+    fi
+
     deactivate
+    echo
 fi
 echo
 

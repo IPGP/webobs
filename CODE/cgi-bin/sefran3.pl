@@ -49,6 +49,7 @@ types of HTML pages:
 use strict;
 use warnings;
 use Time::Local;
+use Time::Piece;
 use DateTime;
 use File::Basename;
 use List::Util qw(first);
@@ -440,30 +441,31 @@ if (!$date) {
     my @dates;
     my @mclist;
     for (0 .. ($limit>0?$limit:$limit_lastmc)) {
-        my $ymdh = strftime('%Y-%m-%d|%H',gmtime(timegm(0,0,$href,$dref,$mref-1,$yref-1900) - $_*3600));
+        my $ymdh = strftime('%Y-%m-%d\|%H',gmtime(timegm(0,0,$href,$dref,$mref-1,$yref-1900) - $_*3600));
         my $ymd = substr($ymdh,0,10);
         push(@dates,$ymd) if (!grep(/^$ymd$/,@dates) && $_ < 24*$SEFRAN3{DISPLAY_DAYS});
         my $f = "$MC3{ROOT}/".substr($ymd,0,4)."/$MC3{PATH_FILES}/$MC3{FILE_PREFIX}".substr($ymd,0,4).substr($ymd,5,2).".txt";
         if (-f $f) {
-            my @mchour = split(/\n/,qx(grep "|$ymdh:" $f));
+            my @mchour;
+            open my $fh, '<', $f or die $!;
+            while (my $line = <$fh>) {
+                push(@mchour, $line) if $line =~ /\|$ymdh:/;
+            }
+            close $fh;
+            chomp(@mchour);
             push(@mclist,@mchour);
         }
     }
     my @listeHeures = reverse('00'..'23');
 
-    my $dt = 0;
-    my $last_mn;
-    my $lmn;
-
     # what's the last minute-image ? searches for it and computes realtime delta
-    my $last_d = qx(y=\$(find $SEFRAN3{ROOT} -maxdepth 1 -name "????" | sort | tail -n1);find \$y -maxdepth 1| sort | tail -n1 | xargs echo -n);
-    if ($last_d) {
-        $last_mn = qx/find $last_d -name "??????????????.png"|sort|tail -n1/;
-        if ($last_mn) {
-            $lmn = basename($last_mn);
-            my @lm = (substr($lmn,10,2),substr($lmn,8,2),substr($lmn,6,2),substr($lmn,4,2),substr($lmn,0,4));
-            $dt = (timegm(gmtime) - timegm(0,$lm[0],$lm[1],$lm[2],$lm[3]-1,$lm[4]-1900) - 60);
-        }
+    my $dt = 0;
+    my $last_mn = latest_sefran_img($SEFRAN3{ROOT});
+    my $lmn = "";
+    if (defined $last_mn) {
+        $lmn = basename($last_mn);
+        my @lm = (substr($lmn,10,2),substr($lmn,8,2),substr($lmn,6,2),substr($lmn,4,2),substr($lmn,0,4));
+        $dt = (timegm(gmtime) - timegm(0,$lm[0],$lm[1],$lm[2],$lm[3]-1,$lm[4]-1900) - 60);
     }
 
     # title and current data/time
@@ -769,13 +771,22 @@ if (!$date) {
 # -----------------------------------------------------------------------------
 if ($date) {
     my ($Yc,$mc,$dc,$Hc,$Mc) = unpack("a4 a2 a2 a2 a2",$date);
+    my $t = Time::Piece->strptime($date, "%Y%m%d%H");
+    my ($Yc0,$mc0,$dc0,$Hc0,$Mc0) = unpack("a4 a2 a2 a2 a2",($t - 3600)->strftime("%Y%m%d%H"));
+    my ($Yc1,$mc1,$dc1,$Hc1,$Mc1) = unpack("a4 a2 a2 a2 a2",($t + 3600)->strftime("%Y%m%d%H"));
 
-    # read existing events from MC for current hour
+    # read existing events from MC for current hour (and previous/next hour minute)
     my @mc_hlist;
     my $f = "$MC3{ROOT}/$Yc/$MC3{PATH_FILES}/$MC3{FILE_PREFIX}$Yc$mc.txt";
-    if (-e $f) {
-        @mc_hlist = split(/\n/,qx(grep "|$Yc-$mc-$dc|$Hc:" $f));
+    if (-e $f && open my $fh, '<', $f) {
+        while (my $line = <$fh>) {
+            push @mc_hlist, $line if $line =~ /\|$Yc-$mc-$dc\|$Hc:/;
+            push @mc_hlist, $line if $line =~ /\|$Yc0-$mc0-$dc0\|$Hc0:59/;
+            push @mc_hlist, $line if $line =~ /\|$Yc1-$mc1-$dc1\|$Hc1:00/;
+        }
+        close $fh;
     }
+    chomp(@mc_hlist);
 
     print "<DIV id=\"sefran\">";
     my %MC;
@@ -789,7 +800,13 @@ if ($date) {
 
     if ($dep) {
         if ($id) {     # read event ID from MC + set number of minute-files containing signal + 1
-            my @mc_evt = qx(grep "^$id|" $MC3{ROOT}/$Yc/$MC3{PATH_FILES}/$fileMC);
+            open my $fh, '<', "$MC3{ROOT}/$Yc/$MC3{PATH_FILES}/$fileMC" or die $!;
+            my @mc_evt;
+            while (my $line = <$fh>) {
+                push(@mc_evt, $line) if $line =~ /^$id\|/;
+            }
+            close $fh;
+            chomp @mc_evt;
             %MC = mcinfo($mc_evt[0],1);
             $date_nbm = 1 + int(1 + ($MC{duration}*$duration_s{$MC{unit}} + $MC{second})/60);
         } else {
@@ -857,7 +874,7 @@ if ($date) {
     print "<TABLE class=\"sefran\"><tr>\n";
     print "<td class=\"signals\"><div style=\"white-space: nowrap;\">";
     for (@liste_png) {
-        my $png = qx(basename $_); chomp $png;
+        my $png = basename($_); chomp($png);
         my ($Y,$m,$d,$H,$M,$S) = unpack("a4 a2 a2 a2 a2 a2",$png);
         my $timestamp = "$Y-$m-$d $H:$M UT";
         my $png_file = "$_".($high ? "_high":"").".png";
@@ -905,13 +922,15 @@ if ($date) {
     for (reverse @mc_hlist) {
         my %MC = mcinfo($_,1);
 
-#DL-was: if (($MC{id} > 0 || $userLevel == 4) && $userLevel >= 1 && $MC{id} != $id && ($MC{minute} - $Mc) <= $date_nbm) {
         if (($MC{id} > 0 || ($userLevel == 4 && $trash == 1)) && $userLevel >= 1 && (defined $MC{minute} && ($MC{minute} - $Mc) <= $date_nbm)) {
             my $deb_evt;
             if ($dep) {
                 $deb_evt = 1 + $SEFRAN3{VALUE_PPI} + int($largeur_image*($MC{minute} - $Mc + $MC{second}/60));
             } else {
-                $deb_evt = 1 + $SEFRAN3{VALUE_PPI} + int($largeur_image*($MC{minute} + 1 + $MC{second}/60));
+                my $dm = 0;
+                $dm = -60 if ($MC{hour} == $Hc - 1);
+                $dm = 60 if ($MC{hour} == $Hc + 1);
+                $deb_evt = 1 + $SEFRAN3{VALUE_PPI} + int($largeur_image*($MC{minute} + 1 + $dm + $MC{second}/60));
             }
             my $dur_evt = 1 + int(0.5 + $largeur_image*$MC{duration}*$duration_s{$MC{unit}}/60);
             if ($MC{id} != $id) {
@@ -939,19 +958,12 @@ if ($date) {
         my $unite_evt = ($id ? $MC{unit} : "s");
         my $duree_sat_evt = ($id ? $MC{overscale} : 0);
         my $nb_evt = ($id ? $MC{amount} : 1);
-        my $s_moins_p_evt = ($id ? $MC{s_minus_p} : "");$s_moins_p_evt =~ s/^NA$//;
+        my $s_moins_p_evt = ($id ? $MC{s_minus_p} : "");
+        $s_moins_p_evt =~ s/^NA$//;
         my $station = $MC{station};
         my $unique_evt = ($id ? $MC{unique} : 0);
         my $operateur = $MC{operator};
         my $comment_evt = ($id ? htmlspecialchars(l2u($MC{comment})) : "");
-
-        # case : 'replay mode' ('replay' and 'editing id' must be exclusive)
-        if ($replay && !$id) {
-            my @mcreplay = qx(awk -F'|' '\$1 == $replay {printf "\%s",\$0}' $MC3{ROOT}/$Yc/$MC3{PATH_FILES}/$fileMC);
-            my %MCreplay = mcinfo($mcreplay[0]);
-            $type_evt = $MCreplay{type};
-            $amplitude_evt = $MCreplay{amplitude};
-        }
 
         my $modif = 0;
 
@@ -1109,8 +1121,7 @@ if ($date) {
                 print "<P><INPUT type=\"checkbox\" name=\"impression\" value=\"1\">$__{'Print signal'}</P>\n";
             } else {
                 print "<INPUT type=\"hidden\" name=\"impression\" value=\"$MC3{AUTOPRINT}\">\n";
-                print "<INPUT type=\"checkbox\" name=\"replay\" id=\"replay\"";
-                print $replay ? " checked >" : ">";  # coming in with replay ==> keep replay as a default
+                print "<INPUT type=\"checkbox\" name=\"replay\" id=\"replay\"".($replay ? " checked":"").">";  # coming in with replay ==> keep replay as a default
                 print "<LABEL for=\"replay\">$__{'Continue with this window'} (Replay!)</LABEL></P>\n";
             }
             print "</TD><TD style=\"border:0;text-align:right\"><INPUT type=\"button\" value=\"Reset\" onClick=\"reset();maj_formulaire()\">",
@@ -1139,6 +1150,36 @@ if ($date) {
 
 # ---- helpers
 # ----------------------------------------------------------------------------
+sub sorted_entries_desc {
+    my ($path) = @_;
+    opendir(my $dh, $path) or return ();
+    my @e = grep { !/^\./ } readdir($dh);
+    closedir($dh);
+    return sort { $b cmp $a } @e;
+}
+
+sub latest_sefran_img {
+    my ($root) = @_;
+
+    # finds the latest minute file *.png by scanning the directory structure
+    # 'yyyy/yyyymmdd' recursively in descending order, stops after the first
+    # existing directory of file 
+    for my $y (sorted_entries_desc($root)) {
+        my $py = "$root/$y";
+        next unless -d $py;
+        for my $ymd (sorted_entries_desc($py)) {
+            my $pd = "$py/$ymd";
+            next unless -d $pd;
+            my $pm = "$pd/minute";
+            for my $f (sorted_entries_desc($pm)) {
+                return "$pm/$f" if $f =~ /\d{14}\.png$/;
+            }
+        }
+    }
+
+    return undef;
+}
+
 sub mcinfo
 {
     my %MC;
@@ -1215,7 +1256,7 @@ Acknowledgments:
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2022 - Institut de Physique du Globe Paris
+WebObs - 2012-2026 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -6,7 +6,9 @@ function y = field2num(x,f,y0,varargin)
 %	FIELD2NUM(X,FIELD,Y0) returns Y0 value if the conversion fails (default
 %	is empty).
 %
-%	FIELD2NUM(X,FIELD,Y0,'notempty') returns also Y0 if X.(FIELD) is empty.
+%	FIELD2NUM(X,FIELD,Y0,OPTION) adds an option:
+%       'notempty' returns also Y0 if X.(FIELD) is empty,
+%       'positive' returns also Y0 if X.(FIELD) is not strictly positive.
 %
 %	There is some specific FIELD names with suffix:
 %
@@ -30,41 +32,43 @@ function y = field2num(x,f,y0,varargin)
 %
 %	 Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2015-09-07 at Pos Dukono, Halmahera Utara (Indonesia)
-%	Updated: 2025-02-17
+%	Updated: 2026-04-07
 
+wofun = sprintf('WEBOBS{%s}',mfilename);
 D = struct('s',1/86400,'n',1/1440,'h',1/24,'d',1,'w',7,'m',30,'y',365.25);
 
 trueval = any(strcmpi(varargin,'val')); % for debugging only (undocumented)
 notempty = any(strcmpi(varargin,'notempty'));
+positive = any(strcmpi(varargin,'positive'));
 
 if isstruct(x) && nargin > 1 && isfield(x,f) && (~isempty(x.(f)) || ~notempty)
 	val = x.(f);
 	if ischar(val)
 		% RGB or color name
-		if ~isempty(regexp(f,'_(RGB|COLOR)$')) && numel(str2num(val)) ~= 3
+		if ~isempty(regexp(f,'_(RGB|COLOR)$','once')) && numel(str2num(val)) ~= 3
 			y = rgb(val);
 
 		% any datenum compatible date
-		elseif ~isempty(regexp(f,'_(DATE|TLIM)$')) && ~isempty(val)
+		elseif ~isempty(regexp(f,'_(DATE|TLIM)$','once')) && ~isempty(val)
 			try
 				y = isodatenum(split(val,','));
 			catch
 				try
 					y = datenum(split(val,','));
 				catch
-					fprintf('WEBOBS{field2num}: ** WARNING ** cannot convert %s key value (%s) to datenum...\n',f,val);
+					fprintf('%s: ** WARNING ** cannot convert %s key value (%s) to datenum...\n',wofun,f,val);
 					y = sstr2num(val);
 				end
 			end
 
 		% colormap name or .cpt filename
-		elseif ~isempty(regexp(f,'COLORMAP$'))
-			if ~isempty(regexpi(val,'\.cpt$')) && exist(val,'file')
+		elseif ~isempty(regexp(f,'COLORMAP$','once'))
+			if ~isempty(regexpi(val,'\.cpt$','once')) && exist(val,'file')
 				y = cpt2cmap(val);
 			else
 				y = sstr2num(val);
 				if size(y,2) ~= 3
-					fprintf('WEBOBS{field2num}: ** WARNING ** cannot import %s = "%s" colormap. Use defaut...\n',f,val);
+					fprintf('%s: ** WARNING ** cannot import %s = "%s" colormap. Use defaut...\n',wofun,f,val);
 					if nargin > 2
 						y = y0;
 					else
@@ -74,20 +78,20 @@ if isstruct(x) && nargin > 1 && isfield(x,f) && (~isempty(x.(f)) || ~notempty)
 			end
 
 		% opacity scalar or 2-element vector
-		elseif ~isempty(regexp(f,'_ALPHA$'))
-			y = val;
+		elseif ~isempty(regexp(f,'_ALPHA$','once'))
+			y = sstr2num(val);
 			if isscalar(y)
 				y = repmat(y,1,2); % allows scalar definition of opacity
 			end
 			if numel(y) < 2 || any(~isinto(y,[0,1]))
-				fprintf('%s: ** Warning: unvalid %s value (%s). Using default (0,1).\n',f,val);
+				fprintf('%s: ** Warning: unvalid %s value (%s). Using default (0,1).\n',wofun,f,val);
 				y = [0,1];
 			end
 
 		% time duration (converted in days)
 		% [NOTE]: this test must be located after the color names to avoid NaN
 		% when color name ends with one of the suffix letter...
-		elseif ~isempty(regexp(val,'[snhdwmy]$'))
+		elseif ~isempty(regexp(val,'[snhdwmy]$','once'))
 			y = str2double(val(1:end-1))*D.(val(end));
 
 		elseif trueval
@@ -95,11 +99,14 @@ if isstruct(x) && nargin > 1 && isfield(x,f) && (~isempty(x.(f)) || ~notempty)
 		else
 			y = sstr2num(val);
 		end
+        if positive && ~(y > 0)
+            y = y0;
+        end
 	else
 		y = val;
 	end
 else
-	if nargin > 2 || (isfield(x,f) && isempty(x.(f)) && notempty)
+	if nargin > 2 || (isfield(x,f) && isempty(x.(f)) && notempty) || (positive && ~(y > 0))
 		y = y0;
 	else
 		y = [];
