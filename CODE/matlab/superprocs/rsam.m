@@ -30,7 +30,7 @@ function DOUT=rsam(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2017-07-19
-%	Updated: 2026-04-30
+%	Updated: 2026-05-28
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -113,6 +113,7 @@ topt = {'BackgroundColor','w','Margin',.1,'HorizontalAlignment','center','Vertic
 
 % common unit for all channels
 clb = cat(1,D.CLB);
+un = strcommon(cat(2,clb.un));
 nxm = 0; % max number of channels
 
 for n = 1:length(N)
@@ -301,7 +302,6 @@ summary = 'SUMMARY';
 if any(strcmp(P.SUMMARYLIST,summary))
 	G = cat(1,D.G);
     summary_channels = field2num(P,'SUMMARY_CHANNELS',1:nxm,'notempty');
-    un = strcommon(cat(2,clb.un));
 
 	% -------------------------------------------------------------------------------------
 	% --- Summary timeseries graph
