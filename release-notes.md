@@ -10,11 +10,9 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 If you have any question which is not answered in the user manual, do not hesitate to write to developpers through the mailing list [webobs-devs@services.cnrs.fr](mailto:webobs-devs@services.cnrs.fr), or start a public discussion thread at [github.com/IPGP/webobs/discussions](https://github.com/IPGP/webobs/discussions).
 
-## v2.8.1  (June 2026)
+## v2.8.1  (May 2026)
 
 ### New features
-1. **Downflowgo**: The lava flow modeling software, [Downflowgo](https://github.com/oryalava/DOWNFLOWGO), can now be integrated to WebObs during the setup.
-
 1. **New grids FORM**: manual databases (formerly dedicated forms) are now fully integrated as a grid type along with PROCs and VIEWs. A FORM is then associated to a DOMAIN and some NODES, appears in the GRIDs table and has its own page with description, nodes table list, map location, and events. FORM is based on the new GENFORM user-defined manual database tool (introduced in the previous release): a freely configurazble SQLite database managed through a GUI form (for entering new data, editing and deleting), a table data display with options and filters, data export as CSV file or as raw data source for PROCs. Creating a FORM becomes as simple as creating a PROC or VIEW, by selecting a template (a dozen are available), if necessary modifying it partially or completely, associating a DOMAIN, associating or creating NODES, and editing the configuration file to set the database structure (inputs and outputs) and the form layout. GENFORM is able to store numerical values, checkboxes, lists, text strings, images, and mathematical output formulas. It aims to replace spreadsheets files for (potentially) any structured scientific data. See the user manual for more details.
 
     `!!` **Update note**: This new feature replaces definitively all the previous forms (EAUX, GAZ, EXTENSO, FISSURO, DISTANCE, BOJAP, RIVERS, SOILSOLUTIONS, and RAINWATER) for which an automatic migration is made during the setup/update. PROCS using the legacy forms databases will be adapted to use new FORM which become a RAWFORMAT/RAWDATA attribute instead of hard link to legacy form. Each PROC will have its own FORM with the same grid name and the same associated nodes. Former configuration files `CONF/FORMS` and `CONF/GRIDS2FORMS` will be moved in `CONF/LEGACY_FORMS/`directory, and old data files `DATA/DB/*.DAT` will be moved to `DATA/BACKUP_LEGACY_FORMS/`. All these files are not necessary anymore and might be removed/backuped anywhere outside the WebObs architecture. Corresponding legacy scripts `CODE/cgi-bin/{form,post,show}FORMNAME.pl` have been removed from this release. Any link/URL (for example in the WebObs menu) pointing to these scripts must be modified as follows:
@@ -34,10 +32,10 @@ STRAINMAP_EXCLUDED_NODELIST|
 STRAINMAP_INCLUDED_NODELIST|
 STRAINMAP_TOL_DAYS|1
 STRAINMAP_HORIZONTAL_ONLY|NO
-STRAINMAP_LINESTYLE|.
-STRAINMAP_MOVING_AVERAGE|30
-STRAINMAP_PAIRS_OFFSET_M|
-STRAINMAP_PAIRS_SORT|YES
+STRAINMAP_TIMESERIES_LINESTYLE|.
+STRAINMAP_TIMESERIES_MOVING_AVERAGE|30
+STRAINMAP_TIMESERIES_PAIRS_OFFSET_M|
+STRAINMAP_TIMESERIES_PAIRS_SORT|YES
 STRAINMAP_WINDOW_DAYS|
 STRAINMAP_DEM_OPT|'watermark',1.5,'saturation',0,'interp','hlegend','cartesian'
 STRAINMAP_LINEWIDTH|.5,4
@@ -46,7 +44,7 @@ STRAINMAP_COLORREF|strain
 STRAINMAP_COLORMAP|ryb(256)
 STRAINMAP_FONTSIZE|10
 ```
-    If node pairs are not defined, it computes pairs using Delaunay triangle from all nodes of the network, or selected using exclude/include options (`STRAINMAP_EXCLUDED_FROM_TARGET_KM`, `STRAINMAP_EXCLUDE_NODELIST`, `STRAINMAP_INLUDED_NODELIST`). An additional option `STRAINMAP_PAIRS_SORT` allows automatic sorting of pairs for the timeseries graph (using velocity). The summary plot computes some linear trend paramters: velocity (mm/yr), total displacement (mm), and total deformation (µstrain) from the entire window or a sub-window defined by `STRAINMAP_WINDOW_DAYS`. Baselines are computed when the time reference is the same for the two timeseries of station pair, considering a tolerance of `STRAINMAP_TOL_DAYS`. Other options are similar to the BASELINES summary plot. A map of stations is also plotted with a basemap using proc's DEM ans options `STRAINMAP_DEM_OPT` (see dem.m function). Baselines are plotted with constant linewidth of proportional to absolute strain (`STRAINMAP_LINEWIDTH` with 1 or 2 values, respectively) and color identical to timeseries (one per station) or using strain colormap (`STRAINMAP_COLORREF` and `STRAINMAP_COLORMAP`).
+    If node pairs are not defined, it computes pairs using Delaunay triangle from all nodes of the network, or selected using exclude/include options (`STRAINMAP_EXCLUDED_FROM_TARGET_KM`, `STRAINMAP_EXCLUDE_NODELIST`, `STRAINMAP_INLUDED_NODELIST`). An additional option `STRAINMAP_TIMESERIES_PAIRS_SORT` allows automatic sorting of pairs for the timeseries graph (using velocity). The summary plot computes some linear trend parameters: velocity (mm/yr), total displacement (mm), and total deformation (µstrain) from the entire window or a sub-window defined by `STRAINMAP_WINDOW_DAYS`. Baselines are computed when the time reference is the same for the two timeseries of station pair, considering a tolerance of `STRAINMAP_TOL_DAYS`. Other options are similar to the BASELINES summary plot. A map of stations is also plotted with a basemap using proc's DEM ans options `STRAINMAP_DEM_OPT` (see dem.m function). Baselines are plotted with constant linewidth of proportional to absolute strain (`STRAINMAP_LINEWIDTH` with 1 or 2 values, respectively) and color identical to timeseries (one per station) or using strain colormap (`STRAINMAP_COLORREF` and `STRAINMAP_COLORMAP`).
 1. **GNSS superproc**: active fault slip/open can be set as a priori correction on displacement data, using the Okada (1985) model, as rectangular fault in elastic medium:
 ```
 FAULT_ACTIVATE|N
@@ -69,6 +67,8 @@ TREND_FACTOR|365.25*1e3
 TREND_UNIT|mm/yr
 ```
     where `TREND_FACTOR` is a dimensionless factor applied to the trend value initially in m/day, and `TREND_UNIT` is the resulting unit string (for display purposes) for individual node timeseries and VECTORS graph. Also, the `VECTORS` summary map now have a displacement scale below the velocity scale.
+
+1. **Downflowgo**: The lava flow modeling software, [Downflowgo](https://github.com/oryalava/DOWNFLOWGO), can now be integrated to WebObs during the setup.
 
 ### Enhancements and modifications
 1. **Theia/OZCAR interface**: Extensive rewriting of the Theia/OZCAR interface with improved database design and improved execution speed. The MULTIOBS format is now used.
