@@ -9,6 +9,10 @@ WebObs is presently fully functional and used in a dozen observatories (see the 
 
 >Beauducel F., D. Lafon, X. Béguin, J.-M. Saurel, A. Bosson, D. Mallarino, P. Boissier, C. Brunet, A. Lemarchand, C. Anténor-Habazac, A. Nercessian, A. A. Fahmi (2020). <b>WebObs: The volcano observatories missing link between research and real-time monitoring</b>, <i>Frontiers in Earth Sciences</i>, [doi:10.3389/feart.2020.00048](https://doi.org/10.3389/feart.2020.00048).
 
+<a name="environment"></a>
+## Environment
+WebObs server can run on most Linux systems. It has been succesfully installed/tested on Linux Debian 12, and older versions of Ubuntu.
+
 <a name="latest"></a>
 ## Download the latest release
 
