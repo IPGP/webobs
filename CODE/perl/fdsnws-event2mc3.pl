@@ -6,7 +6,7 @@ fdsnws-event2mc3.pl
 
 =head1 SYNOPSIS
 
- $ perl fdsnws-event2mc3.pl { update | check | dumper } [-s fdsn_src] [-f mc3-name] [-n sefran3-name]
+ $ perl fdsnws-event2mc3.pl { update | check | dumper } [-s fdsn_src] [-f mc3-name] [-n sefran3-name] [--no-comment]
 
 =head1 DESCRIPTION
 
@@ -30,6 +30,10 @@ defaults to $WEBOBS{ROOT_CONF}/$WEBOBS{MC3_DEFAULT_NAME}.conf
 
 An optional argument ( -n ) may specify the SEFRAN3 name to be used. It
 defaults to $WEBOBS{SEFRAN3_DEFAULT_NAME}
+
+An optional argument (--no-comment) indicating that the comment field of the 
+seismic event should not be automatically filled in the MC3. If not specified, 
+comment will be filled.
 
 =head1 DEPENDENCIES
 
@@ -58,6 +62,7 @@ setlocale(LC_NUMERIC,'C');
 my $mc3 = $WEBOBS{MC3_DEFAULT_NAME};
 my $fdsnws_server = '';
 my $sefran3_name = $WEBOBS{SEFRAN3_DEFAULT_NAME};
+my $comment = 1;
 
 # ---- help text when no arguments
 if (@ARGV == 0) {
@@ -78,6 +83,8 @@ if (@ARGV == 0) {
       "\t\tSpecifies FDSN WebService server to use (variable name FDSNWS_EVENTS_URL_server).Default is FDSNWS_EVENTS_URL in MC3 conf file.\n",
       "\t-n SEFRAN3 name\n",
       "\t\tSpecifies SEFRAN3 name to use as reference. Default is SEFRAN3_DEFAULT_NAME in WEBOBS.conf.\n",
+      "\t--no-comment\n",
+      "\t\tIndicates that the comment field of the seismic event should not be automatically filled in the MC3. If not specified, comment will be filled.\n",
       "\n\tFrançois Beauducel, Jean-Marie Saurel, WEBOBS/IPGP\n\n"
       ;
     exit(0);
@@ -118,7 +125,8 @@ if (@ARGV > 0) {
             exit(1);
         }
     }
-    if ( $opt =~ /-n/ ) {
+    if ( $opt =~ /^-n/ ) {
+        print "-$opt-\n";
         $opt = shift;
         if ( $opt ) {
             $sefran3_name = $opt;
@@ -128,6 +136,10 @@ if (@ARGV > 0) {
             print "invalid -n option\n";
             exit(1);
         }
+    }
+    if ( $opt =~ /--no-comment/ ) {
+        print "--no-comment option\n";
+	$comment = 0;
     }
 }
 
@@ -192,7 +204,7 @@ for (@last) {
     print "--- $evt_id ---\n";
 
     my $mc_path = "$MC3{ROOT}/*/$MC3{PATH_FILES}/$MC3{FILE_PREFIX}*.txt";
-    my @lines = qx(grep -a "${fdsnws_server}:\/\/${evt_id}" $mc_path|xargs echo -n);
+    my @lines = qx(grep "${fdsnws_server}:\/\/${evt_id}" $mc_path|xargs echo -n);
     my $mc_file;
 
     if (@lines) {
@@ -409,7 +421,12 @@ for (@last) {
             # --- outputs for MC
             if ($newID > 0) {
                 $mc_id = $maxID + 1;
-                my $newline = "$mc_id|$evt_sdate|$evt_stime|$evt_type||$evt_dur|s|0|1|$evt_SP|$evt_scode|$evt_unique|$sefran3_name|$fdsnws_server:\/\/$evt_id||$oper|$evt_magtyp$evt_mag $evt_txt\n";
+		my $newline;
+		if ($comment) {
+                    $newline = "$mc_id|$evt_sdate|$evt_stime|$evt_type||$evt_dur|s|0|1|$evt_SP|$evt_scode|$evt_unique|$sefran3_name|$fdsnws_server:\/\/$evt_id||$oper|$evt_magtyp$evt_mag $evt_txt\n";
+                } else {
+                    $newline = "$mc_id|$evt_sdate|$evt_stime|$evt_type||$evt_dur|s|0|1|$evt_SP|$evt_scode|$evt_unique|$sefran3_name|$fdsnws_server:\/\/$evt_id||$oper|\n";
+                }
                 print "$newline\n";
                 push(@lignes,$newline);
             }

@@ -39,6 +39,8 @@ function D = readfmtdata_dsv(WO,P,N,F)
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
+debug = isok(P,'DEBUG');
+
 % makes a single file containing rectangular table of numbers, from the raw data
 fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
 if exist(fdat,'file')
@@ -50,7 +52,7 @@ if nf > 0
 else
 	nftest = 0;
 end
-timecols = field2num(N,'FID_TIMECOLS',1:6,'notempty');
+timecols = field2num(N,'FID_TIMECOLS',1:6);
 errorcols = field2num(N,'FID_ERRORCOLS');
 datacols = field2num(N,'FID_DATACOLS');
 % Input field separator
@@ -91,14 +93,14 @@ if ~isempty(regexpi(F.raw{1},'\$yyyy'))
 		years = [];
 	end	
 	for yyyy = years
-		if (isnan(P.DATELIM(1)) || datenum(yyyy,12,31) >= P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,1,1) <= P.DATELIM(2))
+		if (isnan(P.DATELIM(1)) || datenum(yyyy,12,31)+1 > P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,1,1) <= P.DATELIM(2))
 			if ~isempty(regexpi(F.raw{1},'\$mm'))
 				for mm = 1:12
 					ldm = datevec(datenum(yyyy,mm+1,0)); % last day of the month mm (as date vector)
-					if (isnan(P.DATELIM(1)) || datenum(ldm) >= P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,mm,1) <= P.DATELIM(2))
+					if (isnan(P.DATELIM(1)) || datenum(ldm)+1 > P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,mm,1) <= P.DATELIM(2))
 						if ~isempty(regexpi(F.raw{1},'\$dd'))
 							for dd = 1:ldm(3)
-								if (isnan(P.DATELIM(1)) || datenum(yyyy,mm,dd) >= P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,mm,dd) <= P.DATELIM(2))
+								if (isnan(P.DATELIM(1)) || datenum(yyyy,mm,dd)+1 > P.DATELIM(1)) && (isnan(P.DATELIM(2)) || datenum(yyyy,mm,dd) <= P.DATELIM(2))
 									fraw = regexprep(F.raw{1},'\$yyyy',num2str(yyyy),'ignorecase');
 									fraw = regexprep(fraw,'\$mm',sprintf('%02d',mm),'ignorecase');
 									fraw = regexprep(fraw,'\$dd',sprintf('%02d',dd),'ignorecase');
@@ -142,12 +144,12 @@ if exist(fdat,'file')
 	if ~isempty(dd)
 		nx = size(dd,2); % number of data columns
 		% extracts the time columns
-		if ~isempty(timecols) && nx <= max(timecols)
+		if ~any(isnan(timecols)) && nx <= max(timecols)
 			error('%s: only %d columns found in data while need %d columns for date and time.', ...
 				wofun,nx,length(timecols));
 		end
-		if isempty(timecols)
-			% here we try to guess the order of the 6 first colums
+		if any(isnan(timecols))
+            fprintf('%s: FID_TIMECOLS empty... try to guess order of the first 6 colums.\n',wofun)
 			t = smartdatenum(dd(:,1:6));
 			timecols = 1:6;
 		else
@@ -155,15 +157,15 @@ if exist(fdat,'file')
 		end
 		% extracts the data columns
 		if any(~isnan(datacols)) && nx < max(datacols)
-			error('%s: FID_DATACOLS must indicate valid data columns!');
+			error('%s: FID_DATACOLS must indicate valid data columns!',wofun);
 		end
 		% extracts the error columns
 		if any(~isnan(errorcols)) && nx < max(errorcols)
-			error('%s: FID_ERRORCOLS must indicate valid data columns!');
+			error('%s: FID_ERRORCOLS must indicate valid data columns!',wofun);
 		end
 		% extracts the flag column
 		if any(~isnan(flagcol)) && nx < flagcol
-			error('%s: FID_FLAGCOL must indicate valid data columns!');
+			error('%s: FID_FLAGCOL must indicate valid data columns!',wofun);
 		end
 
 		[t,k] = unique(t);

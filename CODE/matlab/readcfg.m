@@ -45,7 +45,7 @@ function X=readcfg(varargin);
 %
 %   Authors: François Beauducel, Didier Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22 in Paris (France)
-%   Updated: 2025-04-26
+%   Updated: 2026-04-28
 
 quiet = any(strcmpi(varargin,'quiet'));
 
@@ -66,7 +66,7 @@ if nargin < 1
 	 X = WO;
 else
     if ~quiet
-        fprintf('WEBOBS{%s}: ',mfilename);
+        wolog;
     end
 	if ~isempty(regexp(conf,'/'))
 		f = conf;

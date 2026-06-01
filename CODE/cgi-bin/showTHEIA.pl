@@ -186,7 +186,7 @@ print "<TABLE width=\"100%\" style=\"margin:auto\"><TR>"
   ."<TH></TH>"
   ."<TH><SMALL>Identifier</SMALL></TH>"
   ."<TH valign=\"top\"><SMALL>Title</SMALL></TH>"
-  ."<TH><SMALL>Description</SMALL></TH>"
+#  ."<TH><SMALL>Description</SMALL></TH>"
   ."<TH><SMALL>Subject</SMALL></TH>"
   ."<TH><SMALL>Creator(s)</SMALL></TH>"
   ."<TH><SMALL>Spatial coverage</SMALL></TH>"
@@ -220,7 +220,7 @@ while(my @row = $sth->fetchrow_array()){
           ."<TD width=1%><A class=\"datasets\" onclick=\"deleteRow(this);\" href=\"#\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" title=\"delete dataset\" src=\"/icons/no.png\"></A></TD>"
           ."<TD width=15% align=center><SMALL>$row[0]</SMALL></TD>"
           ."<TD width=14% align=center><SMALL>$row[1]</SMALL></TD>"
-          ."<TD width=14% align=center><SMALL>$desc</SMALL></TD>"
+#          ."<TD width=14% align=center><SMALL>$desc</SMALL></TD>"
           ."<TD width=14% align=center><SMALL>$subject</SMALL></TD>"
           ."<TD width=12% align=center><SMALL>".join(', ', @contacts)."</SMALL></TD>"
           ."<TD width=14% align=center><SMALL>$row[3]</SMALL></TD>"
@@ -246,7 +246,7 @@ print "<BR><BR>\n";
 
 # ---- extracting observations data
 $stmt = "SELECT observations.*, observed_properties.theiacategories ";
-$stmt .= "FROM observations INNER JOIN observed_properties ON observations.observedproperty = observed_properties.identifier";
+$stmt .= "FROM observations INNER JOIN observed_properties ON observations.identifier = observed_properties.identifier";
 $sth = $dbh->prepare( $stmt );
 $rv = $sth->execute() or die $DBI::errstr;
 
@@ -263,14 +263,14 @@ print "<TABLE width=\"100%\" style=\"margin:auto\"><TR>"
   ."<TH></TH>"
   ."<TH><SMALL>Identifier</SMALL></TH>"
   ."<TH><SMALL>Processing level</SMALL></TH>"
-  ."<TH><SMALL>Data type</SMALL></TH>"
-  ."<TH><SMALL>Temporal extent</SMALL></TH>"
-  ."<TH><SMALL>Time series</SMALL></TH>"
   ."<TH><SMALL>Observed property</SMALL></TH>"
+  ."<TH><SMALL><a href=\"https://in-situ.theia-land.fr/skosmos/theia_ozcar_thesaurus/en/\" target=\"_blank\">THEIA category</SMALL></TH>"
+#  ."<TH><SMALL>Data type</SMALL></TH>"
+  ."<TH><SMALL>Temporal extent</SMALL></TH>"
+#  ."<TH><SMALL>Time series</SMALL></TH>"
   ."<TH><SMALL>Station name</SMALL></TH>"
-  ."<TH><SMALL>Dataset</SMALL></TH>"
-  ."<TH><SMALL>Data file name</SMALL></TH>"
-  ."<TH><SMALL><a href=\"https://in-situ.theia-land.fr/skosmos/theia_ozcar_thesaurus/en/\" target=\"_blank\">THEIA category</SMALL></TH></TR>";
+#  ."<TH><SMALL>Dataset</SMALL></TH>"
+  ."<TH><SMALL>Data file name</SMALL></TH></TR>";
 
 while(my @row = $sth->fetchrow_array()){
     my $datasetId = $row[7];
@@ -280,19 +280,20 @@ while(my @row = $sth->fetchrow_array()){
     if ( clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")  || clientHasAdm(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName") ) {
         my $subject = join(',', split(/_/,$row[3]));
         print "<TR class=\"channel\" id=$row[0]><TD width=1%><A href=\"/cgi-bin/formCLB.pl?node=PROC.$GRIDName.$NODEName\"><IMG style=\"display:block;margin-left:auto;margin-right:auto;\" \"title=\"edit dataset\" src=\"/icons/modif.png\"></A></TD>";
-        print $row[0] ~~ @channels ? "<TD width=1%><input type='checkbox' checked></TD>" : "<TD width=1%><input type='checkbox'></TD>";
+        print $row[0] ~~ @channels ? "<TD width=1%><input class='theia_obs' type='checkbox' checked></TD>" : "<TD width=1%><input class='theia_obs' type='checkbox'></TD>";
         print "<TD width=12% align=center><SMALL>$row[0]</SMALL></TD>"
           ."<TD width=6%  align=center><select>";
         foreach my $k (keys %processing_level) { print "<option value=$processing_level{$k}".(($k eq $row[1]) ? " selected" : "").">$k</option>\n"; }
         print "</select></TD>"
-          ."<TD align=center><SMALL>$row[2]</SMALL></TD>"
-          ."<TD align=center><SMALL>$row[3]</SMALL></TD>"
-          ."<TD align=center><SMALL>$row[4]</SMALL></TD>"
           ."<TD align=center><SMALL>$row[5]</SMALL></TD>"
+          ."<TD align=center><SMALL><input name=theia size=35 value=$row[9]></SMALL></TD>"
+#          ."<TD align=center><SMALL>$row[2]</SMALL></TD>"
+          ."<TD align=center><SMALL>$row[3]</SMALL></TD>"
+#          ."<TD align=center><SMALL>$row[4]</SMALL></TD>"
           ."<TD align=center><SMALL>$row[6]</SMALL></TD>"
-          ."<TD align=center><SMALL>$row[7]</SMALL></TD>"
-          ."<TD align=center><SMALL>$row[8]</SMALL></TD>"
-          ."<TD align=center><SMALL><input name=theia size=35 value=$row[9]></SMALL></TD></TR>";
+#          ."<TD align=center><SMALL>$row[7]</SMALL></TD>"
+          ."<TD align=center><SMALL>$row[8]</SMALL></TD></TR>";
+
     } else {
         print "<TR class=\"node\" id=$row[0]>"
           ."<TD colspan='12'>No access to $GRIDName.$NODEName\_$channelId !</TD>"
@@ -302,6 +303,7 @@ while(my @row = $sth->fetchrow_array()){
 
 print "</TABLE></TD>\n";
 print "</TR></TABLE>\n";
+print "<input type='checkbox' id='checkAll'> Cocher/Décocher tout";
 print "<BR><BR>\n";
 
 print "<input type=\"hidden\" name=\"nodes\">";
@@ -310,6 +312,23 @@ print "<input type=\"hidden\" name=\"allChannels\">";
 
 print <<"FIN";
 <script>
+    const main_checkbox = document.getElementById('checkAll')
+    const checkboxes = document.querySelectorAll('.theia_obs');
+    for (let checkbox of checkboxes) {
+        if (!checkbox.checked) {
+            main_checkbox.checked = false;
+            break;
+        } else {
+            main_checkbox.checked = true;
+        }
+    }
+
+    main_checkbox.addEventListener('change', function() {
+        for (let checkbox of checkboxes) {
+            checkbox.checked = this.checked;
+        }
+    });
+
     function deleteRow(element) {
         /**
          * Delete a row from the THEIA metadata resume board (but the metadata are still saved in the database !).

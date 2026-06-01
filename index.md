@@ -9,12 +9,16 @@ WebObs is presently fully functional and used in a dozen observatories (see the 
 
 >Beauducel F., D. Lafon, X. Béguin, J.-M. Saurel, A. Bosson, D. Mallarino, P. Boissier, C. Brunet, A. Lemarchand, C. Anténor-Habazac, A. Nercessian, A. A. Fahmi (2020). <b>WebObs: The volcano observatories missing link between research and real-time monitoring</b>, <i>Frontiers in Earth Sciences</i>, [doi:10.3389/feart.2020.00048](https://doi.org/10.3389/feart.2020.00048).
 
+<a name="environment"></a>
+## Environment
+WebObs server can run on most Linux systems. It has been succesfully installed/tested on Linux Debian 12, and older versions of Ubuntu.
+
 <a name="latest"></a>
 ## Download the latest release
 
-- [WebObs-2.8.0.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.8.0/WebObs-2.8.0.tar.gz) (103 Mb) updated March 11, 2026
-- [Release notes](https://github.com/IPGP/webobs/blob/v2.8.0/release-notes.md) (see also the [What's new?](#whatsnew) section below)
-- [User manual](https://github.com/IPGP/webobs/releases/download/v2.8.0/WebObs_Manual.pdf) (in progress)
+- [WebObs-2.8.1.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.8.1/WebObs-2.8.1.tar.gz) (104 Mb) updated May 28, 2026
+- [Release notes](https://github.com/IPGP/webobs/blob/v2.8.1/release-notes.md) (see also the [What's new?](#whatsnew) section below)
+- [User manual](https://github.com/IPGP/webobs/releases/download/v2.8.1/WebObs_Manual.pdf) (in progress)
 - And, for a first install:
   - Mandatory (license free): **Matlab runtime** for [Linux 64bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip) (386 Mb) or [Linux 32bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnx86_installer.zip) (389 Mb)
   - Recommanded: **ETOPO1** (see [below](#srtm1) for download and install)
@@ -189,9 +193,10 @@ Your WebObs installation is now linked to the GitHub repository.
 - new look (style sheet)!
 - check the consistency of registered WebObs users and Apache logins during update (imrpoves access security);
 - generic form for manual database management is now operational with automatic migration of former forms;
-- first version of Python library with demonstration proc (genplot);
+- first version of Python library with demonstration proc (genplot) and integration of Downflowgo tool;
 - geojson shapefiles can be associated to nodes and grids;
 - new summary plot STRAINMAP an other improvements for gnss procs;
+- rsam procs now deal with multiple data channels (e.g., different frequency bands for SSAM)
 - configurable headers fo proc data exports;
 - improvements and new features in MC3/SEFRAN3;
 - improvements in events type proc outputs display;

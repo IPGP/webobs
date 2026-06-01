@@ -65,7 +65,7 @@ FNR <= header_line { next }
 {
 	# Replace '-' after a digit by FS
 	# This is intended to split the timestamp parts into different fields
-	$0 = gensub(/([0-9])-/, "\\1" FS, "g");
+    $0 = gensub(/([0-9]{4})-([0-9]{2})-([0-9]{2})/, "\\1" FS "\\2" FS "\\3", "g")
 	# Replace letter 'T' by FS for ISO date format yyyy-mm-ddThh:mm
 	$0 = gensub(/([0-9])T([0-9])/, "\\1" FS "\\2","g");
 

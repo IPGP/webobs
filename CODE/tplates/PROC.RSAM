@@ -85,7 +85,7 @@ PDFOUTPUT|NO
 # main logo file
 LOGO_FILE|$WEBOBS{ROOT_CODE}/icons/ipgp/logo_WOVS.png
 # main copyright
-COPYRIGHT|Processing by Taisne et al./IPGP/EOS
+COPYRIGHT|
 # optional secondary logo file
 LOGO2_FILE|
 # optional secondary copyright
@@ -97,6 +97,8 @@ EXPORT_HEADER_PROC_KEYLIST|
 
 
 # --- data processing and plot
+# low value near zero (epsilon) is NaN
+EPS_IS_NAN|1e-10
 # removes data picks using median filter (% of min/max values)
 PICKS_CLEAN_PERCENT|0
 # replaces flat signal (two consecutive identical values) by NaN
@@ -108,34 +110,72 @@ MOVING_AVERAGE_SAMPLES|12*60
 # set to YES to plot continuous line ignoring gaps
 CONTINUOUS_PLOT|NO
 # set Y-axis with a log scale
-YLOGSCALE|YES
+YLOGSCALE|NO
+# Y-axis max limit: median max fraction,extent (empty for auto)
+YMAX_MEDIAN|0.99,0.1
+
+# defines a main target (latitude,longitude coordinates)
+TARGET_LATLON|
 
 # --- alarm
-ALARM_THRESHOLD_LEVEL|1e-5
+# default threshold for all channels (overwritten by FID_THRESHOLD)
+ALARM_THRESHOLD_LEVEL|
+# XML filename (or URL) with rsam_threshold node value per station, overwriting FID_THRESHOLD
+ALARM_XML|
 ALARM_COLOR|IndianRed
+ALARM_LINESTYLE|--
+ALARM_LINEWIDTH|2
 NOTIFY_EVENT|rsamalert.
 
 # --- per node graphs
-# graph title
+# pernode graph title
 PERNODE_TITLE|{\fontsize{14}{\bf$node_alias: $node_name} ($timescale)}
+# comma separated list of channels to plot (default is all channels)
+PERNODE_CHANNELS|
 # line style
 PERNODE_LINESTYLE|-
 
 # --- summary graph (all nodes together)
 # comment this key to not plot the summary graph
-SUMMARYLIST|SOURCEMAP
+SUMMARYLIST|SUMMARY,SOURCEMAP
 
+# summary graph title
+SUMMARY_TITLE|{\fontsize{14}{\bf${NAME}} ($timescale)}
 # comma separated list of channels to plot (default is all channels)
 SUMMARY_CHANNELS|1
-# graph title
-SUMMARY_TITLE|{\fontsize{14}{\bf${NAME}} ($timescale)}
 # line style
 SUMMARY_LINESTYLE|-
 
 # --- source mapping
-# number of maps will be N*N (allowed values are 1,2,3 or 4)
-SOURCEMAP_N|3
+# sourcemap graph title
+SOURCEMAP_TITLE|{\fontsize{14}{\bf$name - Source Map $chan_name} ($timescale)}
+# comma separated list of channels to plot (default is all channels)
+SOURCEMAP_CHANNELS|
+# set YES to plot on map per channel (default is averaging channels for each station)
+SOURCEMAP_PERCHANNEL|Y
+SOURCEMAP_EXCLUDED_NODELIST|
+SOURCEMAP_EXCLUDED_FROM_TARGET_KM|
+SOURCEMAP_INCLUDED_NODELIST|
+# computation method for signal average: mean (default) or median
+SOURCEMAP_METHOD|mean
+# number of maps will be N*N (allowed values are 1,2, or 3)
+SOURCEMAP_N|2
+# max length (in pixels) of DEM basemap (for SOURCEMAP_N = 1)
+SOURCEMAP_LMAX|1000
 SOURCEMAP_COLORMAP|spectral(256)
 SOURCEMAP_COLORMAP_ALPHA|0,1
-SOURCEMAP_CAXIS|0,2e-5
+# 2-values min,max: will fix the colorscale for all graphs
+SOURCEMAP_CAXIS|
+# max value for colorscale (min is zero): scalar or comma-separated list for channels (in case of SOURCEMAP_PERCHANNEL)
+SOURCEMAP_CMAX|10
+# plots a marker at maximum amplitude
 SOURCEMAP_PLOT_MAX|Y
+SOURCEMAP_MAX_OPT|'pk','MarkerFaceColor','k','MarkerSize',10
+# plots all sources using center of mass method
+SOURCEMAP_ALLMAX|N
+SOURCEMAP_ALLMAX_EXPONENT|2
+SOURCEMAP_ALLMAX_MARKER|.
+SOURCEMAP_ALLMAX_SIZE|5
+SOURCEMAP_DEM_OPT|'colormap',.9*ones(64,3)
+SOURCEMAP_STATION_MARKER|^
+SOURCEMAP_STATION_SIZE|6

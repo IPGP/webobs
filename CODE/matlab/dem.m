@@ -3,10 +3,10 @@ function varargout=dem(x,y,z,varargin)
 %
 %	DEM(X,Y,Z) plots the Digital Elevation Model defined by X and Y
 %	coordinate vectors and elevation matrix Z, as a lighted image using
-%	specific "landcolor" and "seacolor" colormaps. DEM uses IMAGESC
-%	function which is much faster than SURFL when dealing with large
-%	high-resolution DEM. It produces also high-quality and moderate-size
-%	Postscript image adapted for publication.
+%	specific "landcolor" and "seacolor" colormaps. DEM uses IMAGE
+%	function with RGB true-color matrix which is much faster than SURFL
+%   when dealing with large high-resolution DEM. It produces also 
+%   high-quality and moderate-size Postscript image adapted for publication.
 %
 %	DEM(X,Y,Z,'Param1',Value1,'Param2',Value2,...) specifies options or
 %	parameter/value couple (case insensitive):
@@ -176,9 +176,13 @@ function varargout=dem(x,y,z,varargin)
 %	--- Decimation options ---
 %
 %	For optimization purpose, DEM will automatically decimate data to limit
-%	to a total of 1500x1500 pixels images. To avoid this, use following
-%	options, but be aware that large grids may require huge computer
-%	ressources or induce disk swap or memory errors.
+%	to a total of 1500x1500 pixels images. This value can be adjusted or the
+%	decimation rate fixed. Be aware that large grids may require huge computer
+%   ressources or induce disk swap or memory errors.
+%
+%   'MaxLength',N
+%       Will decimate data to not exceed N pixels in width or height. Default
+%       is N = 1500.
 %
 %	'Decim',N
 %		Decimates matrix Z at 1/N times of the original sampling.
@@ -186,7 +190,6 @@ function varargout=dem(x,y,z,varargin)
 %
 %	'NoDecim'
 %		Forces full resolution of Z, no decimation (N =1).
-%
 %
 %
 %	--- Informations ---
@@ -207,12 +210,13 @@ function varargout=dem(x,y,z,varargin)
 %	Acknowledgments: Éric Gayer
 %
 %	Created: 2007-05-17 in Guadeloupe, French West Indies
-%	Updated: 2026-02-24
+%	Updated: 2026-04-28
 
 %	History:
 %	[2026-02-24] v3.3
 %       - add 'hlegend' and 'zlegend' options ('legend' = 'hlegend'+'zlegend')
 %		- 'LatLon' + 'Cartesian' options for decimal degree labels
+%       - new 'MaxLength' option (to change the default 1500 px)
 %	[2022-11-26] v3.2
 %		- fix an issue with 'grayscale' option
 %		- allows duplicate arguments (takes the last one)
@@ -488,6 +492,15 @@ else
 	wmark = 0; % default
 end
 
+% MaxLength param/value
+[s,nmax] = checkparam(varargin,'maxlength',@isscalar);
+if s
+	nmax = round(nmax);
+	nargs = nargs + 2;
+else
+    nmax = 1500;
+end
+
 % DECIM param/value and NODECIM option
 [s,decim] = checkparam(varargin,'decim',@isscalar);
 if s
@@ -656,7 +669,6 @@ if numel(crop)==4
 end
 
 % decimates data to avoid disk swap/out of memory...
-nmax = 1500;
 if decim
 	n = decim;
 else
@@ -666,7 +678,7 @@ if n > 1
 	x = x(1:n:end);
 	y = y(1:n:end);
 	z = z(1:n:end,1:n:end,:);
-	fprintf('DEM: data has been decimated by a factor of %d...\n',n);
+	fprintf('DEM: data has been decimated by a factor of %d (now %dx%d)...\n',n,size(z));
 end
 
 z = double(z); % necessary for most of the following calculations...
@@ -1006,7 +1018,7 @@ if scale || zlegend
 
 	ysc = ylim(1);
 	hold on
-	imagesc(xsc + wsc*[-1,1]/2,ysc + yscale,repmat(rgbscale,1,2),'clipping','off');
+	image(xsc + wsc*[-1,1]/2,ysc + yscale,repmat(rgbscale,1,2),'clipping','off');
 	patch(xsc + wsc*[-1,1,1,-1],ysc + yscale(end)*[0,0,1,1],'k','FaceColor','none','Clipping','off')
 	text(xsc + 2*wsc + zeros(size(ztick)),ysc + (ztick - zscale(1))*0.5*diff(ylim)/diff(zscale([1,end])),num2str(ztick'), ...
 		'HorizontalAlignment','left','VerticalAlignment','middle','FontSize',fs*.75)

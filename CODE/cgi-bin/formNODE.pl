@@ -151,7 +151,8 @@ my $usrTypePos   = $NODE{POS_TYPE};
 my $usrRAWKML    = $NODE{POS_RAWKML};
 
 # THEIA metadata
-my $usrDesc         = $NODE{"$GRIDType.$GRIDName.DESCRIPTION"}          // $NODE{DESCRIPTION}; $usrDesc =~ s/\"//g; $usrDesc =~ s/\<\<//g; $usrDesc =~ s/\>\>//g; $usrDesc =~ s/\<br\>/\n/g;
+my $theia_selected = %GRID{THEIA_SELECTED_TS} // 0;
+my $usrDesc        = $NODE{"$GRIDType.$GRIDName.DESCRIPTION"} // $NODE{DESCRIPTION}; $usrDesc =~ s/\"//g; $usrDesc =~ s/\<\<//g; $usrDesc =~ s/\>\>//g; $usrDesc =~ s/\<br\>/\n/g;
 my $usrProducer;
 my @usrRole;
 my @usrFirstName;
@@ -636,8 +637,8 @@ function onMapClick(e) {
      * Places a marker on the interactive map and fills the coordinates fields in the NODE form
      * \@param {Event} e Click event
      */
-    var lat = e.latlng['lat'].toFixed(6);
-    var lon = e.latlng['lng'].toFixed(6);
+    var lat = e.latlng['lat'].toFixed(7);
+    var lon = e.latlng['lng'].toFixed(7);
 
     /* need to rework this function !
     var p = document.createElement('p');
@@ -760,16 +761,21 @@ function getGeometry(geojson) {
      * \@return {GeoJSON} geometry GeoJSON object which has its coordinates corresponding to the bounding box of the geometry of the input
      */
 
-    if (geojson && geojson.features && geojson.features.length > 0) {
-        var geometry = {"type":"", "coordinates":""};
-        var coordinates = [];
-        for (var i = 0; i < geojson.features.length; i++) {
-            coordinates.push([getBoundingBox(geojson.features[i].geometry.coordinates)]);;
+    var geometry = {"type": "", "coordinates": ""};
+    var coordinates = [];
+    if (geojson) {
+        if (geojson.features && geojson.features.length > 0) {
+            data = geojson.features;
+        } else {
+            data = geojson;
         }
-        geometry.coordinates = coordinates;
-        geometry.type = geojson.features.length > 1 ? "MultiPolygon" : "Polygon";
-        return geometry;
+        for (var i = 0; i < data.length; i++) {
+            coordinates.push(getBoundingBox(data[i].geometry.coordinates));
+        }
+        geometry.type = data.length > 1 ? "MultiPolygon" : "Polygon";
+        geometry.coordinates = data.length > 1 ? [coordinates] : coordinates;
     }
+    return geometry;
 }
 function getBoundingBox(coordinates) {
     /**
@@ -790,6 +796,10 @@ function getBoundingBox(coordinates) {
         bounds.yMax = bounds.yMax > latitude ? bounds.yMax : latitude;
     }
     var coordinates = [bounds.xMin, bounds.xMax, bounds.yMin, bounds.yMax, bounds.xMin];
+    coordinates = coordinates.map(tuple =>
+      tuple.map(x => parseFloat(x.toFixed(7)))
+    );
+
     return coordinates;
 }
 
@@ -1070,6 +1080,8 @@ print "<a href=$m3g_url_edit target=\"_blank\" id=\"m3g_link\" onClick=\"return 
 print "</TD></TR></TABLE>\n";
 
 # --- show THEIA fields ?
+if ($theia_selected) {
+print "<INPUT type=\"hidden\" name=\"theia_selected\" value=\"1\">";
 print "<DIV id=\"theiaChecked\" style=\"display:none;\"><HR><LABEL>$__{'show/hide THEIA metadata fields'} ?<INPUT type=\"checkbox\" onchange=\"showHideTheia(this)\" value=0></LABEL>&nbsp;<BR><BR></DIV>";
 print "<DIV id=\"showHide\" style=\"display:none;\">";
 
@@ -1148,6 +1160,8 @@ print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Lineage'}:</LABEL>";
 print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrLineage\" onmouseover=\"overlib('$__{help_creationstation_lineage}')\" size=\"8\" name=\"lineage\" id=\"lineage\">&nbsp;&nbsp;<BR>";
 print "</DIV>";
 print "</FIELDSET>";
+} # fin THEIA
+else { print "<input type=hidden id=theiaChecked>"; }
 
 print "</TD>\n";                                                               # end left column
 print "<TD style=\"border:0;vertical-align:top;padding-left:40px\" nowrap>";   # right column

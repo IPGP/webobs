@@ -20,12 +20,10 @@ function varargout = mkgraph(WO,f,P,OPT);
 %
 %	Authors: F. Beauducel - D. Lafon, WEBOBS/IPGP
 %	Created: 2002-12-03 in Gourbeyre, Guadeloupe
-%	Updated: 2026-03-09
+%	Updated: 2026-04-28
 
 
 set(gcf, 'Visible', 'off');
-
-wofun = sprintf('WEBOBS{%s}',mfilename);
 
 if nargin <  4
     OPT = struct;
@@ -87,7 +85,7 @@ if isfield(OPT,'GTITLE') && isfield(OPT,'INFOS')
 	h0 = plotlogo(flogo1,hlogo1,'left');
 	h1 = plotlogo(flogo2,hlogo2,'right');
 
-	if isfield(OPT,'GSTATUS')
+	if isok(OPT,'STATUS') && isfield(OPT,'GSTATUS')
 		if length(OPT.GSTATUS) > 2 && all(~isnan(OPT.GSTATUS(2:3)))
 			OPT.GTITLE = [OPT.GTITLE, ...
 			   {sprintf('%s %+02d - Status %03d %% - Sampling %03d %% ',datestr(OPT.GSTATUS(1)),P.TZ,round(OPT.GSTATUS(2:3)))}];
@@ -162,12 +160,12 @@ end
 wosystem(sprintf('mkdir -p %s',pout))
 
 % creates the main EPS image
-fprintf('%s: exporting %s/%s.eps ...',wofun,ptmp,f);
+wolog('exporting %s/%s.eps ...',ptmp,f);
 print(gcf,'-depsc','-loose','-painters',sprintf('%s/%s.eps',ptmp,f));
 fprintf(' done.\n');
 
 % converts to PNG
-fprintf('%s: converting EPS image to PNG ',wofun);
+wolog('converting EPS image to PNG ');
 wosystem(sprintf('%s %s -density %dx%d %s/%s.eps %s/%s.png',convert,convertopt,P.PPI,P.PPI,ptmp,f,ptmp,f))
 fprintf('ok,');
 
@@ -184,7 +182,7 @@ wosystem(sprintf('mv -f %s/%s.jpg %s/',ptmp,f,pout));
 fprintf('ok.\n');
 
 if isok(P,'SVGOUTPUT')
-	fprintf('%s: exporting %s/%s.svg ...',wofun,ptmp,f);
+	wolog('exporting %s/%s.svg ...',ptmp,f);
 	%fig2svg(sprintf('%s/%s.svg',ptmp,f))
 	plot2svg(sprintf('%s/%s.svg',ptmp,f))
 	%print(gcf,'-dsvg',sprintf('%s/%s.svg',ptmp,f))
@@ -204,7 +202,7 @@ end
 
 IM = imfinfo(sprintf('%s/%s.png',ptmp,f));
 ims = [IM.Width IM.Height];
-fid = fopen(sprintf('%s/%s.map',ptmp,f),'wt');
+fid = fopen(sprintf('%s/%s.map',ptmp,f),'w','n','UTF-8');
 % note: empty events will create an empty file
 for g = 1:length(I)
 	set(I(g).gca,'Units','normalized');
@@ -226,23 +224,34 @@ for g = 1:length(I)
 		x = round(ims(1)*((axp(3)*(I(g).d(n,1) - xylim(1))/diff(xylim(1:2)) + axp(1))));
 		y = round(ims(2) - ims(2)*((axp(4)*(I(g).d(n,2) - xylim(3))/diff(xylim(3:4)) + axp(2))));
 
+        % escapes double quotes
+        txt = regexprep(I(g).s{n},'"','\\"');
 		if size(I(g).d,2) < 4
-			% r is given in points
-			r = ceil(I(g).d(n,3)*P.PPI/72);
-			fprintf(fid,'<AREA%s onMouseOut="nd()" onMouseOver="overlib(%s)" shape=circle coords="%d,%d,%d">\n',lnk,I(g).s{n},x,y,r);
+			% r is given in points, minimum of 3px
+			r = max(3,ceil(I(g).d(n,3)*P.PPI/72));
+			fprintf(fid,'<AREA%s onMouseOut="nd()" onMouseOver="overlib(%s)" shape=circle coords="%d,%d,%d">\n',lnk,txt,x,y,r);
 		else
+            % minimum of 3px
 			x2 = round(ims(1)*((axp(3)*(I(g).d(n,3) - xylim(1))/diff(xylim(1:2)) + axp(1))));
 			y2 = round(ims(2) - ims(2)*((axp(4)*(I(g).d(n,4) - xylim(3))/diff(xylim(3:4)) + axp(2))));
-			fprintf(fid,'<AREA%s onMouseOut="nd()" onMouseOver="overlib(%s)" shape=rect coords="%d,%d,%d,%d">\n',lnk,I(g).s{n},x,y,x2,y2);
+            if x == x2
+                x = x - 1;
+                x2 = x2 + 1;
+            end
+            if y == y2
+                y = y - 1;
+                y2 = y2 + 1;
+            end
+			fprintf(fid,'<AREA%s onMouseOut="nd()" onMouseOver="overlib(%s)" shape=rect coords="%d,%d,%d,%d">\n',lnk,txt,x,y,x2,y2);
 		end
 	end
 end
 %fprintf(fid,'<AREA nohref shape=default>\n');
 fclose(fid);
-fprintf('%s: interactive map %s/%s.map created.\n',wofun,pout,f);
+wolog('interactive map %s/%s.map created.\n',pout,f);
 
 wosystem(sprintf('mv -f %s/%s.* %s/',ptmp,f,pout));
-fprintf('%s: %s/%s.* copied.\n',wofun,pout,f);
+wolog('%s/%s.* copied.\n',pout,f);
 
 % removes the temporary directory
 wosystem(sprintf('rm -rf %s',ptmp));
