@@ -776,6 +776,7 @@ if $(confirm "Create Python environment [y/N] ?") ; then
         git clone --filter=blob:none --no-checkout https://github.com/oryalava/DOWNFLOWGO.git "${DFGO}"
         cd "${DFGO}" && git checkout 1de318da9ae5482b2f5b80c76d0ec41ba6b362c8 -q && cd -
         rm -Rf "${DFGO}/assets/outputs"
+        pip install --upgrade pip
         pip install -r "${DFGO}/requirements.txt"
         g++ "${DFGO}/downflowgo/DOWNFLOW/DOWNFLOW.cpp" -o "${DFGO}/downflowgo/DOWNFLOW/DOWNFLOW"
         # pyflowgo repository install
