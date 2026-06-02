@@ -25,7 +25,7 @@ function DOUT=hypomap(varargin)
 %
 %   Authors: F. Beauducel, J.M. Saurel and F. Massin / WEBOBS, IPGP
 %   Created: 2014-11-25 in Paris, France
-%   Updated: 2026-02-10
+%   Updated: 2026-06-02
 
 
 WO = readcfg;
@@ -395,13 +395,13 @@ for m = 1:length(summarylist)
 
 
 		% information panel
-		P.GTABLE(r).INFOS2 = { 'Filters: '};
+		OPT.INFOS2 = { 'Filters: '};
 		for fn = {'MAG','DEP','MSK','GAP','RMS','ERH','ERZ','NPH','CLA'}
 			if any(isfinite(P.([fn{:},'LIM'])))
-				P.GTABLE(r).INFOS2 = [P.GTABLE(r).INFOS2,{sprintf('%s \\in [{\\bf%g},{\\bf%g}];',fn{:},P.([fn{:},'LIM']))}];
+				OPT.INFOS2 = [OPT.INFOS2,{sprintf('%s \\in [{\\bf%g},{\\bf%g}];',fn{:},P.([fn{:},'LIM']))}];
 			end
 		end
-		P.GTABLE(r).INFOS = { ...
+		OPT.INFOS = { ...
 			sprintf('From: {\\bf%s}',datestr(tlim(1),'dd-mmm-yyyy HH:MM')), ...
 			sprintf('     To: {\\bf%s}',datestr(tlim(2),'dd-mmm-yyyy HH:MM')), ...
 			'', ...
@@ -410,16 +410,16 @@ for m = 1:length(summarylist)
 		};
 		if ~isempty(tk)
 			if ~any(isnan(minmax(dk(:,4))))
-				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS,{sprintf('  Magnitude: min {\\bf%1.1f} - max {\\bf%1.1f}',minmax(dk(:,4)))}];
+				OPT.INFOS = [OPT.INFOS,{sprintf('  Magnitude: min {\\bf%1.1f} - max {\\bf%1.1f}',minmax(dk(:,4)))}];
 			end
 			if ~any(isnan(minmax(dk(:,11))))
-				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS,{sprintf('  Intensity: min {\\bf%s} - max {\\bf%s}',num2roman(min(dk(:,11))),num2roman(max(dk(:,11))))}];
+				OPT.INFOS = [OPT.INFOS,{sprintf('  Intensity: min {\\bf%s} - max {\\bf%s}',num2roman(min(dk(:,11))),num2roman(max(dk(:,11))))}];
 			end
 			if ~isempty(styp)
-				P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS,{sprintf('  Types:')}, styp];
+				OPT.INFOS = [OPT.INFOS,{sprintf('  Types:')}, styp];
 			end
 		end
-		P.GTABLE(r).GTITLE = gtitle(M(m).title,P.GTABLE(r).TIMESCALE);
+		OPT.GTITLE = gtitle(M(m).title,P.GTABLE(r).TIMESCALE);
 		OPT.IMAP = IMAP;
 		OPT.FIXEDPP = true;
 		mkgraph(WO,sprintf('%s_%s',map,P.GTABLE(r).TIMESCALE),P,OPT)
@@ -477,7 +477,7 @@ for m = 1:length(summarylist)
             colormap(M(m).cmap)
 			tlabel(tlim,P.TZ)
 
-			P.GTABLE(r).GTITLE = gtitle(M(m).title,P.GTABLE(r).TIMESCALE);
+			OPT.GTITLE = gtitle(M(m).title,P.GTABLE(r).TIMESCALE);
 
             OPT.IMAP = [];
 			mkgraph(WO,sprintf('%s_time_%s',map,P.GTABLE(r).TIMESCALE),P,OPT)
