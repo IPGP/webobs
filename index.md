@@ -11,12 +11,12 @@ WebObs is presently fully functional and used in a dozen observatories (see the 
 
 <a name="environment"></a>
 ## Environment
-WebObs server can run on most Linux systems. It has been succesfully installed/tested on Linux Debian 12, and older versions of Ubuntu.
+WebObs server can run on most Linux systems. It has been succesfully installed/tested on Linux Debian 12, Ubuntu 22.04 LTS and older versions. Presently, the Matlab runtime is not compatible with newer versions due to libncurse5 dependency.
 
 <a name="latest"></a>
 ## Download the latest release
 
-- [WebObs-2.8.1.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.8.1/WebObs-2.8.1.tar.gz) (104 Mb) updated May 28, 2026
+- [WebObs-2.8.1.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.8.1/WebObs-2.8.1.tar.gz) (104 Mb) updated June 2, 2026
 - [Release notes](https://github.com/IPGP/webobs/blob/v2.8.1/release-notes.md) (see also the [What's new?](#whatsnew) section below)
 - [User manual](https://github.com/IPGP/webobs/releases/download/v2.8.1/WebObs_Manual.pdf) (in progress)
 - And, for a first install:
