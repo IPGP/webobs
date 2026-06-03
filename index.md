@@ -11,7 +11,7 @@ WebObs is presently fully functional and used in a dozen observatories (see the 
 
 <a name="environment"></a>
 ## Environment
-WebObs server can run on most Linux systems. It has been succesfully installed/tested on Linux Debian 12, and older versions of Ubuntu.
+WebObs server can run on most Linux systems. It has been succesfully installed/tested on Linux Debian 12, Ubuntu 22.04 LTS and older versions. Presently, the Matlab runtime is not compatible with newer versions due to libncurse5 dependency.
 
 <a name="latest"></a>
 ## Download the latest release
