@@ -2109,6 +2109,31 @@ msgstr "Réinitialiser"
 msgid "Create"
 msgstr "Créer"
 
+# ---- formUPLOAD.pl
+
+msgid "Invalid object"
+msgstr "objet non valid"
+
+msgid "intervention event not specified"
+msgstr "L'événement n'est pas spécifié"
+
+msgid "Do not know where to upload"
+msgstr "Ne sait pas où téléverser..."
+
+msgid "Manage"
+msgstr "Gestion de"
+
+msgid "Confirm your request"
+msgstr "Confirmez votre demande"
+
+msgid "for"
+msgstr "pour"
+
+msgid "Delete all"
+msgstr "Tout supprimer"
+
+msgid "Upload new file(s)"
+msgstr "Téléverser de nouveaux fichiers"
 
 # ---- showGENFORM.pl
 
