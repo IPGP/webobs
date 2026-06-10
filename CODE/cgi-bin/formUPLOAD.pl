@@ -110,14 +110,19 @@ if (scalar(@NID) == 2) {
 my @allowed = ("SPATH_PHOTOS","SPATH_GENFORM_IMAGES","SPATH_DOCUMENTS","SPATH_SCHEMES","SPATH_INTERVENTIONS","SHAPEFILE");
 die "$__{'Cannot upload to'} $typeDoc" if ( "@allowed" !~ /\b$typeDoc\b/ );
 
-if ($typeDoc eq "SPATH_GENFORM_IMAGES") {
+if ($typeDoc ne "SPATH_INTERVENTIONS") {
+    $pathTarget  .= "/$pobj->{$typeDoc}";
+}
+if ($typeDoc eq "SPATH_DOCUMENTS") {
+    $filetype = "";
+} elsif ($typeDoc eq "SPATH_SCHEMES") {
+    $filetype .= ",.pdf";
+} elsif ($typeDoc eq "SPATH_GENFORM_IMAGES") {
     $pathTarget = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$object";
 } elsif ($typeDoc eq "SHAPEFILE") {
     $pathTarget = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$object";
     $filetype = ".json, .geojson, .zip, .shz";
-} elsif ($typeDoc ne "SPATH_INTERVENTIONS") {
-    $pathTarget  .= "/$pobj->{$typeDoc}";
-} else {
+} elsif ($typeDoc eq "SPATH_INTERVENTIONS") {
     die "$__{'intervention event not specified'}" if ($event eq "");
     $pathTarget  .= "/$pobj->{$typeDoc}/$event/PHOTOS";
 }
@@ -137,7 +142,7 @@ my @listeTarget = <$pathTarget/*.*> ;
 
 # ---- start HTML to display/process input form
 # 
-my $titrePage = "Manage $pobj->{$typeDoc}";
+my $titrePage = "$__{'Manage'} $pobj->{$typeDoc}";
 
 print $cgi->header(-charset=>"utf-8"),
   $cgi->start_html("$titrePage");
@@ -302,8 +307,9 @@ print "</TR></TABLE>";
 print "</DIV>";
 
 if (@listeTarget) { print "<INPUT type=checkbox id=delall> $__{'Delete all'}"; }
-print "<BR><fieldset><legend style=\"color: black; font-size:8pt\">$__{'Upload new file(s)'} <i><small>Note: $__{'Avoid special characters and spaces in filename'}</small></i></legend>
-    <INPUT type=\"file\" id=\"uploadFile\" name=\"uploadFile\" multiple accept='$filetype'><BR>
+print "<BR><fieldset><legend style=\"color: black; font-size:8pt\">$__{'Upload new file(s)'}"
+    ." <i><small>Note: $__{'Avoid special characters and spaces in filename'}</small></i></legend>
+    <INPUT type=\"file\" id=\"uploadFile\" name=\"uploadFile\" multiple".( $filetype ne "" ? " accept='$filetype'":"" )."><BR>
     <div id=\"multiloadmsg\" style=\"visibility: hidden;color: green;\"></div></P>";
 print qq(<div id="progress"></div>);
 print qq(<progress id="progress-bar" value="0" max="100" hidden></progress>);
@@ -329,11 +335,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon
+Didier Mallarino, Francois Beauducel, Alexis Bosson, Didier Lafon, Jérôme Touvier
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2015 - Institut de Physique du Globe Paris
+WebObs - 2012-2026 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
