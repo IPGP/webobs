@@ -40,6 +40,13 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %		data format: jjjjj.jj E N V dE dN dV yyyymmddhhmmss yyyy.yyyyyyyyy
 %		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
 %
+%   format 'spotgins-enu'
+%		type: SPOTGINS solutions - supports v2 and v3 formats (auto-detection)
+%		filename/url: P.RAWDATA (use $FID to point the right file/url)
+%		data format v2: jjjjj.jj E N V dE dN dV yyyymmddhhmmss yyyy.yyyyyyyyy
+%		data format v3: MJD DispEast DispNorth DispUp SigmaEast SigmaNorth SigmaUp CorrEN CorrEU CorrNU yyyy-mm-ddTHH:MM:SS DecimalYear Const Flag DateOfExe GinsVersion PrairieVersion
+%		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)READFMTDATA_GNSS subfunction of readfmtdata.m
+%
 %	format 'spotgins-ippp'
 %		type: GINS IPPP solutions
 %		filename/url: P.RAWDATA (use $FID to point the right file/url)
@@ -306,19 +313,66 @@ case {'gipsy','gipsy-tdp','gipsyx'}
 	end
 	%D.ITRF_YEAR = 'ITRF08';
 
-
 % -----------------------------------------------------------------------------
-case 'spotgins-enu-v2'
-        % format exemple
-        %#jjjjj.jjjjjjjj         _____E         _____N         _____U         ____dE         ____dN         ____dU  yyyymmddHHMMSS  yyyy.yyyyyyy  Const  Dateofexe       GinsVersion
-        % 52670.83876160       0.055822       0.051638       0.005578       0.001263       0.001163       0.004899  20030131200749  2003.0844898  G      250404_185253   VALIDE_24_2
-        % 52671.50195600       0.057207       0.054240      -0.004722       0.000705       0.000619       0.002600  20030201120249  2003.0863067  G      250404_185253   VALIDE_24_2
-        
+case 'spotgins-enu'
+	% Supports both v2 and v3 SPOTGINS formats
+	% 
+	% v2 format example:
+	%#jjjjj.jjjjjjjj         _____E         _____N         _____U         ____dE         ____dN         ____dU  yyyymmddHHMMSS  yyyy.yyyyyyy  Const  Dateofexe       GinsVersion
+	% 52670.83876160       0.055822       0.051638       0.005578       0.001263       0.001163       0.004899  20030131200749  2003.0844898  G      250404_185253   VALIDE_24_2
+	% 52671.50195600       0.057207       0.054240      -0.004722       0.000705       0.000619       0.002600  20030201120249  2003.0863067  G      250404_185253   VALIDE_24_2
+	%
+	% v3 format example:
+	%#MJD           DispEast      DispNorth         DispUp      SigmaEast     SigmaNorth        SigmaUp     CorrEN     CorrEU     CorrNU  yyyy-mm-ddTHH:MM:SS  DecimalYear  Const  Flag  DateOfExe      GinsVersion  PrairieVersion
+	% 51668.5       0.080276      -2.058358       0.009854       0.000312       0.000439       0.001339  -0.028963  -0.085824  -0.011884  2000-05-04T12:00:00  2000.340164  G         0  250910_120313  25_1         v56
+	% 51669.5       0.077154      -2.057207       0.005923       0.000257       0.000371       0.001109  -0.017412  -0.060937  -0.124317  2000-05-05T12:00:00  2000.342896  G         0  250910_120313  25_1         v56
+	
 	fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
 	wosystem(sprintf('rm -f %s',fdat),P);
+	
+	% Detect format version from first file
+	format_version = '';
+	if ~isempty(F.raw)
+		first_raw = F.raw{1};
+		if strncmpi('http',first_raw,4)
+			[s,header] = wosystem(sprintf('curl -s -S "%s" | head -20',first_raw),P);
+		else
+			[s,header] = wosystem(sprintf('head -20 %s',first_raw),P);
+		end
+		if s == 0
+			if ~isempty(strfind(header,'SPOTGINS SOLUTION [POSITION] v3')) || ~isempty(strfind(header,'MJD           DispEast'))
+				format_version = 'v3';
+			elseif ~isempty(strfind(header,'SPOTGINS SOLUTION [POSITION] v2')) || ~isempty(strfind(header,'jjjjj.jjjjjjjj'))
+				format_version = 'v2';
+			else
+				% Try to detect from data columns (fallback method)
+				if strncmpi('http',first_raw,4)
+					[s,sample] = wosystem(sprintf('curl -s -S "%s" | grep -v "^#" | head -1',first_raw),P);
+				else
+					[s,sample] = wosystem(sprintf('grep -v "^#" %s | head -1',first_raw),P);
+				end
+				if s == 0 && ~isempty(sample)
+					cols = length(strsplit(strtrim(sample)));
+					if cols >= 17  % v3 has 17+ columns
+						format_version = 'v3';
+					elseif cols >= 11  % v2 has 11+ columns  
+						format_version = 'v2';
+					end
+				end
+			end
+		end
+	end
+	
+	if isempty(format_version)
+		format_version = 'v2';  % default fallback
+		fprintf('%s: ** INFO ** Could not detect SPOTGINS format version, assuming v2.\n',wofun);
+	else
+		fprintf('%s: ** INFO ** Detected SPOTGINS format %s.\n',wofun,format_version);
+	end
+	
 	for a = 1:length(F.raw)
 		fraw = F.raw{a};
-                cmd0 = sprintf('awk ''/^[^#]/ {print}'' >> %s',fdat); % removes header lines
+		cmd0 = sprintf('awk ''/^[^#]/ {print}'' >> %s',fdat); % removes header lines
 		if strncmpi('http',fraw,4)
 			s  = wosystem(sprintf('curl -s -S "%s" | %s',fraw,cmd0),P);
 			if s ~= 0
@@ -331,20 +385,31 @@ case 'spotgins-enu-v2'
 			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
 		end
 	end
-        
-        
-        % load the file
+	
+	% load the file
 	if exist(fdat,'file')
 		dd = dlmread(fdat);
 	else
 		dd = [];
 	end
+	
 	if ~isempty(dd)
-                t = dd(:,1) + 678941.5007; % converts MJD to datenum
-		d = [dd(:,2:4),zeros(size(dd,1),1)]; % North(mm),East(mm),Up(mm) => E(m),N(m),U(m),Orbit
-		e = dd(:,5:7);
+		switch format_version
+			case 'v3'
+				% v3 format: MJD DispEast DispNorth DispUp SigmaEast SigmaNorth SigmaUp ...
+				t = dd(:,1) + 678941.5007; % converts MJD to datenum
+				d = [dd(:,2:4),zeros(size(dd,1),1)]; % DispEast,DispNorth,DispUp,Orbit => E(m),N(m),U(m),Orbit
+				e = dd(:,5:7); % SigmaEast,SigmaNorth,SigmaUp
+				
+			case 'v2'
+				% v2 format: jjjjj.jj E N U dE dN dU ...
+				t = dd(:,1) + 678941.5007; % converts MJD to datenum
+				d = [dd(:,2:4),zeros(size(dd,1),1)]; % E,N,U,Orbit => E(m),N(m),U(m),Orbit
+				e = dd(:,5:7); % dE,dN,dU
+		end
+		
 		e(e<min_error) = min_error;
-		fprintf('%d data imported.\n',size(dd,1));
+		fprintf('%d data imported (format %s).\n',size(dd,1),format_version);
 	else
 		fprintf('no data found!\n')
 		t = [];
@@ -355,7 +420,7 @@ case 'spotgins-enu-v2'
 
 % -----------------------------------------------------------------------------
 case 'spotgins-ippp'
-        % From J.S. - ITES Strasbourg
+    % From J.S. - ITES Strasbourg
 	% format example
 	% !yyyymmdd hhmmss yyyy.yyyyyyyyy  jjjjj.jj        X_position        Y_position        Z_position            dX            dY            dZ             E             N             V            dE            dN            dV
     %  20160723  65619 2016.558521561  57592.29    4182067.152057     570976.439258    4765940.539811      0.000611      0.000218      0.000673     -0.006574     -0.008848     -0.014844      0.000205      0.000307      0.000859
