@@ -83,6 +83,16 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %		data format: ascii
 %		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
 %
+%	format 'rtklib'
+%		type: RTKLIB solution file (ENU baseline, FLH absolute, or XYZ ECEF)
+%		filename/url: P.RAWDATA (use $FID to point the right file/url)
+%		data format: yyyy/mm/dd HH:MM:SS.sss  a  b  c  Q  ns  s_a  s_b  s_c  sdAB  sdBC  sdAC  age  ratio
+%		  header lines start with %%; coordinate type auto-detected from header keywords
+%		  ENU: e-baseline(m) n-baseline(m) u-baseline(m)
+%		  FLH: latitude(deg) longitude(deg) height(m) - converted to UTM
+%		  XYZ: x-ecef(m) y-ecef(m) z-ecef(m) - converted to UTM
+%		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
+%
 %
 %	Authors: François Beauducel and Jean-Bernard de Chabalier, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
@@ -634,6 +644,93 @@ case 'ingv-gps'
 		e = dd(:,5:7);
 		e(e<min_error) = min_error;
 		fprintf('%d data imported.\n',size(dd,1));
+	else
+		fprintf('no data found!\n')
+		t = [];
+		d = [];
+		e = [];
+	end
+
+% -----------------------------------------------------------------------------
+case 'rtklib'
+	% RTKLIB solution file
+	% Header lines start with %. Coordinate type auto-detected from header keywords:
+	%   'e-baseline' => ENU, 'x-ecef' => XYZ, 'latitude' => FLH (default)
+	% Data format: yyyy/mm/dd HH:MM:SS.sss  a  b  c  Q  ns  s_a  s_b  s_c  sdAB  sdBC  sdAC  age  ratio
+
+	fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
+	wosystem(sprintf('rm -f %s',fdat),P);
+
+	% detect coordinate type from file header
+	initype = 'FLH'; % RTKLIB default output is FLH
+	if ~isempty(F.raw)
+		fraw = F.raw{1};
+		if strncmpi('http',fraw,4)
+			[~,hdr] = wosystem(sprintf('curl -s -S "%s" | head -30',fraw),P);
+		else
+			[~,hdr] = wosystem(sprintf('head -30 "%s"',fraw),P);
+		end
+		% Be more robust: check multiple keyword variants
+		if ~isempty(strfind(lower(hdr),'x-ecef')) || ~isempty(strfind(lower(hdr),'y-ecef')) || ~isempty(strfind(lower(hdr),'z-ecef'))
+			initype = 'XYZ';
+		elseif ~isempty(strfind(lower(hdr),'e-baseline')) || ~isempty(strfind(lower(hdr),'n-baseline'))
+			initype = 'ENU';
+		elseif ~isempty(strfind(lower(hdr),'latitude')) || ~isempty(strfind(lower(hdr),'longitude'))
+			initype = 'FLH';
+		end
+	end
+	fprintf('%s: ** INFO ** RTKLIB coordinate type: %s\n',wofun,initype);
+
+	% extract data: convert 'yyyy/mm/dd HH:MM:SS.sss' date/time to 6 numeric columns
+	% resulting columns: y m d H M S a b c Q ns s_a s_b s_c sdAB sdBC sdAC age ratio
+	for a = 1:length(F.raw)
+		fraw = F.raw{a};
+		cmd0 = sprintf(['awk ''/^[^%%]/{split($1,d,"/");split($2,t,":");' ...
+			'print d[1],d[2],d[3],t[1],t[2],t[3],$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15}'' >> %s'],fdat);
+		if strncmpi('http',fraw,4)
+			s = wosystem(sprintf('curl -s -S "%s" | %s',fraw,cmd0),P);
+			if s ~= 0
+				break;
+			end
+		else
+			s = wosystem(sprintf('cat "%s" | %s',fraw,cmd0),P);
+		end
+		if s ~= 0
+			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+		end
+	end
+
+	% load the file
+	% columns: 1=year 2=month 3=day 4=hour 5=min 6=sec 7=a 8=b 9=c
+	%          10=Q 11=ns 12=s_a 13=s_b 14=s_c 15=sdAB 16=sdBC 17=sdAC 18=age 19=ratio
+	if exist(fdat,'file')
+		dd = load(fdat);
+	else
+		dd = [];
+	end
+	if ~isempty(dd)
+		t = datenum(dd(:,1),dd(:,2),dd(:,3),dd(:,4),dd(:,5),dd(:,6));
+		switch initype
+		case 'ENU'
+			% e-baseline(m), n-baseline(m), u-baseline(m)
+			% sigma columns: s_a=sde, s_b=sdn, s_c=sdu
+			d = [dd(:,7),dd(:,8),dd(:,9),zeros(size(dd,1),1)]; % E,N,U,Orbit
+			e = [dd(:,12),dd(:,13),dd(:,14)]; % sde,sdn,sdu
+		case 'FLH'
+			% latitude(deg), longitude(deg), height(m) - convert to UTM
+			% sigma columns: s_a=sdn, s_b=sde, s_c=sdu (N before E in RTKLIB FLH output)
+			[E_utm,N_utm] = ll2utm(dd(:,7),dd(:,8));
+			d = [E_utm(:),N_utm(:),dd(:,9),zeros(size(dd,1),1)]; % E_UTM,N_UTM,h,Orbit
+			e = [dd(:,13),dd(:,12),dd(:,14)]; % sde(=s_b),sdn(=s_a),sdu
+		case 'XYZ'
+			% x-ecef(m), y-ecef(m), z-ecef(m) - convert to UTM
+			% sigma columns: s_a=sdx, s_b=sdy, s_c=sdz
+			[enu_xyz,e_xyz] = cart2utm(dd(:,7:9),dd(:,12:14));
+			d = [enu_xyz,zeros(size(dd,1),1)]; % E,N,U,Orbit
+			e = e_xyz;
+		end
+		e(e<min_error) = min_error;
+		fprintf('%d data imported (type: %s).\n',size(dd,1),initype);
 	else
 		fprintf('no data found!\n')
 		t = [];
