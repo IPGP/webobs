@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import configparser
 import os
 import random
@@ -59,6 +61,12 @@ for k, v in conf.items():
 config_dict["config_general"]["use_gui"] = "no"
 config_dict["config_general"]["mapping_display"] = "no"
 config_dict["paths"]["eruptions_folder"] = OUTDIR
+
+# Copy parameters_file_downflow.txt in a writable area
+source = config_dict["downflow"]["parameters_file_downflow"]
+dest = os.path.join(OUTDIR, "parameters_file_downflow.txt")
+shutil.copy(source, dest)
+config_dict["downflow"]["parameters_file_downflow"] = dest
 
 config = configparser.ConfigParser()
 for section, kv_pairs in config_dict.items():
