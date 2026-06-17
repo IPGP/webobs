@@ -19,7 +19,7 @@ GENFORM form. See formGRID.pl for description of configuration.
 
 =over
 
-=item B<date selection>
+=item B<date selection
 
 time span of the data, including partial recordings.
 y1= , m1= , d1=
@@ -53,7 +53,7 @@ use List::Util qw[min max sum];
 
 # ---- webobs stuff
 use WebObs::Config;
-use WebObs::Users qw($CLIENT clientMaxAuth);
+use WebObs::Users qw($CLIENT clientMaxAuth userName);
 use WebObs::Grids;
 use WebObs::Utils;
 use WebObs::i18n;
@@ -85,7 +85,7 @@ my $day   = strftime('%d',@tod);
 my $month = strftime('%m',@tod);
 my $year  = strftime('%Y',@tod);
 my $today = strftime('%F',@tod);
-my $default_days = $FORM{DEFAULT_DAYS} // 30;
+my $default_days = $FORM{DEFAULT_DAYS} // 365;
 my ($y1,$m1,$d1) = split(/[-T]/,DateTime->today()->subtract(days => $default_days - 1));
 
 # ---- get CGI parameters
@@ -97,7 +97,9 @@ $QryParm->{'y2'}        //= $year;
 $QryParm->{'m2'}        //= $month;
 $QryParm->{'d2'}        //= $day;
 $QryParm->{'node'}      //= "";
+$QryParm->{'quality'}   //= "";
 $QryParm->{'trash'}     //= "0";
+$QryParm->{'opers'}     //= "";
 $QryParm->{'debug'}     //= "";
 
 my $re = $QryParm->{'filter'};
@@ -113,6 +115,16 @@ for (@{$FORM{NODESLIST}}) {
     %Ns = (%Ns, %N);
     push(@formnodes, $id) if ($QryParm->{'node'} =~ /^($id|)$/);
     push(@allFormNodes, $id);
+}
+my @OpersSelList;
+foreach my $op (split(/[, ]/, $FORM{OPERATORS_LIST})) {
+    if ($op =~ /^+/) {
+        foreach my $u (WebObs::Users::groupListUser("$op")) {
+            push(@OpersSelList, $u."|".join('',userName($u))) if (!grep(/^$u$/, @OpersSelList));
+        }
+    } else {
+        push(@OpersSelList, $op."|".join('',userName($op))) if (!grep(/^$op$/, @OpersSelList));
+    }
 }
 
 my @validity = split(/[, ]/, ($FORM{VALIDITY_COLORS} ? $FORM{VALIDITY_COLORS}:"#66FF66,#FFD800,#FFAAAA"));
@@ -227,7 +239,10 @@ foreach my $k (@rownames) {
 
 # get the requested data
 my @filter = "trash = 0" if (!$QryParm->{'trash'});
+push(@filter, "quality = 0") if ($QryParm->{'quality'} eq "0");
+push(@filter, "quality = 'checked'") if ($QryParm->{'quality'} eq "1");
 push(@filter, "node IN ('".join("','",@formnodes)."')") if ($#formnodes >= 0);
+push(@filter, "operators = '".$QryParm->{'opers'}."'") if ($QryParm->{'opers'} ne "");
 foreach (keys %lists) {
     my $sel_list = $QryParm->{$_};
     push(@filter, "$_ = \"$sel_list\"") if ($sel_list ne "");
@@ -335,16 +350,25 @@ if ($FORM{BANG}) {
     for (@list_days) { print "<OPTION value=\"$_\"".($QryParm->{'d2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
     print "</SELECT>\n";
 } else {
-    print qq(<b>Date min</b>:&nbsp;<input size="30" value="$QryParm->{'yce_min'}" name="yce_min" type="number" onmouseout="nd()" onmouseover="overlib('')"> );
-    print qq(<b>Date max</b>:&nbsp;<input size="30" value="$QryParm->{'yce'}" name="yce" type="number" onmouseout="nd()" onmouseover="overlib('')">);
+    print qq(<b>Date min</b>:&nbsp;<INPUT size="30" value="$QryParm->{'yce_min'}" name="yce_min" type="number" onmouseout="nd()" onmouseover="overlib('')"> );
+    print qq(<b>Date max</b>:&nbsp;<INPUT size="30" value="$QryParm->{'yce'}" name="yce" type="number" onmouseout="nd()" onmouseover="overlib('')">);
 }
-print "&nbsp;&nbsp;<select name=\"node\" size=\"1\">";
+print "&nbsp;&nbsp;<SELECT name=\"node\" size=\"1\">";
 for ("|$__{'All nodes'}",@NODESSelList) {
     my ($key,$val) = split (/\|/,$_);
     my $sel = ("$key" eq "$QryParm->{'node'}" ? "selected":"");
     print "<option $sel value=$key>$val</option>\n";
 }
-print "</select>";
+print "</SELECT>";
+if (isok($FORM{OPERATORS_FILT})) {
+    print "&nbsp;&nbsp;<B>$__{'Operator(s)'}:</B> <SELECT name=\"opers\" size=\"1\">";
+    for ("|$__{'All operators'}",@OpersSelList) {
+        my ($key,$val) = split (/\|/,$_);
+        my $sel = ("$key" eq "$QryParm->{'opers'}" ? "selected":"");
+        print "<option $sel value=$key>$val</option>\n";
+    }
+    print "</SELECT>";
+}
 print "<BR>\n";
 print " \n";
 # filters for inputs/outputs with _FILT option
@@ -376,8 +400,19 @@ print "<IMG src=\"/icons/search.png\">&nbsp;<INPUT name=\"filter\" type=\"text\"
 if ($re ne "") {
     print "<img style=\"border:0;vertical-align:text-bottom\" src=\"/icons/cancel.gif\" onClick=eraseFilter()>";
 }
+print "<BR>";
+if (isok($FORM{QUALITY_CHECK})) {
+    print "<B>$__{'Quality:'}</B> <SELECT name='quality' size='1'>"
+        ." onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_genform_quality}')\">"
+        ."<OPTION value=''>$__{'All records'}</OPTION>"
+        ."<OPTION value='1'".($QryParm->{'quality'} eq "1" ? " selected":"").">$__{'Valid records'}</OPTION>"
+        ."<OPTION value='0'".($QryParm->{'quality'} eq "0" ? " selected":"").">$__{'Unvalid records'}</OPTION>"
+        ."<SELECT>\n";
+} else {
+    print "<INPUT type=\"hidden\" name=\"quality\">";
+}
 if ($clientAuth > 1) {
-    print "<BR><INPUT type=\"checkbox\" name=\"trash\" value=\"1\"".($QryParm->{'trash'} ? " checked":"")
+    print "<INPUT type=\"checkbox\" name=\"trash\" value=\"1\"".($QryParm->{'trash'} ? " checked":"")
         ." onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_show_trash}')\">&nbsp;<B>$__{'Trash'}</B>";
 } else {
     print "<INPUT type=\"hidden\" name=\"trash\">";
@@ -532,8 +567,8 @@ for (my $j = 0; $j <= $#rows; $j++) {
     my @nameOper;
     my @namOper;
     foreach (@operators) {
-        push(@nameOper, "<B>$_</B>: ".join('',WebObs::Users::userName($_)));
-        push(@namOper, join('',WebObs::Users::userName($_)));
+        push(@nameOper, "<B>$_</B>: ".join('',userName($_)));
+        push(@namOper, join('',userName($_)));
     }
     my $form_url = URI->new("/cgi-bin/formGENFORM.pl");
     $form_url->query_form('form' => $form, 'id' => $id, 'return_url' => $return_url, 'action' => 'edit');
@@ -666,8 +701,8 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 my @uname;
                 my @unam;
                 foreach (@uid) {
-                    push(@uname, "<B>$_</B>: ".join('',WebObs::Users::userName($_)));
-                    push(@unam, join('',WebObs::Users::userName($_)));
+                    push(@uname, "<B>$_</B>: ".join('',userName($_)));
+                    push(@unam, join('',userName($_)));
                 }
                 $val = join(', ',@uid);
                 $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('".join('<br>',@uname)."')\"";
@@ -704,6 +739,7 @@ if ($QryParm->{'debug'}) {
     <LI>Fieldsets = ".join(',',@fieldsets)."</LI>
     <LI>Field names = ".join(";", map { join(",", @$_) } @field_names)."</LI>
     <LI>Filter = $filter</LI>
+    <LI>Operators = ".join(",",@OpersSelList)."</LI>
     </UL>\n");
 }
 push(@html,"<P>$__{'Genform code'}: <B class='code'>FORM.$form</B><BR>\n");
@@ -770,7 +806,7 @@ Lucas Dassin, François Beauducel, Jérôme Touvier
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2025 - Institut de Physique du Globe Paris
+WebObs - 2012-2026 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

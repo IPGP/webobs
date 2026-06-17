@@ -90,7 +90,7 @@ require Exporter;
 @ISA        = qw(Exporter);
 @EXPORT     = qw(%USERS %USERIDS $CLIENT READAUTH EDITAUTH ADMAUTH);
 @EXPORT_OK  = qw(userIsValid refreshUsers allUsers clientMaxAuth clientHasRead clientHasEdit clientHasAdm clientIsValid
-    listRNames userListGroup htpasswd_update htpasswd_comment htpasswd_uncomment htpasswd_verify htpasswd_display);
+    listRNames userListGroup userName htpasswd_update htpasswd_comment htpasswd_uncomment htpasswd_verify htpasswd_display);
 $VERSION    = "1.00";
 
 refreshUsers();
