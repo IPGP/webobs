@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-05-24
+%   Updated: 2026-06-16
 
 WO = readcfg;
 
@@ -2639,8 +2639,8 @@ for r = 1:numel(P.GTABLE)
 			IMAP(nimap).s = cell(size(M(m).t));
 			IMAP(nimap).l = cell(size(M(m).t));
 			for n = 1:numel(IMAP(nimap).s)
-				IMAP(nimap).s{n} = sprintf('''%g km (%s)<br>%s = %g %s<br>misfit = %g mm'',CAPTION,''%s (%s)''', ...
-					roundsd(M(m).d(n,3)/1e3,2),	M(m).type{n}, ...
+				IMAP(nimap).s{n} = sprintf('''depth = %g km (%s)<br>%s = %g %s<br>misfit = %g mm'',CAPTION,''%s (%s)''', ...
+					roundsd(-M(m).d(n,3)/1e3,2), M(m).type{n}, ...
 					regexprep(vtype,'\','\\'),roundsd(M(m).d(n,4)/vfactor,2), ...
 					regexprep(vunit,'\^3','<sup>3</sup>'),roundsd(M(m).e(n,5),2), ...
 					datestr(M(m).t(n),'dd-mmm-yyyy HH:MM'),mtlabel{m});

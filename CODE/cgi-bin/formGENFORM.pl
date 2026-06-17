@@ -342,16 +342,18 @@ function update_form()
     var dd2 = document.getElementsByName("edate_day");
     var hr2 = document.getElementsByName("edate_hr");
     var mn2 = document.getElementsByName("edate_mn");
+    var sc2 = document.getElementsByName("edate_sec");
 
     var yy1 = document.getElementsByName("sdate_year");
     var mm1 = document.getElementsByName("sdate_month");
     var dd1 = document.getElementsByName("sdate_day");
     var hr1 = document.getElementsByName("sdate_hr");
     var mn1 = document.getElementsByName("sdate_mn");
+    var sc1 = document.getElementsByName("sdate_sec");
 
     if (yy1[0]) {
-        var date1 = new Date(yy1[0].value, mm1[0].value-1, dd1[0].value, hr1[0].value, mn1[0].value);
-        var date2 = new Date(yy2[0].value, mm2[0].value-1, dd2[0].value, hr2[0].value, mn2[0].value);
+        var date1 = new Date(yy1[0].value, mm1[0].value-1, dd1[0].value, hr1[0].value, mn1[0].value, sc1[0].value);
+        var date2 = new Date(yy2[0].value, mm2[0].value-1, dd2[0].value, hr2[0].value, mn2[0].value, sc2[0].value);
         duration = (date2.getTime() - date1.getTime())/86400000;
         form.duration.value = duration.toFixed(1);
     } else {
