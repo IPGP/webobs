@@ -266,12 +266,17 @@ sub datetime_input {
         print qq(<select name=$names{mn} size="1" $ovl>);
         date_time_option(\@minuteList, $sel_mn2);
         print qq(</select>);
+    } else {
+        print qq(<input type="hidden" name="$names{hr}">);
+        print qq(<input type="hidden" name="$names{mn}">);
     }
 
     if ( scalar(@datetime) == 6 ) {
         print qq(<select name=$names{sec} size="1" $ovl>);
         date_time_option(\@secondList, $sel_sec2);
         print qq(</select>);
+    } else {
+        print qq(<input type="hidden" name="$names{sec}">);
     }
     print qq(<br>);
 
@@ -333,8 +338,8 @@ sub simplify_date {
 
 # from 2 date intervals ($sdate_min, $sdate_max, $edate_min, $edate_max), returns an array of min/max duration in days
 sub date_duration {
-    my $dur_min = sprintf("%+.1f",(str2time($_[2]) - str2time($_[1]))/86400);
-    my $dur_max = sprintf("%+.1f",(str2time($_[3]) - str2time($_[0]))/86400);
+    my $dur_min = sprintf("%+.3f",(str2time($_[2]) - str2time($_[1]))/86400);
+    my $dur_max = sprintf("%+.3f",(str2time($_[3]) - str2time($_[0]))/86400);
     return ($dur_min, $dur_max);
 }
 
