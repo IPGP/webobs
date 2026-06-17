@@ -2146,6 +2146,24 @@ msgstr "Recherche des données, merci de patienter."
 msgid "help_disp_fieldset"
 msgstr "Afficher les colonnes du"
 
+msgid "All operators"
+msgstr "Tous les opérateurs"
+
+msgid "Quality:"
+msgstr "Validité :"
+
+msgid "help_genform_quality"
+msgstr "Sélectionner les enregistrements validés/non validés"
+
+msgid "All records"
+msgstr "Tous les enregistrements"
+
+msgid "Valid records"
+msgstr "Enregistrements validés"
+
+msgid "Unvalid records"
+msgstr "Enregistrements non validés"
+
 msgid "Trash"
 msgstr "Corbeille"
 

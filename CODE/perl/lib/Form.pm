@@ -203,7 +203,7 @@ sub datetime_input {
     $title = $title ? $title : "Date";
     my %FORM = %{$formref};
     my ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2, $sel_sec2);
-    my $type = $field eq "edate" || $field eq "sdate" ? "udate" : $FORM{uc($field."_TYPE")};
+    my $type = $field eq "edate" || $field eq "sdate" ? "udate($FORM{DATETIME_FORMAT})" : $FORM{uc($field."_TYPE")};
     my %datetime_length = ("ymd" => 3, "hm" => 5, "hms" => 6); # Array size mapping for Date/Time inputs
     my ($size, $default) = extract_type($type);
     my $len = exists $datetime_length{lc($size)} ? $datetime_length{lc($size)} : 3;
@@ -367,7 +367,7 @@ sub extract_type {
     } elsif ($size =~ /\(\w+\)$/) {
         $size =~ s/^[a-z]+\((\w+)\)/$1/;
     } elsif ($size eq "udate") {
-         ($size, $default) = ("hm", 15);
+         ($size, $default) = ("hm",15);
     } else {
         $size = 5;
     }
@@ -417,11 +417,11 @@ __END__
 
 =head1 AUTHOR
 
-Didier Lafon, François Beauducel, Lucas Dassin
+Didier Lafon, François Beauducel, Lucas Dassin, Jérôme Touvier
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2025 - Institut de Physique du Globe Paris
+WebObs - 2012-2026 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -38,11 +38,17 @@ BANG|$WEBOBS{BIG_BANG}
 # Time zone of the data (in hour from UT)
 TZ|0
 
+# date/time format: 'ymd' (yyyy-mm-dd), 'hm' (yyyy-mm-dd HH:MM, default), or 'hms' (yyyy-mm-dd HH:MM:SS)
+DATETIME_FORMAT|hm
+
 # if YES, use start and end date/time for each record
 STARTING_DATE|YES
 
 # may contain any +GID and/or UID list (comma separated)
 OPERATORS_LIST|+DUTY
+
+# if YES, allows selection of an operator in the table display,
+OPERATORS_FILT|NO
 
 # if YES, use a quality check for each record
 QUALITY_CHECK|YES
