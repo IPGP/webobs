@@ -764,6 +764,7 @@ if $(confirm "Create Python environment [y/N] ?") ; then
     chown -R ${USERID}:${USERGID} ${DOCROOT}/venv/
     source ${DOCROOT}/venv/bin/activate
     PYTHON_CODE="${DOCROOT}/CODE/python"
+    pip install --upgrade pip
     pip install -r "${PYTHON_CODE}/requirements.txt"
 
     # Downflowgo install ----------------------------------------------------------
@@ -775,12 +776,12 @@ if $(confirm "Create Python environment [y/N] ?") ; then
         DFGO="${PYTHON_CODE}/downflowgo/src"
         rm -Rf "${DFGO}" && mkdir "${DFGO}"
         git clone --filter=blob:none --no-checkout https://github.com/oryalava/DOWNFLOWGO.git "${DFGO}"
-        cd "${DFGO}" && git checkout 1de318da9ae5482b2f5b80c76d0ec41ba6b362c8 -q && cd -
+        cd "${DFGO}" && git checkout 8822eb034f6c41593c42c8a6f01232835b6b0b6e -q && cd -
         rm -Rf "${DFGO}/assets/outputs"
-        pip install --upgrade pip
         pip install -r "${DFGO}/requirements.txt"
         g++ "${DFGO}/downflowgo/DOWNFLOW/DOWNFLOW.cpp" -o "${DFGO}/downflowgo/DOWNFLOW/DOWNFLOW"
-        chmod 666 "${DFGO}/downflowgo/DOWNFLOW/parameters_range.txt"
+        sed -i -e 's/import matplotlib.cm as cm/import matplotlib.pyplot as pyplot/g' "${DFGO}/downflowgo/mapping.py"
+        sed -i -e 's/cm.get_cmap/pyplot.get_cmap/g' "${DFGO}/downflowgo/mapping.py"
         # pyflowgo repository install
         git clone --filter=blob:none --no-checkout https://github.com/pyflowgo/pyflowgo.git /tmp/pyflowgo
         cd /tmp/pyflowgo && git checkout b4297d52bdd240ed4e287744e708542c4b0d461d -q && cd -
