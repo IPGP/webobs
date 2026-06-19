@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-06-16
+%   Updated: 2026-06-19
 
 WO = readcfg;
 
@@ -559,13 +559,14 @@ for r = 1:numel(P.GTABLE)
 			mode = 'fixed';
 		else
             % network mode: reference station list
-			[kvref,knref] = ismemberlist(split(vref,','),{N.FID});
-			if ~isempty(vref) && all(kvref)
+            sref = split(vref,',');
+			kvref = ismemberlist({N.FID},sref);
+			if ~isempty(vref) && length(sref)==sum(kvref)
 				mode = vref;
-				if numel(knref) > 1
-					voffset = rsum(tr(knref,:)./tre(knref,:))./rsum(1./tre(knref,:));
+				if sum(kvref) > 1
+					voffset = rsum(tr(kvref,:)./tre(kvref,:))./rsum(1./tre(kvref,:));
 				else
-					voffset = tr(knref,:);
+					voffset = tr(kvref,:);
 				end
 				if any(isnan(voffset))
 					voffset = [0,0,0];
@@ -1028,8 +1029,9 @@ for r = 1:numel(P.GTABLE)
         axes('Position',[.05,.5,.8,.43])
         ylim = [0,-boffset];
         for n = 1:length(B)
+            B(n).strain = 1e3*(B(n).d - rmedian(B(n).d))/B(n).length - boffset*n;
             if ~strcmpi(strainmap_timeseries_type,'displacement')
-                dd = 1e3*(B(n).d - rmedian(B(n).d))/B(n).length - boffset*n;
+                dd = B(n).strain;
             else
                 dd = B(n).d - rmedian(B(n).d) - boffset*n;
             end
@@ -1166,7 +1168,6 @@ for r = 1:numel(P.GTABLE)
         set(gca,'YLim',[0,1])
         axis off
 
-
 		if isok(P,'PLOT_GRID')
 			grid on
 		end
@@ -1177,6 +1178,18 @@ for r = 1:numel(P.GTABLE)
         OPT.IMAP = [];
 		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
+   
+        % exports strain timeseries data
+        if isok(P,'EXPORTS')
+            for i = 1:length(B)
+                E.title = sprintf('%s: %s',OPT.GTITLE,B(i).name);
+                E.infos = {};
+                E.t = B(i).t;
+                E.header = {'Distance_(m)',sprintf('Strain_(%cstr)',char(181))};
+                E.d = [B(i).d,B(i).strain];
+                mkexport(WO,sprintf('%s_%s_%s',summary,B(i).line,P.GTABLE(r).TIMESCALE),E,P,r);
+            end
+        end
 	end
 
 	% === VECTORS: Velocity vectors map
