@@ -1029,9 +1029,14 @@ for r = 1:numel(P.GTABLE)
         axes('Position',[.05,.5,.8,.43])
         ylim = [0,-boffset];
         for n = 1:length(B)
-            B(n).strain = 1e3*(B(n).d - rmedian(B(n).d))/B(n).length - boffset*n;
+            k1 = find(~isnan(B(n).d),1);
+            if ~isempty(k1)
+                B(n).strain = 1e3*(B(n).d - B(n).d(k1))/B(n).length;
+            else
+                B(n).strain = nan(size(B(n).d));
+            end
             if ~strcmpi(strainmap_timeseries_type,'displacement')
-                dd = B(n).strain;
+                dd = 1e3*(B(n).d - rmedian(B(n).d))/B(n).length - boffset*n;
             else
                 dd = B(n).d - rmedian(B(n).d) - boffset*n;
             end
