@@ -16,7 +16,7 @@ WebObs server can run on most Linux systems. It has been succesfully installed/t
 <a name="latest"></a>
 ## Download the latest release
 
-- [WebObs-2.8.1.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.8.1/WebObs-2.8.1.tar.gz) (104 Mb) updated June 2, 2026
+- [WebObs-2.8.2.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.8.2/WebObs-2.8.2.tar.gz) (104 Mb) updated July 1, 2026
 - [Release notes](https://github.com/IPGP/webobs/blob/v2.8.1/release-notes.md) (see also the [What's new?](#whatsnew) section below)
 - [User manual](https://github.com/IPGP/webobs/releases/download/v2.8.1/WebObs_Manual.pdf) (in progress)
 - And, for a first install:
