@@ -7,10 +7,10 @@ function plottable(t,x,y,halign,col,varargin)
 %
 %	Author: F. Beauducel, IPGP/IRD
 %	Created: 2019-07-31 in Yogyakarta (Indonesia)
-%   Updated: 2026-05-28
+%   Updated: 2026-07-14
 
 if ~all(size(col)==size(t))
-    col = repmat({'none'},size(t))
+    col = repmat({'none'},size(t));
 end
 
 y = linspace(y(1),y(2),size(t,1));
