@@ -489,6 +489,7 @@ function verif_formulaire() {
         MECB.FORM.typeEvenement.focus();
         return false;
     }
+    return true;
 }
 
 // ---- hide or delete an MC event
