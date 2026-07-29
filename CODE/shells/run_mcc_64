@@ -30,6 +30,7 @@ else
 	LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRJRE} ;  
 	XAPPLRESDIR=${WO__PATH_MCR}/X11/app-defaults ;
 
+	export DISPLAY=:0
 	export LD_LIBRARY_PATH;
 	export XAPPLRESDIR;
 	echo LD_LIBRARY_PATH is ${LD_LIBRARY_PATH};
