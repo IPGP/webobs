@@ -48,6 +48,9 @@ OPERATORS_LIST|+DUTY
 QUALITY_CHECK|YES
 QUALITY_OPERATORS|+ADMIN
 
+# default is descending order for showGENFORM.pl (set YES for ascending)
+SORT_ASCENDING|NO
+
 # default window time for showGENFORM.pl (in days)
 DEFAULT_DAYS|365
 

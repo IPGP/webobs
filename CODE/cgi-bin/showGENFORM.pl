@@ -78,6 +78,7 @@ my @columns_geoloc = ("latitude", "northern_error", "longitude", "eastern_error"
 my @columns_udate = ("date", "date_min", "yce", "yce_min");
 
 my $title = ($FORM{NAME} ? $FORM{NAME}:$FORM{DESCRIPTION});
+my $sort = (isok($FORM{SORT_ASCENDING}) ? "ASC":"DESC");
 
 # ---- DateTime inits ----------------------------------------
 my $Ctod  = time();  my @tod  = localtime($Ctod);
@@ -259,7 +260,7 @@ if ($FORM{BANG}) {
 
     $stmt = qq(SELECT t.*, end_date.date, end_date.date_min FROM $tbl t
     LEFT JOIN udate end_date ON t.edate = end_date.id LEFT JOIN udate start_date ON t.sdate = start_date.id
-    WHERE $filter ORDER BY end_date.date ASC;);
+    WHERE $filter ORDER BY end_date.date $sort;);
 } elsif ($QryParm->{'yce_min'} ne "" && $QryParm->{'yce'} ne "") {
     $startDate = $QryParm->{'yce_min'};
     $endDate = $QryParm->{'yce'};
@@ -271,12 +272,12 @@ if ($FORM{BANG}) {
 
     $stmt = qq(SELECT t.*, end_date.*, start_date.* FROM $tbl t
     LEFT JOIN udate end_date ON t.edate = end_date.id LEFT JOIN udate start_date ON t.sdate = start_date.id
-    WHERE $filter ORDER BY end_date.yce ASC;);
+    WHERE $filter ORDER BY end_date.yce $sort;);
 } else {
     $filter = @filter ? "WHERE " . join(" AND ", @filter) : "";
     $stmt = qq(SELECT t.*, end_date.yce FROM $tbl t
     LEFT JOIN udate end_date ON t.edate = end_date.id
-    $filter ORDER BY end_date.yce ASC;);
+    $filter ORDER BY end_date.yce $sort;);
 }
 
 $sth = $dbh->prepare($stmt);
