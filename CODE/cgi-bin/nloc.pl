@@ -130,7 +130,8 @@ for (keys(%N)) {
         my %NODE = readNode($id);
         my $active = (($NODE{$id}{END_DATE} ge $today || $NODE{$id}{END_DATE} eq "NA")
               && ($NODE{$id}{INSTALL_DATE} le $today || $NODE{$id}{INSTALL_DATE} eq "NA"));
-        if (!($NODE{$id}{LAT_WGS84} eq "" && $NODE{$id}{LON_WGS84} eq "" && $NODE{$id}{ALTITUDE} eq "") && (($nodes ne "active" || $active))) {
+        my $locok = !($NODE{$id}{LAT_WGS84} eq "" && $NODE{$id}{LON_WGS84} eq "" && $NODE{$id}{ALTITUDE} eq "");
+        if ($nodes ne "active" || $active) {
             my $alias = $NODE{$id}{ALIAS};
             my $name = $NODE{$id}{NAME};
             my $type = $NODE{$id}{TYPE};
@@ -139,44 +140,42 @@ for (keys(%N)) {
             my $lat = $NODE{$id}{LAT_WGS84};
             my $lon = $NODE{$id}{LON_WGS84};
             my $alt = $NODE{$id}{ALTITUDE};
-            if ($coord eq "utm") {
-                ($lat,$lon) = geo2utm($lat,$lon);
-                $lat = sprintf("%.0f",$lat);
-                $lon = sprintf("%.0f",$lon);
-            } elsif ($coord eq "local") {
-                ($lat,$lon) = geo2utml($lat,$lon);
-                $lat = sprintf("%.0f",$lat);
-                $lon = sprintf("%.0f",$lon);
-            } elsif ($coord eq "xyz") {
-                ($lat,$lon,$alt) = geo2cart($lat,$lon,$alt);
-                $lat = sprintf("%.0f",$lat);
-                $lon = sprintf("%.0f",$lon);
-                $alt = sprintf("%.0f",$alt);
+            if ($locok) {
+                if ($coord eq "utm") {
+                    ($lat,$lon) = geo2utm($lat,$lon);
+                    $lat = sprintf("%.0f",$lat);
+                    $lon = sprintf("%.0f",$lon);
+                } elsif ($coord eq "local") {
+                    ($lat,$lon) = geo2utml($lat,$lon);
+                    $lat = sprintf("%.0f",$lat);
+                    $lon = sprintf("%.0f",$lon);
+                } elsif ($coord eq "xyz") {
+                    ($lat,$lon,$alt) = geo2cart($lat,$lon,$alt);
+                    $lat = sprintf("%.0f",$lat);
+                    $lon = sprintf("%.0f",$lon);
+                    $alt = sprintf("%.0f",$alt);
+                }
             }
 
             switch (lc($format)) {
                 case 'kml' {
-                    print "<Placemark id=\"$id\">
-    <name>$alias : $name</name>
-    <ExtendedData>
-        <Data name=\"active\">
-            <value>$active</value>
-        </Data>
-        <Data name=\"start\">
-            <value>$start</value>
-        </Data>
-        <Data name=\"end\">
-            <value>$end</value>
-        </Data>
-    </ExtendedData>
-    <description>
-        <![CDATA[<i>$type</i><br>$DOMAINS{$GRID{DOMAIN}}{NAME} / $GRID{NAME}<br><small>($GRIDType.$GRIDName.$id)</small>]]>
-    </description>
-    <open>1</open>\n<styleUrl>#webobs</styleUrl>
-    <Point>
-        <coordinates>$NODE{$id}{LON_WGS84},$NODE{$id}{LAT_WGS84},$NODE{$id}{ALTITUDE}</coordinates>
-    </Point>
-</Placemark>\n";
+                    if ($locok) {
+                    print "<Placemark id=\"$id\">\n"
+                         ."   <name>$alias : $name</name>\n"
+                         ."   <ExtendedData>\n"
+                         ."      <Data name=\"active\"><value>$active</value></Data>\n"
+                         ."      <Data name=\"start\"><value>$start</value></Data>\n"
+                         ."      <Data name=\"end\"><value>$end</value></Data>\n"
+                         ."   </ExtendedData>\n"
+                         ."   <description>\n"
+                         ."       <![CDATA[<i>$type</i><br>$DOMAINS{$GRID{DOMAIN}}{NAME} / $GRID{NAME}<br><small>($GRIDType.$GRIDName.$id)</small>]]>\n"
+                         ."   </description>\n"
+                         ."   <open>1</open>\n<styleUrl>#webobs</styleUrl>\n"
+                         ."   <Point>\n"
+                         ."      <coordinates>$NODE{$id}{LON_WGS84},$NODE{$id}{LAT_WGS84},$NODE{$id}{ALTITUDE}</coordinates>\n"
+                         ."   </Point>\n"
+                         ."</Placemark>\n";
+                    }
                 }
                 case 'csv' {
                     print "\"$id\";\"$alias\";$name;\"$type\";$lat;$lon;$alt;\"$start\";\"$end\";$active\r\n";
@@ -208,7 +207,7 @@ Francois Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2025 - Institut de Physique du Globe Paris
+WebObs - 2012-2026 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
