@@ -51,6 +51,9 @@ QUALITY_OPERATORS|+ADMIN
 # default window time for showGENFORM.pl (in days)
 DEFAULT_DAYS|365
 
+# default is descending order for showGENFORM.pl (set YES for ascending)
+SORT_ASCENDING|NO
+
 # list of 3 colors for validity: normal, warning, error (hashtag char must be escaped!)
 VALIDITY_COLORS|\#66FF66,\#FFD800,\#FFAAAA
 
