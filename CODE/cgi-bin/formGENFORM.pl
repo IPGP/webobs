@@ -444,10 +444,16 @@ function verif_form()
         } else { cbox.value = ""; }
     });
     console.log(\$("#theform"));
-    if(document.form.site.value == "") {
+    if (document.form.site.value == "") {
         alert("$__{'You must select a node associated to this record!'}");
         document.form.site.focus();
         return false;
+    }
+    
+    if (document.form.quality0.value == "checked") {
+        if (!confirm("$__{'You are modifying a validated record. Are you sure?'}")) {
+            return false;
+        }
     }
 
     var form = document.getElementById("theform");
@@ -582,7 +588,8 @@ my $title2;
 my $recinfo;
 my $val;
 my %prev_inputs;
-my $trash;
+my $trash; 
+my $qualOK;
 
 my @edate_vals;
 my @sdate_vals;
@@ -652,8 +659,9 @@ print qq[<form name="form" id="theform" action="">
 <input type="hidden" name="user" value="$client">
 <input type="hidden" name="trash" value="$trash">
 <input type="hidden" name="delete" value="">
-<input type=\"hidden\" name=\"action\" value="save">
-<input type=\"hidden\" name=\"form\" value=\"$form\">
+<input type="hidden" name=\"action\" value="save">
+<input type="hidden" name=\"form\" value=\"$form\">
+<input type="hidden" name=\"quality0\" value=\"$quality\">
 
 <table width="100%">
   <tr>
@@ -673,7 +681,7 @@ if (isok($FORM{QUALITY_CHECK})) {
             push(@uid, $_);
         }
     }
-    my $qualOK = ($clientAuth>2 || grep(/^$USERS{$CLIENT}{UID}$/,@uid));
+    $qualOK = ($clientAuth>2 || grep(/^$USERS{$CLIENT}{UID}$/,@uid));
     print "<P><input type=\"checkbox\"".($quality ? " checked":"")
       .(!$qualOK ? " disabled=\"disabled\"":"")
       ." name=\"quality\" value=\"1\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'help_genform_quality'}')\">"
@@ -1007,7 +1015,7 @@ Lucas Dassin, François Beauducel, Jérôme Touvier
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2025 - Institut de Physique du Globe Paris
+WebObs - 2012-2026 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
