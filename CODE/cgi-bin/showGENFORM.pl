@@ -87,6 +87,7 @@ my $month = strftime('%m',@tod);
 my $year  = strftime('%Y',@tod);
 my $today = strftime('%F',@tod);
 my $default_days = $FORM{DEFAULT_DAYS} // 365;
+my $datetime_format = $FORM{DATETIME_FORMAT} // "hm";
 my ($y1,$m1,$d1) = split(/[-T]/,DateTime->today()->subtract(days => $default_days - 1));
 
 # ---- get CGI parameters
@@ -481,25 +482,9 @@ for (my $i = 0; $i <= $#fs_names; $i++) {
 }
 $csvTxt .= $dlm."Comment\n";
 
-# makes the table header
-$header = "<TR>";
-if ($clientAuth > 1) {
-    my $form_url = URI->new("/cgi-bin/formGENFORM.pl");
-    $form_url->query_form('form' => $form, 'site' => $QryParm->{'node'}, 'return_url' => $return_url, 'action' => 'new');
-    $header .= "<TH rowspan=2><A href=\"$form_url\"><IMG src=\"/icons/new.png\" border=\"0\" title=\"$__{'Enter a new record'}\"></A></TH>\n";
-}
-$header .= "<TH ".($starting_date ? "colspan=3>$__{'Sampling Interval'}" : "rowspan=2>$__{'Sampling Date'}")." <I>(UTC".sprintf("%+03d",$FORM{TZ}).")</I></TH>";
-$header .= "<TH rowspan=2>$__{'Site'}</TH><TH rowspan=2>$__{'Oper'}</TH>";
-foreach(@colnam) {
-    $header .= "<TH rowspan=2></TH><TH colspan=$colspan{$_}>$_</TH>\n";
-}
-$header .= "<TH rowspan=2></TH></TR>\n"; # end with comment column
-$header .= ($starting_date ? "<TH>$__{'Start'}</YH><TH>$__{'End'}</TH><TH align=right>$__{'Days'}</TH>" : "");
-foreach(@colnam2) {
-    $header .= "<TH>".$_."</TH>\n";
-}
-$header .= "</TR>\n";
+my $dur_max = 0;
 
+# make the data table first
 for (my $j = 0; $j <= $#rows; $j++) {
     my ($id, $trash, $quality, $site, $edate, $sdate, $opers, $rem, $ts0, $user) = @{$rows[$j]}[0..$ncol];
 
@@ -527,7 +512,8 @@ for (my $j = 0; $j <= $#rows; $j++) {
         my @sdate_vals = $dbh->selectrow_array($stmt);
         $sdate = simplify_date($sdate_vals[0], $sdate_vals[1]);
         $sdate = $sdate_vals[2] ? sprintf "[ %.2e - %.2e ]", $sdate_vals[3], $sdate_vals[2] : $sdate;
-        @dur = date_duration($sdate_vals[1], $sdate_vals[0], $edate_vals[1], $edate_vals[0])
+        @dur = date_duration($sdate_vals[1], $sdate_vals[0], $edate_vals[1], $edate_vals[0], $datetime_format);
+        $dur_max = $dur[1] if ($dur[1] > $dur_max); 
     }
     $dbh->disconnect();
 
@@ -581,7 +567,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
         $text .= "<TH nowrap>$edit</TH>";
     }
     if ($starting_date) {
-        my $dur_str = ($dur[0] < $dur[1] ? "$dur[0] $__{'to_num'} $dur[1]" : $dur[0]);
+        my $dur_str = ($dur[0] ne $dur[1] ? "$dur[0] $__{'to_num'} $dur[1]" : $dur[0]);
         $text .= "<TD nowrap>$sdate</TD><TD nowrap>$edate</TD><TD class=\"tdResult\">$dur_str</TD>";
     } else {
         $text .= "<TD nowrap>$edate</TD>";
@@ -726,6 +712,29 @@ for (my $j = 0; $j <= $#rows; $j++) {
     $text .= "$remTxt</TR>\n";
 }
 
+# makes the table header
+$header = "<TR>";
+if ($clientAuth > 1) {
+    my $form_url = URI->new("/cgi-bin/formGENFORM.pl");
+    $form_url->query_form('form' => $form, 'site' => $QryParm->{'node'}, 'return_url' => $return_url, 'action' => 'new');
+    $header .= "<TH rowspan=2><A href=\"$form_url\"><IMG src=\"/icons/new.png\" border=\"0\" title=\"$__{'Enter a new record'}\"></A></TH>\n";
+}
+$header .= "<TH ".($starting_date ? "colspan=3>$__{'Sampling Interval'}" : "rowspan=2>$__{'Sampling Date'}")." <I>(UTC".sprintf("%+03d",$FORM{TZ}).")</I></TH>";
+$header .= "<TH rowspan=2>$__{'Site'}</TH><TH rowspan=2>$__{'Oper'}</TH>";
+foreach(@colnam) {
+    $header .= "<TH rowspan=2></TH><TH colspan=$colspan{$_}>$_</TH>\n";
+}
+$header .= "<TH rowspan=2></TH></TR>\n"; # end with comment column
+if ($starting_date) {
+    $header .= "<TH align=left>$__{'Start'}</TH><TH align=left>$__{'End'}</TH><TH align=right>$__{'Duration'}<BR>"
+        ."(".($datetime_format eq "hms" ? $__{'d:HH:MM:SS'}:($datetime_format eq "hm" ? $__{'d:HH:MM'}:$__{'days'})).")</TH>";
+}
+foreach(@colnam2) {
+    $header .= "<TH>".$_."</TH>\n";
+}
+$header .= "</TR>\n";
+
+# some debug info
 if ($QryParm->{'debug'}) {
     my $env = qx(env);
     $env = join(', ', map {s/^([^=]*=)/<b>$1<\/b>/g; $_;} split(/\n/, $env));
@@ -741,10 +750,12 @@ if ($QryParm->{'debug'}) {
     <LI>Field names = ".join(";", map { join(",", @$_) } @field_names)."</LI>
     <LI>Filter = $filter</LI>
     <LI>Operators = ".join(",",@OpersSelList)."</LI>
+    <LI>Duration max = $dur_max</LI>
     </UL>\n");
 }
+
 push(@html,"<P>$__{'Genform code'}: <B class='code'>FORM.$form</B><BR>\n");
-push(@html,"$__{'Date interval'} = <B>$delay days.</B><BR>\n");
+push(@html,"$__{'Date interval'} = <B>$delay $__{'days'}.</B><BR>\n");
 push(@html,"$__{'Number of records'} = <B>".($#rows+1)."</B> / $nbData.</P>\n");
 
 # displays all lists explicitely

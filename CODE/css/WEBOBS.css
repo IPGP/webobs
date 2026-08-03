@@ -153,6 +153,12 @@ input[type="submit"]:hover {
     cursor: pointer;
 }
 
+.inputNoEdit {
+    color: #555555;
+    font-weight: bold;
+    background: transparent;
+    border: none;
+}
 .inputNum {
     text-align: right;
 }

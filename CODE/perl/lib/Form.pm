@@ -337,11 +337,28 @@ sub simplify_date {
 }
 
 # from 2 date intervals ($sdate_min, $sdate_max, $edate_min, $edate_max), returns an array of min/max duration in days
+# last optional argument returns duration in day:hour:minute:second
 sub date_duration {
-    my $dur_min = sprintf("%+.3f",(str2time($_[2]) - str2time($_[1]))/86400);
-    my $dur_max = sprintf("%+.3f",(str2time($_[3]) - str2time($_[0]))/86400);
-    return ($dur_min, $dur_max);
+    my @dd = @_;
+    $dd[0] = $dd[1] if ($dd[0] eq "");
+    $dd[2] = $dd[3] if ($dd[2] eq "");
+    my $dur_min = (str2time($dd[2]) - str2time($dd[1]))/86400;
+    my $dur_max = (str2time($dd[3]) - str2time($dd[0]))/86400;
+    if (scalar(@dd) > 4 && $dd[4] ne "ymd") {
+        return (day2dhms($dur_min,$dd[4]),day2dhms($dur_max,$dd[4]));
+    } else {
+        return (sprintf("%+.0f",$dur_min), sprintf("%+.0f",$dur_max));
+    }
 }
+
+sub day2dhms {
+    my $d = shift;
+    my $f = shift;
+    my $s = sprintf("%d:%02d:%02d",int($d),int(24*($d - int($d))),int(60*($d*24 - int($d*24))));
+    $s .= sprintf(":%02.0f",60*($d*1440 - int($d*1440))) if ($f eq "hms");
+    return $s;
+}
+
 
 # extract_formula ($type) returns $formula and @x an array of used fields (input or output)
 sub extract_formula {

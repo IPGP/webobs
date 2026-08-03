@@ -2194,6 +2194,12 @@ msgstr "Début"
 msgid "End"
 msgstr "Fin"
 
+msgid "d:HH:MM:SS"
+msgstr "j:HH:MM:SS"
+
+msgid "d:HH:MM"
+msgstr "j:HH:MM"
+
 msgid "to_num"
 msgstr "à"
 
