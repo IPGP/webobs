@@ -354,14 +354,39 @@ function update_form()
     if (yy1[0]) {
         var date1 = new Date(yy1[0].value, mm1[0].value-1, dd1[0].value, hr1[0].value, mn1[0].value, sc1[0].value);
         var date2 = new Date(yy2[0].value, mm2[0].value-1, dd2[0].value, hr2[0].value, mn2[0].value, sc2[0].value);
+        if (date2 < date1) {
+           yy2[0].value = yy1[0].value;
+           mm2[0].value = mm1[0].value;
+           dd2[0].value = dd1[0].value;
+           hr2[0].value = hr1[0].value;
+           mn2[0].value = mn1[0].value;
+           sc2[0].value = sc1[0].value;
+        }
+
         duration = (date2.getTime() - date1.getTime())/86400000;
-        if (duration > 1) {
-            form.duration.value = duration.toFixed(2);
-        } else {
-            form.duration.value = duration.toFixed(5);
+        var dur = duration;
+        form.durstr.value = "";
+        if (dur >= 1) {
+            form.durstr.value = Math.floor(dur) + " $__{day}";
+            if (dur >= 2) {
+                form.durstr.value = form.durstr.value + "s";
+            }
+        }
+        dur = (dur - Math.floor(dur))*24;
+        if (dur >= 1) {
+            form.durstr.value = form.durstr.value + " " + String(Math.floor(dur)).padStart(2,"0") + " $__{h}";
+        }
+        dur = (dur - Math.floor(dur))*60;
+        if (dur >= 1) {
+            form.durstr.value = form.durstr.value + " " + String(Math.floor(dur)).padStart(2,"0") + " $__{mn}";
+        }
+        dur = (dur - Math.floor(dur))*60;
+        if (dur >= 1) {
+            form.durstr.value = form.durstr.value + " " + String(dur.toFixed(0)).padStart(2,"0") + " $__{s}";
         }
     } else {
         form.duration.value = "0";
+        form.durstr.value = "";
     }
 ];
 foreach my $f (@formulas) {
@@ -715,17 +740,18 @@ for (@NODESSelList) {
 }
 print qq(</select><BR>);
 
+print qq(<input type="hidden" name="duration">);
 if ($starting_date) {
     datetime_input(\%FORM, "sdate", \@sdate_vals, "Start Date");
     datetime_input(\%FORM, "edate", \@edate_vals, "End Date");
     if ($FORM{BANG}) {
-        print qq(<B>$__{'Duration'} =</B> <input size=5 readOnly class=inputNumNoEdit name="duration"> $__{'days'}<BR>);
+        print qq(<B>$__{'Duration'} =</B> <input size=20 readOnly class=inputNoEdit name="durstr"><BR>);
     } else {
-        print qq(<input type="hidden" name="duration">);
+        print qq(<input type="hidden" name="durstr">);
     }
 } else {
     datetime_input(\%FORM, "edate", \@edate_vals);
-    print qq(<input type="hidden" name="duration">);
+    print qq(<input type="hidden" name="durstr">);
 }
 
 # Add mandatory operator input
