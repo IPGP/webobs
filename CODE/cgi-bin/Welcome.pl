@@ -157,7 +157,7 @@ my @Misc  = readFile("$APARMS{MISC}"); # future use
 # ---- Start HTML page output
 my $titrePage = "$APARMS{TITLE}";
 print "Content-type: text/html\n\n";
-print '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">', "\n";
+print '<!DOCTYPE html>', "\n";
 print "<HTML><HEAD><title>$titrePage</title>\n",
   "<META http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">",
   "<LINK rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">",
