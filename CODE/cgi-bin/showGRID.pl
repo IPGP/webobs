@@ -163,6 +163,7 @@ my $dbh;
 
 my $titrePage = "";
 my $editCGI = "/cgi-bin/nedit.pl";
+my $urnData;
 
 $GRID{UTM_LOCAL} //= '';
 my %UTM = %{setUTMLOCAL($GRID{UTM_LOCAL})};
@@ -206,7 +207,7 @@ if (-e $statusDB) {
 # ---- Start HTML page
 #
 print "Content-type: text/html\n\n";
-print '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">', "\n";
+print '<!DOCTYPE html>', "\n";
 print "<HTML><HEAD><title>$titrePage</title>";
 print "<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">
 <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">";
@@ -388,7 +389,7 @@ if ($isForm) {
     my $orphanNodes = join('',@row);
     $sth->finish();
 
-    my $urnData = "/cgi-bin/showGENFORM.pl?form=$GRIDName";
+    $urnData = "/cgi-bin/showGENFORM.pl?form=$GRIDName";
     $htmlcontents .= "<LI>$__{'Form structure:'} "
                     ."<B>".grep(/^INPUT.._NAME/,keys(%GRID))."</B> $__{'inputs'}, "
                     ."<B>".grep(/^OUTPUT.._NAME/,keys(%GRID))."</B> $__{'outputs'}, "
@@ -398,8 +399,8 @@ if ($isForm) {
       ." <B>".grep(/^FIELDSET.._NAME/,keys(%GRID))."</B> $__{'fieldsets'}</LI>\n";
     $htmlcontents .= "<LI>$__{'First year of data:'} <B>$GRID{BANG}</B></LI>\n";
     $htmlcontents .= "<LI>$__{'Time zone for all records:'} <B>UTC".sprintf("%+03d",$GRID{TZ})."</B></LI>\n";
-    $htmlcontents .= "<LI>$__{'Total number of records:'} <B>$nbData</B> ($__{'including'} <B>$nbTrash</B> $__{'in trash'} and <B>$orphanNodes</B> in orphan nodes)</LI>\n";
-    $htmlcontents .= "<LI>$__{'Access to data'}: <A href=\"$urnData\"><IMG src='/icons/form.png' style='vertical-align:middle'></A></LI>\n";
+    $htmlcontents .= "<LI>$__{'Total number of records:'} <B>$nbData</B> ($__{'including'} <B>$nbTrash</B> $__{'in trash'} $__{'and'} <B>$orphanNodes</B> $__{'in orphan nodes'})</LI>\n";
+    $htmlcontents .= "<LI>$__{'Access to data:'} <A href=\"$urnData\"><IMG src='/icons/form.png' style='vertical-align:middle'></A></LI>\n";
 
     # get associated PROCs
     my @procgenform;
@@ -833,7 +834,7 @@ for (@{$GRID{NODESLIST}}) {
             my $lastdelay = $NODE{"$GRIDType.$GRIDName.LAST_DELAY"};
             my $acqrate = $NODE{"$GRIDType.$GRIDName.ACQ_RATE"};
 
-            $htmlcontents .= "<TD></TD><TD align=\"center\"><A href=\"/cgi-bin/showGENFORM.pl?form=$GRIDName&node=$NODEName\" title=\"$__{'Access to form data'}\"><IMG src=\"/icons/form.png\"></A></TD>";
+            $htmlcontents .= "<TD></TD><TD align=\"center\"><A href=\"/cgi-bin/showGENFORM.pl?form=$GRIDName&node=$NODEName\" title=\"$__{'Access to form data'} ($NODE{ALIAS})\"><IMG src=\"/icons/form.png\"></A></TD>";
             $htmlcontents .= "<TD align=\"center\">$nbRec</TD>";
             $htmlcontents .= "<TD align=\"center\">$lastRec</TD>";
 
@@ -1038,7 +1039,8 @@ sub tableStats {
         push(@itypes,$type);
     }
     my $txt = "<TD style='border:0;text-align:right;vertical-align:top'><TABLE class='trData'>"
-              ."<TR><TH rowspan=2></TH><TH colspan=".(uniq(@itypes)).">$__{'Type'}</TH><TH rowspan=2></TH><TH colspan=3>Export n°</TH></TR>\n"
+              ."<TR><TH rowspan=2>".(($editOK && $_[0] eq 'INPUT') ? "<A href=\"/cgi-bin/formGENFORM.pl?form=$GRIDName&return_url=/cgi-bin/showGRID.pl?grid=FORM.$GRIDName&action=new\" title=\"$__{'Add a new record'}\"><IMG src='/icons/new.png'></A>":"")."</TH>"
+              ."<TH colspan=".(uniq(@itypes)).">$__{'Type'}</TH><TH rowspan=2></TH><TH colspan=3>Export n°</TH></TR>\n"
               ."<TR>".join("",map{"<TH>$_</TH>"} uniq(@itypes))."<TH>Data</TH><TH>Error</TH><TH>Cell</TH><TR>\n";
     # adds operators and comment in front
     if ($_[0] eq 'INPUT') {
