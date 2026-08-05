@@ -298,7 +298,7 @@ $IMS10text .=   sprintf(  "STOP\\n");
 # ---- Start building HTML page -----------------------------------------------
 #
 print $cgi->header(-charset=>'utf-8');
-print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n
+print "<!DOCTYPE html>\n
 <html><head><title>$titrePage</title>\n
 <link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">\n
 <script language=\"JavaScript\" src=\"/js/jquery.js\" type=\"text/javascript\"></script>\n

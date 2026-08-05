@@ -237,7 +237,7 @@ if (($ENV{"REDIRECT_QUERY_STRING"} // '') =~ /\blogout\b/
 {
     print $cgi->header(-type=>'text/html', -charset=>'utf-8');
     print <<__EOD__;
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE html>
 <html>
     <head>
         <title>WebObs logout</title>
@@ -270,7 +270,7 @@ $pass_restriction .= ", including:<br> <b>$passwd_accepted_chars</b>";
 print $cgi->header(-type=>'text/html',-charset=>'utf-8');
 
 print <<__EOD__;
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE html>
 <html>
     <head>
         <title>WebObs registration form</title>
