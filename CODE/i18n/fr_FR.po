@@ -191,8 +191,8 @@ msgstr "Fréquence d\\'échantillonnage"
 msgid "Acquisition period"
 msgstr "Période d\\'acquisition"
 
-msgid "Access to data"
-msgstr "Accès aux données"
+msgid "Access to data:"
+msgstr "Accès aux données :"
 
 msgid "Default data format"
 msgstr "Format de données par défaut"
@@ -1610,6 +1610,18 @@ msgstr "Performance du taux d&rsquo;&eacute;chantillonnage (en %): nombre d&rsqu
 
 msgid "help_node_status"
 msgstr "Status (en %): existence d&rsquo;&eacute;chantillons valides dans le dernier d&eacute;lai d&rsquo;acquisition pour tous les canaux"
+
+msgid "Add a new record"
+msgstr "Ajouter un nouvel enregistrement"
+
+msgid "and"
+msgstr "et"
+
+msgid "in orphan nodes"
+msgstr "associés à des nodes orphelins"
+
+msgid "Access to form data"
+msgstr "Accéder au données du form"
 
 # ---- formREQ.pl
 
