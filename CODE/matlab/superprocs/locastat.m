@@ -18,7 +18,7 @@ function locastat(sta)
 
 %   Author: F. Beauducel/WEBOBS, IPGP
 %   Created: 2007-05-15
-%   Updated: 2026-04-09
+%   Updated: 2026-08-06
 
 % this will force update of all maps older than this date
 forceupdate = datenum(2019,7,23);
@@ -498,18 +498,32 @@ else
         switch G.geometry.type
         case 'LineString'
             xy = cat(1,G.geometry.coordinates{:});
+            plotshp(xy,utm)
         case 'Polygon'
             xy = cat(1,G.geometry(n).coordinates{:}{:});
+            plotshp(xy,utm)
+        case 'MultiPolygon'
+            mp = cat(2,G.geometry(n).coordinates{:});
+            for i = 1:length(mp)
+                xy = cat(1,mp{i}{:});
+                plotshp(xy,utm)
+            end
+        otherwise
+            fprintf('** WARNING: unknown geometry in geojson "%s"\n',G.geometry.type);
         end
-        if utm
-            [x,y] = ll2utm(cat(1,xy{:,2}),cat(1,xy{:,1}));
-        else
-            x = cat(1,xy{:,1});
-            y = cat(1,xy{:,2});
-        end
-        plotshape(x,y,'k','EdgeColor','r','LineWidth',2,'FaceColor','none');
     end
 end
+
+%----------------------------------------------------------------------------------------
+function plotshp(xy,utm)
+
+if utm
+    [x,y] = ll2utm(cat(1,xy{:,2}),cat(1,xy{:,1}));
+else
+    x = cat(1,xy{:,1});
+    y = cat(1,xy{:,2});
+end
+plotshape(x,y,'k','EdgeColor','r','LineWidth',2,'FaceColor','none');
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
