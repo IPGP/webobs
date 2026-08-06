@@ -290,8 +290,8 @@ msgstr "Actives"
 msgid "Coordinates"
 msgstr "Coordonnées"
 
-msgid "Lifetime and Validity"
-msgstr "Durée de vie et validité"
+msgid "Lifetime and Events Time Zone"
+msgstr "Durée de vie et fuseau horaire"
 
 msgid "Export"
 msgstr "Exporter"
@@ -1961,6 +1961,9 @@ msgstr "Résultat des requêtes"
 
 # ---- formNODE.pl
 
+msgid "Name and Description"
+msgstr "Nom, codes et description"
+
 msgid "show/hide THEIA metadata fields"
 msgstr "montrer/cacher les champs de métadonnées THEIA"
 
@@ -1988,8 +1991,11 @@ msgstr "Le thème INSPIRE fait référence à la description du modèle de donn�
 msgid "help_creationstation_lineage"
 msgstr "Décrit la généalogie du jeu de données, c'est-à-dire l'histoire du jeu de données et, s'il est connu, son cycle de vie, depuis l'acquisition et la capture d'informations jusqu'à sa compilation avec d'autres jeux de données et les variantes de sa forme actuelle."
 
-msgid "Auto-locatation"
+msgid "Auto-location"
 msgstr "Géolocalisation"
+
+msgid "Locate me!"
+msgstr "Localisez-moi !"
 
 msgid "beware_approximate_position"
 msgstr "Utilise l'API de géolocalisation HTML pour localiser l'utilisateur. Attention : la position peut être approximée de quelques mètres à plusieurs milliers de mètres, en fonction de votre localisation."
