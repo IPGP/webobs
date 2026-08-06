@@ -35,6 +35,9 @@ msgstr "Oper."
 msgid "Owner"
 msgstr "Operator"
 
+msgid "node's name"
+msgstr "node \\' name"
+
 # formulaireCREATION_STATION.pl
 
 msgid "help_creationstation_valid"
