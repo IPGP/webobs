@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-06-19
+%   Updated: 2026-08-06
 
 WO = readcfg;
 
@@ -212,6 +212,7 @@ strainmap_linewidth = field2num(P,'STRAINMAP_LINEWIDTH',3);
 strainmap_colorref = field2str(P,'STRAINMAP_COLORREF');
 strainmap_cmap = field2num(P,'STRAINMAP_COLORMAP',ryb(256),'notempty');
 strainmap_fontsize = field2num(P,'STRAINMAP_FONTSIZE',10);
+strainmap_table_fontsize = field2num(P,'STRAINMAP_TABLE_FONTSIZE',8);
 
 
 % MOTION parameters
@@ -1169,7 +1170,7 @@ for r = 1:numel(P.GTABLE)
             end
             bscol(i+1,[1,5]) = repmat({B(n).col},1,2);
         end
-        plottable(bstab,[.1,.3,.5,.7,.9],[.85,0],'ccccc',bscol,'FontSize',8)
+        plottable(bstab,[.1,.3,.5,.7,.9],[.85,0],'ccccc',bscol,'FontSize',strainmap_table_fontsize)
         set(gca,'YLim',[0,1])
         axis off
 

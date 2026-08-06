@@ -244,7 +244,10 @@ STRAINMAP_LINEWIDTH|.5,4
 # map baseline pairs color reference: strain for signed colormap, or timeseries (default)
 STRAINMAP_COLORREF|strain
 STRAINMAP_COLORMAP|ryb(256)
+# fontsize for the station names on map (empty or 0 = do not print names)
 STRAINMAP_FONTSIZE|10
+# fontsize for the data table
+STRAINMAP_TABLE_FONTSIZE|8
 
 # --- VECTORS: excluding NODES from graphs and calculations
 VECTORS_EXCLUDED_NODELIST|
