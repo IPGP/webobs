@@ -379,7 +379,7 @@ if (!($NODE{LAT_WGS84} eq "" && $NODE{LON_WGS84} eq "" && $NODE{ALTITUDE} eq "")
             if ($_ ne $NODEName) {
                 my $d = ($dist{$_}<1 ? sprintf("%8.0f&nbsp;m",1000*$dist{$_}):sprintf("%7.3f&nbsp;km",$dist{$_}));
                 my $p = ($proj{$_} ? "&nbsp;<IMG src='/icons/attention.gif' border='0' title=\"$__{'This node has a project'}\">":"");
-                print "<TR><TD align=right style='border:none'><SMALL>$d<IMG src=\"/icons/boussole/".lc(compass($bear{$_})).".png\" align=\"top\"></SMALL></TD>"
+                print "<TR><TD align=right style='border:none' nowrap><SMALL>$d<IMG src=\"/icons/boussole/".lc(compass($bear{$_})).".png\" align=\"top\"></SMALL></TD>"
                   ."<TD align=right style='border:none'><SMALL>".sprintf("%+1.0f&nbsp;m&nbsp;",($deniv{$_} // 0))."</SMALL></TD>"
                   ."<TD style='border:none'><SMALL>".getNodeString(node=>$_, link=>'node')."$p</SMALL></TD></TR>\n";
                 last if ($n++ == $NODES{NEIGHBOUR_NODES_MAX});
