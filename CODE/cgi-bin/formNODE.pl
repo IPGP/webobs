@@ -781,28 +781,34 @@ function getGeometry(geojson) {
 }
 function getBoundingBox(coordinates) {
     /**
-     * Calculate the bounding box of given coordinates
-     * \@param  {Array} coordinates Array of coordinates
-     * \@return {Array} The calculated bounding box as an array of coordinates
-     */
-    var bounds = {}, coords, point, latitude, longitude;
+    * Calculate the bounding box of given coordinates, whatever the
+    * nesting depth (Point, LineString, Polygon, Multi* ...)
+    * \@param  {Array} coordinates Nested array of coordinates
+    * \@return {Array} Closed ring [[xMin,yMin],[xMax,yMin],[xMax,yMax],[xMin,yMax],[xMin,yMin]]
+    */
+    var bounds = {xMin: Infinity, xMax: -Infinity, yMin: Infinity, yMax: -Infinity};
 
-    coords = coordinates;
-
-    for (var j = 0; j < coords.length; j++) {
-        longitude = coords[j][0];
-        latitude = coords[j][1];
-        bounds.xMin = bounds.xMin < longitude ? bounds.xMin : longitude;
-        bounds.xMax = bounds.xMax > longitude ? bounds.xMax : longitude;
-        bounds.yMin = bounds.yMin < latitude ? bounds.yMin : latitude;
-        bounds.yMax = bounds.yMax > latitude ? bounds.yMax : latitude;
+    function walk(coords) {
+        if (typeof coords[0] === 'number') {
+            var longitude = coords[0];
+            var latitude = coords[1];
+            bounds.xMin = Math.min(bounds.xMin, longitude);
+            bounds.xMax = Math.max(bounds.xMax, longitude);
+            bounds.yMin = Math.min(bounds.yMin, latitude);
+            bounds.yMax = Math.max(bounds.yMax, latitude);
+        } else {
+            coords.forEach(walk);
+        }
     }
-    var coordinates = [bounds.xMin, bounds.xMax, bounds.yMin, bounds.yMax, bounds.xMin];
-    coordinates = coordinates.map(tuple =>
-      tuple.map(x => parseFloat(x.toFixed(7)))
-    );
-
-    return coordinates;
+    walk(coordinates);
+    var box = [
+        [bounds.xMin, bounds.yMin],
+        [bounds.xMax, bounds.yMin],
+        [bounds.xMax, bounds.yMax],
+        [bounds.xMin, bounds.yMax],
+        [bounds.xMin, bounds.yMin]
+    ];
+    return box.map(pair => pair.map(x => parseFloat(x.toFixed(7))));
 }
 
 function addCreator() {
