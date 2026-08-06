@@ -14,7 +14,7 @@ function mkexport(WO,f,E,P,r,N);
 %
 %   File header is completed by additional infos from P using the variable
 %   P.EXPORT_HEADER_PROC_KEYLIST. Syntax SUMMARY:KEY exports the KEY only
-%   if SUMMARYLIST contains SUMMARY name.
+%   if SUMMARYLIST contains SUMMARY name and F name starts with 'SUMMARY_'.
 % 
 %   MKEXPORT(WO,F,E,P,R,N) adds further infos in the file header using NODE 
 %   structure N and P.EXPORT_HEADER_NODE_KEYLIST variable.
@@ -22,7 +22,7 @@ function mkexport(WO,f,E,P,r,N);
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2003-03-10
-%	Updated: 2026-04-28
+%	Updated: 2026-08-06
 
 
 ptmp = sprintf('%s/%s/%s',WO.PATH_TMP_WEBOBS,P.SELFREF,randname(16));
@@ -64,18 +64,20 @@ if fid > 0
 
     % Header node keylist
     if nargin > 5 && isstruct(N)
-        for f = 1:length(node_keylist)
-            fprintf(fid,'# NODE.%s: %s\n',node_keylist{f},field2str(N,node_keylist{f}));
+        for i = 1:length(node_keylist)
+            fprintf(fid,'# NODE.%s: %s\n',node_keylist{i},field2str(N,node_keylist{i}));
         end
     end
 
     % Header proc keylist
-    for f = 1:length(proc_keylist)
-        ss = split(proc_keylist{f},':');
-        if numel(ss) > 1 && ismember(ss(1),P.SUMMARYLIST)
-            fprintf(fid,'# PROC.%s: %s\n',ss{2},field2str(P,ss{2}));
+    for i = 1:length(proc_keylist)
+        ss = split(proc_keylist{i},':');
+        if numel(ss) > 1
+            if ismember(ss(1),P.SUMMARYLIST) && ~isempty(regexp(f,sprintf('^%s_',ss{1})))
+                fprintf(fid,'# PROC.%s: %s\n',ss{2},field2str(P,ss{2}));
+            end
         else
-            fprintf(fid,'# PROC.%s: %s\n',proc_keylist{f},field2str(P,proc_keylist{f}));
+            fprintf(fid,'# PROC.%s: %s\n',proc_keylist{i},field2str(P,proc_keylist{i}));
         end
     end
     fprintf(fid,'#\n');
