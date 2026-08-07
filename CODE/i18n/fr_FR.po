@@ -290,7 +290,7 @@ msgid "Valid"
 msgstr "Valides"
 
 msgid "Active"
-msgstr "Actives"
+msgstr "Actifs"
 
 msgid "Coordinates"
 msgstr "Coordonnées"
@@ -1245,8 +1245,11 @@ msgstr "Modification"
 msgid "Input"
 msgstr "Saisie"
 
+msgid "Show"
+msgstr "Afficher"
+
 msgid "Hide"
-msgstr "Cacher"
+msgstr "Masquer"
 
 msgid "Hide/trash this event"
 msgstr "Mettre cet événement à la corbeille"
@@ -1609,6 +1612,24 @@ msgid "string"
 msgstr "texte"
 
 # --- showGRID.pl
+
+msgid "Only"
+msgstr "Uniquement"
+
+msgid "Active_nodes"
+msgstr "Actifs"
+
+msgid "Inactive_nodes"
+msgstr "Inactifs"
+
+msgid "All_nodes"
+msgstr "Tous"
+
+msgid "Invalid nodes"
+msgstr "Nodes invalides"
+
+msgid "Lifetime and Activity Status"
+msgstr "Durée de vie et status d'activité"
 
 msgid "help_node_sampling"
 msgstr "Performance du taux d&rsquo;&eacute;chantillonnage (en %): nombre d&rsquo;&eacute;chantillons valides au cours de la derni&egrave;re p&eacute;riode de temps, compar&eacute; &agrave; l&rsquo;acquisition th&eacute;orique"

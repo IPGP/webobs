@@ -218,6 +218,15 @@ msgstr "Year %Y"
 
 # ---- showGRID.pl
 
+msgid "Active_nodes"
+msgstr "Active"
+
+msgid "Inactive_nodes"
+msgstr "Inactive"
+
+msgid "All_nodes"
+msgstr "All"
+
 msgid "help_node_sampling"
 msgstr "Sampling rate performance (in %):  number of valid samples over the last time period, compared to theoretical acquisition period"
 
