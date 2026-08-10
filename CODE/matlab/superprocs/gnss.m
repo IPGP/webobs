@@ -977,7 +977,11 @@ for r = 1:numel(P.GTABLE)
             B(n).d = d;
             B(n).o = o;
             B(n).t = tka;
-            B(n).tlast = tka(end);
+            if ~isempty(tka)
+                B(n).tlast = tka(end);
+            else
+                B(n).tlast = now;
+            end
             kvel = (isinto(B(n).t,tvel) & ~isnan(B(n).d));
             if sum(kvel)
                 B(n).rlin = polyfit(B(n).t(kvel),B(n).d(kvel),1);

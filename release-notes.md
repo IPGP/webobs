@@ -42,6 +42,7 @@ STRAINMAP_TIMESERIES_LINESTYLE|.
 STRAINMAP_TIMESERIES_MOVING_AVERAGE|30
 STRAINMAP_TIMESERIES_PAIRS_OFFSET_M|
 STRAINMAP_TIMESERIES_PAIRS_SORT|YES
+STRAINMAP_TIMESERIES_FONTSIZE|8
 STRAINMAP_WINDOW_DAYS|
 STRAINMAP_DEM_OPT|'watermark',1.5,'saturation',0,'interp','hlegend','cartesian'
 STRAINMAP_LINEWIDTH|.5,4
@@ -49,6 +50,8 @@ STRAINMAP_LINEWIDTH|.5,4
 STRAINMAP_COLORREF|strain
 STRAINMAP_COLORMAP|ryb(256)
 STRAINMAP_FONTSIZE|10
+STRAINMAP_TABLE_FONTSIZE|8
+STRAINMAP_TABLE_MAXLINES|20
 ```
     If node pairs are not defined, it computes pairs using Delaunay triangle from all nodes of the network, or selected using exclude/include options (`STRAINMAP_EXCLUDED_FROM_TARGET_KM`, `STRAINMAP_EXCLUDE_NODELIST`, `STRAINMAP_INLUDED_NODELIST`). An additional option `STRAINMAP_TIMESERIES_PAIRS_SORT` allows automatic sorting of pairs for the timeseries graph (using velocity). The summary plot computes some linear trend parameters: velocity (mm/yr), total displacement (mm), and total deformation (µstrain) from the entire window or a sub-window defined by `STRAINMAP_WINDOW_DAYS`. Baselines are computed when the time reference is the same for the two timeseries of station pair, considering a tolerance of `STRAINMAP_TOL_DAYS`. Other options are similar to the BASELINES summary plot. A map of stations is also plotted with a basemap using proc's DEM ans options `STRAINMAP_DEM_OPT` (see dem.m function). Baselines are plotted with constant linewidth of proportional to absolute strain (`STRAINMAP_LINEWIDTH` with 1 or 2 values, respectively) and color identical to timeseries (one per station) or using strain colormap (`STRAINMAP_COLORREF` and `STRAINMAP_COLORMAP`).
 1. **GNSS superproc**: active fault slip/open can be set as a priori correction on displacement data, using the Okada (1985) model, as rectangular fault in elastic medium:
