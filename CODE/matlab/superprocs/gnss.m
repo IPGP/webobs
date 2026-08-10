@@ -213,6 +213,7 @@ strainmap_colorref = field2str(P,'STRAINMAP_COLORREF');
 strainmap_cmap = field2num(P,'STRAINMAP_COLORMAP',ryb(256),'notempty');
 strainmap_fontsize = field2num(P,'STRAINMAP_FONTSIZE',10);
 strainmap_table_fontsize = field2num(P,'STRAINMAP_TABLE_FONTSIZE',8);
+strainmap_table_maxlines = field2num(P,'STRAINMAP_TABLE_MAXLINES',20);
 
 
 % MOTION parameters
@@ -975,6 +976,7 @@ for r = 1:numel(P.GTABLE)
             B(n).d = d;
             B(n).o = o;
             B(n).t = tka;
+            B(n).tlast = tka(end);
             kvel = (isinto(B(n).t,tvel) & ~isnan(B(n).d));
             if sum(kvel)
                 B(n).rlin = polyfit(B(n).t(kvel),B(n).d(kvel),1);
@@ -1001,6 +1003,9 @@ for r = 1:numel(P.GTABLE)
             end
             fprintf('   velocity %s = %+g mm/yr, total displacement = %+g mm, total deformation = %+g µstrain\n', ...
                 B(n).name,roundsd([B(n).vel,B(n).dis,B(n).def],4));
+
+            % for export: Lat1,Lon1,Lat2,Lon2,Dist,Vel_mm/yr','Disp_mm',sprintf('Def_(%cstr)',char(181))};
+            B(n).dexport = [geo(a,1:2),geo(b,1:2),B(n).length,B(n).vel,B(n).dis,B(n).def];
         end
         fprintf('---> Baselines timeseries offset = ')
         if strainmap_timeseries_offset > 0
@@ -1056,7 +1061,7 @@ for r = 1:numel(P.GTABLE)
                 end
                 text(tlim(2),lda,['   ',B(n).line],'Color',scolor(n),'FontWeight','bold', ...
                     'HorizontalAlignment','left','VerticalAlignment','middle')
-                ylim = minmax([ylim,lda+boffset*[-.5,.5]]);
+                ylim = minmax([ylim,lda+boffset*[-1,1]]);
             end
         end
         if any(isnan(ylim))
@@ -1170,6 +1175,17 @@ for r = 1:numel(P.GTABLE)
             end
             bscol(i+1,[1,5]) = repmat({B(n).col},1,2);
         end
+
+        if strainmap_table_maxlines > 1
+            bstab = bstab(1:strainmap_table_maxlines+1,:);
+            bscol = bscol(1:strainmap_table_maxlines+1,:);
+            db = length(B) - strainmap_table_maxlines;
+            if db > 0
+                bstab = [bstab;{'','',sprintf('... and %d more baselines ...',db),'',''}];
+                bscol = [bscol;repmat({'none'},1,size(bstab,2))];
+            end
+        end
+
         plottable(bstab,[.1,.3,.5,.7,.9],[.85,0],'ccccc',bscol,'FontSize',strainmap_table_fontsize)
         set(gca,'YLim',[0,1])
         axis off
@@ -1185,7 +1201,7 @@ for r = 1:numel(P.GTABLE)
 		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
    
-        % exports strain timeseries data
+        % exports strain timeseries data and parameters table
         if isok(P,'EXPORTS')
             for i = 1:length(B)
                 E.title = sprintf('%s: %s',OPT.GTITLE,B(i).name);
@@ -1195,6 +1211,14 @@ for r = 1:numel(P.GTABLE)
                 E.d = [B(i).d,B(i).strain];
                 mkexport(WO,sprintf('%s_%s_%s',summary,B(i).line,P.GTABLE(r).TIMESCALE),E,P,r);
             end
+            % parameters (sorted as in the table)
+            E.title = OPT.GTITLE;
+            E.infos = {sprintf('baselines: %s',strjoin(cat(1,{B(ix).line}),','))};
+            E.t = cat(1,B(ix).tlast);
+            E.header = {'Lat1_(N)','Lon1_(E)','Lat2_(N)','Lon2_(E)','Dist_(km)','Vel_mm/yr','Disp_mm',sprintf('Def_(%cstr)',char(181))};
+            E.d = cat(1,B(ix).dexport);
+            mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P,r);
+
         end
 	end
 
