@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-08-06
+%   Updated: 2026-08-10
 
 WO = readcfg;
 
@@ -206,6 +206,7 @@ strainmap_timeseries_linestyle = field2str(P,'STRAINMAP_TIMESERIES_LINESTYLE','.
 strainmap_timeseries_mavr = field2num(P,'STRAINMAP_TIMESERIES_MOVING_AVERAGE',30,'notempty');
 strainmap_timeseries_offset = field2num(P,'STRAINMAP_TIMESERIES_PAIRS_OFFSET_M',0);
 strainmap_timeseries_sorting = isok(P,'STRAINMAP_TIMESERIES_PAIRS_SORT',1);
+strainmap_timeseries_fontsize = field2num(P,'STRAINMAP_TIMESERIES_FONTSIZE',8);
 strainmap_win = field2num(P,'STRAINMAP_WINDOW_DAYS');
 strainmap_demopt = field2cell(P,'STRAINMAP_DEM_OPT','watermark',1.5,'interp','saturation',0,'hlegend');
 strainmap_linewidth = field2num(P,'STRAINMAP_LINEWIDTH',3);
@@ -1059,7 +1060,7 @@ for r = 1:numel(P.GTABLE)
                 if isempty(lda) || isnan(lda)
                     lda = rmean(dd);
                 end
-                text(tlim(2),lda,['   ',B(n).line],'Color',scolor(n),'FontWeight','bold', ...
+                text(tlim(2),lda,['   ',B(n).line],'Color',scolor(n),'FontSize',strainmap_timeseries_fontsize,'FontWeight','bold', ...
                     'HorizontalAlignment','left','VerticalAlignment','middle')
                 ylim = minmax([ylim,lda+boffset*[-1,1]]);
             end

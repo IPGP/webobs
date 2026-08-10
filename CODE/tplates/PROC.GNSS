@@ -235,6 +235,8 @@ STRAINMAP_TIMESERIES_MOVING_AVERAGE|30
 STRAINMAP_TIMESERIES_PAIRS_OFFSET_M|
 # sort baseline pairs from linear trend
 STRAINMAP_TIMESERIES_PAIRS_SORT|YES
+# fontsize for the timeseries baseline name
+STRAINMAP_TIMESERIES_FONTSIZE|8
 # window for linear trend parameters: all window (empty), number of days before the end (scalar), or days interval [min,max] from end (2 values)  
 STRAINMAP_WINDOW_DAYS|
 # DEM options for background basemap (see dem.m)
@@ -248,6 +250,9 @@ STRAINMAP_COLORMAP|ryb(256)
 STRAINMAP_FONTSIZE|10
 # fontsize for the data table
 STRAINMAP_TABLE_FONTSIZE|8
+# max number of lines in the data table
+STRAINMAP_TABLE_MAXLINES|20
+
 
 # --- VECTORS: excluding NODES from graphs and calculations
 VECTORS_EXCLUDED_NODELIST|
