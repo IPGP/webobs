@@ -111,7 +111,7 @@ for i = 1:length(k)
         fml = regexprep(fml,'OUTPUT([0-9]{2,3})','out(:,$1)');
         % specific Matlab syntax
         fml = regexprep(fml,'(\*\*)','.^'); % replaces ** with ^
-        fml = regexprep(fml,'(\*|/)','.$1'); % adds point before * and /
+        fml = regexprep(fml,'(\*|/)','.$1') % adds point before * and /
         eval(sprintf('out(:,i)=%s;',fml)); % computes the formula
     end
 end

@@ -22,6 +22,6 @@ clean:
 
 %: $(SRC)/superprocs/%.m
 	mkdir -p $(TMP)
-	$(MCC) $(OPT) -m -R -nodisplay -d $(TMP) $<
+	$(MCC) $(OPT) -m -R -nodisplay -a $(SRC) -d $(TMP) $<
 	mv -f $(TMP)/$(@F) $(OUT)/
 	chmod -R a+x $(OUT)/*$@*
