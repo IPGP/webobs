@@ -876,9 +876,38 @@ if [[ ${SETUPTYPE} == "install" ]]; then
 			fi
 		fi
 		if [[ -f ${DOCROOT}/CONF/htpasswd ]]; then OPTHTP=""; else OPTHTP="-c"; fi
-		verbosecho "running htpasswd -s ${OPTHTP} ${DOCROOT}/CONF/htpasswd ${USERID} "
-		htpasswd -s ${OPTHTP} ${DOCROOT}/CONF/htpasswd ${USERID}
-		errexit "htpasswd'ing ${DOCROOT}/CONF/htpasswd"
+		if ${AUTO}; then
+			# htpasswd itself prompts interactively for the password twice
+			# (New password: / Re-type new password:) - not something
+			# confirm/readkbn can intercept. Feed it from stdin instead
+			# (-i), so nothing sensitive ever appears in argv/ps output.
+			WO_USERPASSWD_WAS_GENERATED=false
+			if [[ -z "${WO_USERPASSWD}" ]]; then
+				WO_USERPASSWD=$( (openssl rand -base64 18 2>/dev/null) || tr -dc 'A-Za-z0-9' </dev/urandom | head -c 24)
+				WO_USERPASSWD_WAS_GENERATED=true
+			fi
+			if ${WO_USERPASSWD_WAS_GENERATED}; then
+				autonote "Set WebObs password for user '${USERID}' -> <randomly generated>"
+			else
+				autonote "Set WebObs password for user '${USERID}' -> <from config: WO_USERPASSWD>"
+			fi
+			htpasswd -s ${OPTHTP} -i "${DOCROOT}/CONF/htpasswd" "${USERID}" <<< "${WO_USERPASSWD}"
+			errexit "htpasswd'ing ${DOCROOT}/CONF/htpasswd"
+			if ${WO_USERPASSWD_WAS_GENERATED}; then
+				echo
+				echo "**** IMPORTANT: no WO_USERPASSWD was set, so a random WebObs password"
+				echo "**** was generated for user '${USERID}':"
+				echo "****     ${WO_USERPASSWD}"
+				echo "**** It will not be shown again - store it now, then change it from the"
+				echo "**** WebObs web interface."
+				echo
+			fi
+			unset WO_USERPASSWD WO_USERPASSWD_WAS_GENERATED
+		else
+			verbosecho "running htpasswd -s ${OPTHTP} ${DOCROOT}/CONF/htpasswd ${USERID} "
+			htpasswd -s ${OPTHTP} ${DOCROOT}/CONF/htpasswd ${USERID}
+			errexit "htpasswd'ing ${DOCROOT}/CONF/htpasswd"
+		fi
 	echo
 fi
 

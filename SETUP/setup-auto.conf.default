@@ -55,6 +55,17 @@
 # ("${WO_USERID}@localhost").
 #WO_USERMAIL=wo@example.org
 
+# Password for the WebObs web-interface account (htpasswd entry for
+# ${WO_USERID}). Empty = a random 24-character password is generated and
+# printed ONCE on the terminal at the end of the run - store it then, it
+# is never written to the report file.
+#
+# SECURITY NOTE: if you set this, the password is stored in clear text in
+# this file. Keep this file out of version control, and restrict its
+# permissions, e.g.:
+#   chmod 600 myobs.conf
+#WO_USERPASSWD=
+
 
 # ===== Upgrade only ============================================================
 
