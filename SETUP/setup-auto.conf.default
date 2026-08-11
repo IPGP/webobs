@@ -1,0 +1,196 @@
+#!/bin/bash
+# ------------------------------------------------------------------------------
+# WebObs - sample configuration file for 'setup --auto'
+# ------------------------------------------------------------------------------
+#
+# This file is simply sourced (. file) by the 'setup' script when it is
+# invoked with --config <file>. It lets you override the automatic answer
+# given to each question that setup would otherwise ask interactively.
+#
+# Usage:
+#   1) Copy this file, e.g.:  cp setup-auto.conf.default myobs.conf
+#   2) Uncomment and adapt the variables whose default value you want to
+#      change.
+#   3) Run:  ./setup --auto --config /path/to/myobs.conf
+#
+# Any variable left commented out (or simply absent) uses the built-in
+# --auto default, indicated in a comment for each entry below. These
+# --auto defaults intentionally match the ones proposed interactively by
+# 'setup' ([Y/n] -> defaults to Y, [y/N] -> defaults to N), except where
+# noted otherwise.
+#
+# NB: this file is plain bash. No spaces around '=', and quote values that
+# contain spaces.
+# ------------------------------------------------------------------------------
+
+
+# ===== General confirmation ===================================================
+
+# Confirm running setup at all (install or upgrade).
+# Auto default: Y (unlike interactive mode, which defaults to N - otherwise
+# --auto would be pointless)
+#WO_CONFIRM_SETUP=Y
+
+# If required software dependencies are missing AND --expert-mode is active,
+# continue the installation anyway.
+# Auto default: N (never install "blindly" on an incomplete system)
+#WO_CONTINUE_DESPITE_MISSING_DEPS=N
+
+
+# ===== Perl modules / system user (fresh install only) =======================
+
+# Install WebObs Perl modules system-wide (symlinks).
+# Auto default: Y
+#WO_INSTALL_PERL_MODULES_SYSTEMWIDE=Y
+
+# Unix login of the WebObs account (fresh install only; ignored on upgrade).
+# Empty = script default ("wo").
+#WO_USERID=wo
+
+# Create the above Unix user if it doesn't exist yet.
+# Auto default: Y
+#WO_CREATE_USER=Y
+
+# Email address of the WebObs user. Empty = script default
+# ("${WO_USERID}@localhost").
+#WO_USERMAIL=wo@example.org
+
+
+# ===== Upgrade only ============================================================
+
+# Automatically update and check existing configuration files during an
+# upgrade.
+# Auto default: Y
+#WO_AUTO_UPDATE_CONF_FILES=Y
+
+# Edit (vim) each updated configuration file.
+# Auto default: N -- KEEP AT N for a truly non-interactive run (a blocking
+# editor with no terminal would hang the setup).
+#WO_EDIT_UPDATED_CONF_FILES=N
+
+
+# ===== Migration from a very old installation (pre-2012) =====================
+# These variables are only used if WO_MIGRATE_OLD_STUFF=Y below.
+
+# Offer migration of pre-2012 data.
+# Auto default: N
+#WO_MIGRATE_OLD_STUFF=N
+
+# Import an existing OPERATORS/USERS file (migration only).
+#WO_IMPORT_OPERATORS_FILE=N
+#WO_OPERATORS_FILE=/path/to/OPERATORS.conf
+
+# Import an existing htpasswd file (migration only).
+#WO_IMPORT_HTPASSWD=N
+#WO_HTPASSWD_FILE=/path/to/htpasswd
+
+# Import the existing HEBDO.DAT file into the Gazette (migration only).
+#WO_IMPORT_HEBDO=N
+
+
+# ===== WebObs identification (fresh install) ===================================
+
+# Short/alphanumeric identification string for your WebObs.
+# Empty = script default (current year).
+#WO_WEBOBSID=MyObservatory
+
+
+# ===== Python environment / Downflowgo ========================================
+
+# Create the Python virtual environment (venv) and install dependencies.
+# Auto default: N (same as interactive)
+#WO_CREATE_PYTHON_VENV=N
+
+# Install Downflowgo (requires WO_CREATE_PYTHON_VENV=Y).
+# Auto default: N
+#WO_INSTALL_DOWNFLOWGO=N
+
+
+# ===== Miscellaneous ============================================================
+
+# Download the latest FDSN network codes list (requires outbound network
+# access to fdsn.org).
+# Auto default: N
+#WO_UPDATE_FDSN_CODES=N
+
+
+# ===== Apache ====================================================================
+
+# Redefine the Apache configuration (only asked during an upgrade; always
+# done during a fresh install).
+# Auto default: N
+#WO_REDEFINE_APACHE=N
+
+# Activate this DOCROOT/release as the Production WebObs by (re)writing the
+# Apache VirtualHost. WARNING: this affects your Production WebObs.
+# Auto default: Y
+#WO_ACTIVATE_APACHE_PRODUCTION=Y
+
+# Prefix for the VirtualHost log files. Empty = script default
+# ("/var/log/<apache>/webobs").
+#WO_APACHE_VARLOG=/var/log/apache2/webobs
+
+
+# ===== Directories outside DocumentRoot (SEFRAN, RAW DATA) ====================
+
+# Redefine directories outside DocumentRoot (only asked during an upgrade;
+# always done during a fresh install).
+# Auto default: N
+#WO_REDEFINE_OTHER_DIRS=N
+
+# SEFRAN output/data directory. Empty = script default
+# ("$USER_HOME/sefran").
+#WO_SEFRANROOT=/home/wo/sefran
+
+# Raw data directory. Empty = script default ("$USER_HOME/rawdata").
+#WO_RAWDATA=/home/wo/rawdata
+
+
+# ===== Matlab Compiler Runtime (if an MCR installer is present) ==============
+
+# Install the MCR if a MCR_*_installer.zip file is found in DOCROOT.
+# Auto default: Y
+#WO_INSTALL_MCR=Y
+
+# MCR installation directory. Empty = script default ("${DOCROOT}/MCR").
+#WO_MCRDIR=/opt/webobs/MCR
+
+# Delete the MCR archive once installed.
+# Auto default: N
+#WO_DELETE_MCRZIP=N
+
+
+# ===== Rights, ownership, groups (finalization) ================================
+
+# Reassess groups/owners/rights (only asked during an upgrade; always done
+# during a fresh install).
+# Auto default: N
+#WO_REASSESS_RIGHTS=N
+
+# Sub-questions of the reassessment above (each defaults to Y):
+#WO_CHMOD_RIGHTS=Y          # chmod -R 775 on CONF,LOGS,DATA,OUTG,OUTR
+#WO_CHOWN_RIGHTS=Y          # chown -R on CONF,LOGS,DATA,OUTG,OUTR
+#WO_CHMOD_OUTR_SETGID=Y     # chmod ug+s on OUTR
+#WO_ADD_APACHE_GROUP=Y      # add the Apache user to the WebObs group
+#WO_SETGID_CONF_DATA=Y      # chmod g+s on CONF and DATA
+#WO_APACHE_UMASK=Y          # add 'umask 002' to the Apache config
+
+
+# ===== systemd services (wopostboard, woscheduler) =============================
+
+# Create and enable the systemd services if not already installed.
+# Auto default: N
+#WO_INSTALL_SYSTEMD_SERVICES=N
+
+# Update the systemd service files if they differ from the templates
+# shipped with WebObs (auto mode: no diff is shown, just a binary choice).
+# Auto default: N
+#WO_UPDATE_SYSTEMD_SERVICES=N
+
+
+# ===== Final activation (upgrade only) ==========================================
+
+# If another installation is already Production, make this one the new
+# Production.
+# Auto default: N
+#WO_REPLACE_PRODUCTION=N
