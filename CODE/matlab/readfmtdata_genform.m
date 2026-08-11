@@ -21,9 +21,7 @@ function D = readfmtdata_genform(WO,P,N,F)
 %
 %	Author: François Beauducel, WEBOBS/IPGP
 %	Created: 2024-07-03, in Surabaya (Indonesia)
-%	Updated: 2026-02-17
-
-wofun = sprintf('WEBOBS{%s}',mfilename);
+%	Updated: 2026-08-11
 
 fn = upper(F.raw{1});
 tn = lower(fn);
@@ -111,7 +109,7 @@ for i = 1:length(k)
         fml = regexprep(fml,'OUTPUT([0-9]{2,3})','out(:,$1)');
         % specific Matlab syntax
         fml = regexprep(fml,'(\*\*)','.^'); % replaces ** with ^
-        fml = regexprep(fml,'(\*|/)','.$1') % adds point before * and /
+        fml = regexprep(fml,'(\*|/)','.$1'); % adds point before * and /
         eval(sprintf('out(:,i)=%s;',fml)); % computes the formula
     end
 end
