@@ -214,11 +214,14 @@ msgstr "Routine graphique"
 msgid "First year of data:"
 msgstr "Première année des données :"
 
-msgid "Form structure:"
-msgstr "Structure du Form :"
+msgid "Form parameters:"
+msgstr "Paramètres du Form :"
 
-msgid "Form layout:"
-msgstr "Mise en page du Form :"
+msgid "Structure:"
+msgstr "Structure :"
+
+msgid "Layout:"
+msgstr "Mise en page :"
 
 msgid "inputs"
 msgstr "entrées"
@@ -244,11 +247,11 @@ msgstr "dont"
 msgid "in trash"
 msgstr "dans la corbeille"
 
-msgid "Procs using this form"
+msgid "Procs using this form:"
 msgstr "Procs utilisant ce Form :"
 
-msgid "DEM"
-msgstr "MNT"
+msgid "DEM:"
+msgstr "MNT :"
 
 msgid "check file!"
 msgstr "vérifier le fichier !"
