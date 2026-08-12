@@ -110,11 +110,11 @@
 
 # Create the Python virtual environment (venv) and install dependencies.
 # Auto default: N (same as interactive)
-#WO_CREATE_PYTHON_VENV=N
+#WO_CREATE_PYTHON_VENV=Y
 
 # Install Downflowgo (requires WO_CREATE_PYTHON_VENV=Y).
 # Auto default: N
-#WO_INSTALL_DOWNFLOWGO=N
+#WO_INSTALL_DOWNFLOWGO=Y
 
 
 # ===== Miscellaneous ============================================================

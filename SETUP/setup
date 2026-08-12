@@ -812,7 +812,7 @@ fi
 # Python environment ----------------------------------------------------------
 # -----------------------------------------------------------------------------
 echo 'Python environment installation'
-if $(confirm "Create Python environment [y/N] ?" WO_CREATE_PYTHON_VENV N) ; then
+if $(confirmy "Create Python environment [Y/n] ?" WO_CREATE_PYTHON_VENV Y) ; then
     python3 -m venv ${DOCROOT}/venv/
     chown -R ${USERID}:${USERGID} ${DOCROOT}/venv/
     source ${DOCROOT}/venv/bin/activate
@@ -824,7 +824,7 @@ if $(confirm "Create Python environment [y/N] ?" WO_CREATE_PYTHON_VENV N) ; then
     # -----------------------------------------------------------------------------
     echo
     echo 'Downflowgo installation'
-    if $(confirm "Install Downflowgo [y/N] ?" WO_INSTALL_DOWNFLOWGO N) ; then
+    if $(confirmy "Install Downflowgo [Y/n] ?" WO_INSTALL_DOWNFLOWGO Y) ; then
         # downflowgo repository install
         DFGO="${PYTHON_CODE}/downflowgo/src"
         rm -Rf "${DFGO}" && mkdir "${DFGO}"
