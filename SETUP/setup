@@ -625,7 +625,6 @@ REPORT=${DOCROOT}/SETUP.CONF.README
 cp ${RELBASE}/README ${REPORT}
 cp ${RELBASE}/release-notes.md ${DOCROOT}
 mkdir -p ${DOCROOT}/DATA/DB/ # To make sure that the DB directory is there.
-mkdir -p ${DOCROOT}/DATA/NODES/ # To make sure that the NODES directory is there.
 if [[ -d ${DOCROOT}/CONF ]]; then
 	# when there already exists a ${DOCROOT}/CONF, show delta with new release:
 	echo "checking for changes to the existing ${DOCROOT}/CONF"
@@ -913,8 +912,8 @@ fi
 
 # DATA/ setup -----------------------------------------------------------------
 # -----------------------------------------------------------------------------
-if [[ -d ${DOCROOT}/DATA ]]; then
-	# when there already exists a ${DOCROOT}/DATA, show delta with new release
+if [[ -d ${DOCROOT}/DATA/NODES ]]; then
+	# when there already exists a ${DOCROOT}/DATA/NODES, show delta with new release
 	echo "checking for default files missing in existing ${DOCROOT}/DATA"
 	echo "" >>${REPORT}
 	echo "DATA/ missing default files:" >>${REPORT}
@@ -924,15 +923,10 @@ if [[ -d ${DOCROOT}/DATA ]]; then
 else
 	# need to initialize a new DATA/ directory
 	echo "setting up ${DOCROOT}/DATA from default data"
-	verbosecho "creating ${DOCROOT}/DATA"
-	rm -rf ${DOCROOT}/DATA
-	mkdir -p ${DOCROOT}/DATA
-	errexit "creating ${DOCROOT}/DATA"
 	NEWVERSION=$(grep -E 'VERSION\|' ${RELBASE}/SETUP/CONF/WEBOBS.rc)
 	NEWVERSION=${NEWVERSION##\VERSION|}
 
 	verbosecho "copying ${RELBASE}/SETUP/DATA/* to ${DOCROOT}/DATA"
-	#FB-was: cp -r ${RELBASE}/SETUP/DATA/* ${DOCROOT}/DATA
 	cp -a ${RELBASE}/SETUP/DATA/* ${DOCROOT}/DATA
 	errexit "copying default data to ${DOCROOT}/DATA"
 
