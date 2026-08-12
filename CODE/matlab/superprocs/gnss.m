@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-05-24
+%   Updated: 2026-08-10
 
 WO = readcfg;
 
@@ -206,12 +206,15 @@ strainmap_timeseries_linestyle = field2str(P,'STRAINMAP_TIMESERIES_LINESTYLE','.
 strainmap_timeseries_mavr = field2num(P,'STRAINMAP_TIMESERIES_MOVING_AVERAGE',30,'notempty');
 strainmap_timeseries_offset = field2num(P,'STRAINMAP_TIMESERIES_PAIRS_OFFSET_M',0);
 strainmap_timeseries_sorting = isok(P,'STRAINMAP_TIMESERIES_PAIRS_SORT',1);
+strainmap_timeseries_fontsize = field2num(P,'STRAINMAP_TIMESERIES_FONTSIZE',8);
 strainmap_win = field2num(P,'STRAINMAP_WINDOW_DAYS');
 strainmap_demopt = field2cell(P,'STRAINMAP_DEM_OPT','watermark',1.5,'interp','saturation',0,'hlegend');
 strainmap_linewidth = field2num(P,'STRAINMAP_LINEWIDTH',3);
 strainmap_colorref = field2str(P,'STRAINMAP_COLORREF');
 strainmap_cmap = field2num(P,'STRAINMAP_COLORMAP',ryb(256),'notempty');
 strainmap_fontsize = field2num(P,'STRAINMAP_FONTSIZE',10);
+strainmap_table_fontsize = field2num(P,'STRAINMAP_TABLE_FONTSIZE',8);
+strainmap_table_maxlines = field2num(P,'STRAINMAP_TABLE_MAXLINES',20);
 
 
 % MOTION parameters
@@ -559,13 +562,14 @@ for r = 1:numel(P.GTABLE)
 			mode = 'fixed';
 		else
             % network mode: reference station list
-			[kvref,knref] = ismemberlist(split(vref,','),{N.FID});
-			if ~isempty(vref) && all(kvref)
+            sref = split(vref,',');
+			kvref = ismemberlist({N.FID},sref);
+			if ~isempty(vref) && length(sref)==sum(kvref)
 				mode = vref;
-				if numel(knref) > 1
-					voffset = rsum(tr(knref,:)./tre(knref,:))./rsum(1./tre(knref,:));
+				if sum(kvref) > 1
+					voffset = rsum(tr(kvref,:)./tre(kvref,:))./rsum(1./tre(kvref,:));
 				else
-					voffset = tr(knref,:);
+					voffset = tr(kvref,:);
 				end
 				if any(isnan(voffset))
 					voffset = [0,0,0];
@@ -973,6 +977,11 @@ for r = 1:numel(P.GTABLE)
             B(n).d = d;
             B(n).o = o;
             B(n).t = tka;
+            if ~isempty(tka)
+                B(n).tlast = tka(end);
+            else
+                B(n).tlast = now;
+            end
             kvel = (isinto(B(n).t,tvel) & ~isnan(B(n).d));
             if sum(kvel)
                 B(n).rlin = polyfit(B(n).t(kvel),B(n).d(kvel),1);
@@ -999,6 +1008,9 @@ for r = 1:numel(P.GTABLE)
             end
             fprintf('   velocity %s = %+g mm/yr, total displacement = %+g mm, total deformation = %+g µstrain\n', ...
                 B(n).name,roundsd([B(n).vel,B(n).dis,B(n).def],4));
+
+            % for export: Lat1,Lon1,Lat2,Lon2,Dist,Vel_mm/yr','Disp_mm',sprintf('Def_(%cstr)',char(181))};
+            B(n).dexport = [geo(a,1:2),geo(b,1:2),B(n).length,B(n).vel,B(n).dis,B(n).def];
         end
         fprintf('---> Baselines timeseries offset = ')
         if strainmap_timeseries_offset > 0
@@ -1028,6 +1040,12 @@ for r = 1:numel(P.GTABLE)
         axes('Position',[.05,.5,.8,.43])
         ylim = [0,-boffset];
         for n = 1:length(B)
+            k1 = find(~isnan(B(n).d),1);
+            if ~isempty(k1)
+                B(n).strain = 1e3*(B(n).d - B(n).d(k1))/B(n).length;
+            else
+                B(n).strain = nan(size(B(n).d));
+            end
             if ~strcmpi(strainmap_timeseries_type,'displacement')
                 dd = 1e3*(B(n).d - rmedian(B(n).d))/B(n).length - boffset*n;
             else
@@ -1046,9 +1064,9 @@ for r = 1:numel(P.GTABLE)
                 if isempty(lda) || isnan(lda)
                     lda = rmean(dd);
                 end
-                text(tlim(2),lda,['   ',B(n).line],'Color',scolor(n),'FontWeight','bold', ...
+                text(tlim(2),lda,['   ',B(n).line],'Color',scolor(n),'FontSize',strainmap_timeseries_fontsize,'FontWeight','bold', ...
                     'HorizontalAlignment','left','VerticalAlignment','middle')
-                ylim = minmax([ylim,lda+boffset*[-.5,.5]]);
+                ylim = minmax([ylim,lda+boffset*[-1,1]]);
             end
         end
         if any(isnan(ylim))
@@ -1162,10 +1180,20 @@ for r = 1:numel(P.GTABLE)
             end
             bscol(i+1,[1,5]) = repmat({B(n).col},1,2);
         end
-        plottable(bstab,[.1,.3,.5,.7,.9],[.85,0],'ccccc',bscol,'FontSize',8)
+
+        if strainmap_table_maxlines > 1
+            bstab = bstab(1:strainmap_table_maxlines+1,:);
+            bscol = bscol(1:strainmap_table_maxlines+1,:);
+            db = length(B) - strainmap_table_maxlines;
+            if db > 0
+                bstab = [bstab;{'','',sprintf('... and %d more baselines ...',db),'',''}];
+                bscol = [bscol;repmat({'none'},1,size(bstab,2))];
+            end
+        end
+
+        plottable(bstab,[.1,.3,.5,.7,.9],[.85,0],'ccccc',bscol,'FontSize',strainmap_table_fontsize)
         set(gca,'YLim',[0,1])
         axis off
-
 
 		if isok(P,'PLOT_GRID')
 			grid on
@@ -1177,6 +1205,26 @@ for r = 1:numel(P.GTABLE)
         OPT.IMAP = [];
 		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
+   
+        % exports strain timeseries data and parameters table
+        if isok(P,'EXPORTS')
+            for i = 1:length(B)
+                E.title = sprintf('%s: %s',OPT.GTITLE,B(i).name);
+                E.infos = {};
+                E.t = B(i).t;
+                E.header = {'Distance_(m)',sprintf('Strain_(%cstr)',char(181))};
+                E.d = [B(i).d,B(i).strain];
+                mkexport(WO,sprintf('%s_%s_%s',summary,B(i).line,P.GTABLE(r).TIMESCALE),E,P,r);
+            end
+            % parameters (sorted as in the table)
+            E.title = OPT.GTITLE;
+            E.infos = {sprintf('baselines: %s',strjoin(cat(1,{B(ix).line}),','))};
+            E.t = cat(1,B(ix).tlast);
+            E.header = {'Lat1_(N)','Lon1_(E)','Lat2_(N)','Lon2_(E)','Dist_(km)','Vel_mm/yr','Disp_mm',sprintf('Def_(%cstr)',char(181))};
+            E.d = cat(1,B(ix).dexport);
+            mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P,r);
+
+        end
 	end
 
 	% === VECTORS: Velocity vectors map
@@ -2639,8 +2687,8 @@ for r = 1:numel(P.GTABLE)
 			IMAP(nimap).s = cell(size(M(m).t));
 			IMAP(nimap).l = cell(size(M(m).t));
 			for n = 1:numel(IMAP(nimap).s)
-				IMAP(nimap).s{n} = sprintf('''%g km (%s)<br>%s = %g %s<br>misfit = %g mm'',CAPTION,''%s (%s)''', ...
-					roundsd(M(m).d(n,3)/1e3,2),	M(m).type{n}, ...
+				IMAP(nimap).s{n} = sprintf('''depth = %g km (%s)<br>%s = %g %s<br>misfit = %g mm'',CAPTION,''%s (%s)''', ...
+					roundsd(-M(m).d(n,3)/1e3,2), M(m).type{n}, ...
 					regexprep(vtype,'\','\\'),roundsd(M(m).d(n,4)/vfactor,2), ...
 					regexprep(vunit,'\^3','<sup>3</sup>'),roundsd(M(m).e(n,5),2), ...
 					datestr(M(m).t(n),'dd-mmm-yyyy HH:MM'),mtlabel{m});

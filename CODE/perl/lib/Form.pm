@@ -203,7 +203,7 @@ sub datetime_input {
     $title = $title ? $title : "Date";
     my %FORM = %{$formref};
     my ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2, $sel_sec2);
-    my $type = $field eq "edate" || $field eq "sdate" ? "udate" : $FORM{uc($field."_TYPE")};
+    my $type = $field eq "edate" || $field eq "sdate" ? "udate($FORM{DATETIME_FORMAT})" : $FORM{uc($field."_TYPE")};
     my %datetime_length = ("ymd" => 3, "hm" => 5, "hms" => 6); # Array size mapping for Date/Time inputs
     my ($size, $default) = extract_type($type);
     my $len = exists $datetime_length{lc($size)} ? $datetime_length{lc($size)} : 3;
@@ -266,12 +266,17 @@ sub datetime_input {
         print qq(<select name=$names{mn} size="1" $ovl>);
         date_time_option(\@minuteList, $sel_mn2);
         print qq(</select>);
+    } else {
+        print qq(<input type="hidden" name="$names{hr}">);
+        print qq(<input type="hidden" name="$names{mn}">);
     }
 
     if ( scalar(@datetime) == 6 ) {
         print qq(<select name=$names{sec} size="1" $ovl>);
         date_time_option(\@secondList, $sel_sec2);
         print qq(</select>);
+    } else {
+        print qq(<input type="hidden" name="$names{sec}">);
     }
     print qq(<br>);
 
@@ -332,11 +337,28 @@ sub simplify_date {
 }
 
 # from 2 date intervals ($sdate_min, $sdate_max, $edate_min, $edate_max), returns an array of min/max duration in days
+# last optional argument returns duration in day:hour:minute:second
 sub date_duration {
-    my $dur_min = sprintf("%+.1f",(str2time($_[2]) - str2time($_[1]))/86400);
-    my $dur_max = sprintf("%+.1f",(str2time($_[3]) - str2time($_[0]))/86400);
-    return ($dur_min, $dur_max);
+    my @dd = @_;
+    $dd[0] = $dd[1] if ($dd[0] eq "");
+    $dd[2] = $dd[3] if ($dd[2] eq "");
+    my $dur_min = (str2time($dd[2]) - str2time($dd[1]))/86400;
+    my $dur_max = (str2time($dd[3]) - str2time($dd[0]))/86400;
+    if (scalar(@dd) > 4 && $dd[4] ne "ymd") {
+        return (day2dhms($dur_min,$dd[4]),day2dhms($dur_max,$dd[4]));
+    } else {
+        return (sprintf("%+.0f",$dur_min), sprintf("%+.0f",$dur_max));
+    }
 }
+
+sub day2dhms {
+    my $d = shift;
+    my $f = shift;
+    my $s = sprintf("%d:%02d:%02d",int($d),int(24*($d - int($d))),int(60*($d*24 - int($d*24))));
+    $s .= sprintf(":%02.0f",60*($d*1440 - int($d*1440))) if ($f eq "hms");
+    return $s;
+}
+
 
 # extract_formula ($type) returns $formula and @x an array of used fields (input or output)
 sub extract_formula {
@@ -367,7 +389,7 @@ sub extract_type {
     } elsif ($size =~ /\(\w+\)$/) {
         $size =~ s/^[a-z]+\((\w+)\)/$1/;
     } elsif ($size eq "udate") {
-         ($size, $default) = ("hm", 15);
+         ($size, $default) = ("hm",15);
     } else {
         $size = 5;
     }
@@ -417,11 +439,11 @@ __END__
 
 =head1 AUTHOR
 
-Didier Lafon, François Beauducel, Lucas Dassin
+Didier Lafon, François Beauducel, Lucas Dassin, Jérôme Touvier
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2025 - Institut de Physique du Globe Paris
+WebObs - 2012-2026 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

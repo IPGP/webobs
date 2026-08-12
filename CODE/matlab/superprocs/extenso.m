@@ -28,7 +28,7 @@ function DOUT=extenso(varargin)
 %
 %   Authors: F. Beauducel + J.C. Komorowski / WEBOBS, IPGP
 %   Created: 2001-10-23
-%   Updated: 2026-02-03
+%   Updated: 2026-08-11
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -252,116 +252,119 @@ end
 % Summary graphs (all proc's nodes)
 
 for r = 1:length(P.GTABLE)
+    tr = nan(length(N),1); % trends per station per component (mm/yr)
+    tre = nan(length(N),1); % trends error (mm/yr)
+    az = nan(length(N),1);
+    vx = nan(length(N),1);
+    vy = nan(length(N),1);
 
-	stitre = sprintf('%s',P.NAME);
-	tlim = [P.GTABLE(r).DATE1,P.GTABLE(r).DATE2];
-	if any(isnan(tlim))
-		tlim = [tfirstall,P.NOW];
-	end
-	OPT.GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
-	if P.GTABLE(r).STATUS
-		OPT.GSTATUS = [tlim(2),rmean(cat(1,N.STATUS)),rmean(cat(1,N.ACQUIS))];
-	end
-	OPT.INFOS = {''};
-	tr = nan(length(N),1); % trends per station per component (mm/yr)
-	tre = nan(length(N),1); % trends error (mm/yr)
-	az = nan(length(N),1);
-	vx = nan(length(N),1);
-	vy = nan(length(N),1);
+	% --- Time series graph by zones
+	summary = 'SUMMARY';
+	if any(strcmp(P.SUMMARYLIST,summary))
+        stitre = sprintf('%s',P.NAME);
+        tlim = [P.GTABLE(r).DATE1,P.GTABLE(r).DATE2];
+        if any(isnan(tlim))
+            tlim = [tfirstall,P.NOW];
+        end
+        OPT.GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
+        if P.GTABLE(r).STATUS
+            OPT.GSTATUS = [tlim(2),rmean(cat(1,N.STATUS)),rmean(cat(1,N.ACQUIS))];
+        end
+        OPT.EVENTS = [];
+        OPT.INFOS = {''};
 
-	% computes trends
-	for n = 1:length(N)
-		t = D(n).t;
-		d = D(n).d;
-		e = D(n).e;
-		k = find(t>=tlim(1) & t<=tlim(2));
-		if ~isempty(k)
-			tk = t(k);
-			dk = d(k,1);
-			k1 = k(find(~isnan(d(k,1)),1));
-            if ~isempty(k1)
-                dk = dk - d(k1,1);
-            end
-			% computes yearly trends (in mm/yr)
-			kk = find(~isnan(dk));
-			if length(kk) > 2
-				[b,stdx] = wls(tk(kk)-tk(1),dk(kk),1./e(k(kk),1));
-				tr(n) = b(1)*365.25;
-				az(n) = D(n).CLB.az(1);
-				[vx(n),vy(n)] = pol2cart((90-az(n))*pi/180,tr(n));
-				% different modes for error estimation
-				switch terrmod
-				case 2
-					tre(n) = std(dk(kk) - polyval(b,tk(kk)-tk(1)))*365.25/diff(tlim);
-				case 3
-					cc = corrcoef(tk(kk)-tk(1),dk(kk));
-					r2 = sqrt(abs(cc(2)));
-					tre(n) = stdx(1)*365.25/r2;
-					fprintf('%s: R = %g\n',N(n).ALIAS,r2);
-				otherwise
-					tre(n) = stdx(1)*365.25;
-				end
-				% all errors are adjusted with sampling completeness factor
-				if N(n).ACQ_RATE > 0
-					acq = length(kk)*N(n).ACQ_RATE/abs(diff(tlim));
-					tre(n) = tre(n)/sqrt(acq);
-				end
-			end
-		end
-	end
-
-
-	% --- Time series graph
-	figure, clf, orient tall
-
-    zones = length(find(~cellfun(@isempty,regexp(fieldnames(P),'ZONE._NAME'))));
-	for i = 1:zones
-        nlist = split(P.(sprintf('ZONE%d_NODELIST',i)),',');
-		subplot(2*zones,1,(i-1)*(zones-1)+(1:2)), extaxes(gca,[.07,0])
-		hold on
-		aliases = [];
-		ncolors = [];
-		for n = 1:length(N)
-
-			t = D(n).t;
-			d = D(n).d;
-			%e = D(n).e;
-			C = D(n).CLB;
-
-			k = find(t>=tlim(1) & t<=tlim(2));
-			if any(strcmp(N(n).FID,nlist)) && ~isempty(k)
-				tk = t(k);
+        % computes trends
+        for n = 1:length(N)
+            t = D(n).t;
+            d = D(n).d;
+            e = D(n).e;
+            k = find(t>=tlim(1) & t<=tlim(2));
+            if ~isempty(k)
+                tk = t(k);
                 dk = d(k,1);
-				k1 = k(find(~isnan(d(k,1)),1));
+                k1 = k(find(~isnan(d(k,1)),1));
                 if ~isempty(k1)
                     dk = dk - d(k1,1);
                 end
-				plot(tk,dk,summary_linestyle,'Color',scolor(n,cmap),'MarkerSize',P.GTABLE(r).MARKERSIZE,'MarkerFaceColor',scolor(n,cmap))
-				aliases = cat(2,aliases,{N(n).ALIAS});
-				ncolors = cat(2,ncolors,n);
-			end
-		end
-		hold off
-		set(gca,'XLim',tlim,'FontSize',fontsize)
-		box on
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel({sprintf('{\\bf%s}',P.(sprintf('ZONE%d_NAME',i))),sprintf('%s (%s)',C.nm{1},C.un{1})})
+                % computes yearly trends (in mm/yr)
+                kk = find(~isnan(dk));
+                if length(kk) > 2
+                    [b,stdx] = wls(tk(kk)-tk(1),dk(kk),1./e(k(kk),1));
+                    tr(n) = b(1)*365.25;
+                    az(n) = D(n).CLB.az(1);
+                    [vx(n),vy(n)] = pol2cart((90-az(n))*pi/180,tr(n));
+                    % different modes for error estimation
+                    switch terrmod
+                    case 2
+                        tre(n) = std(dk(kk) - polyval(b,tk(kk)-tk(1)))*365.25/diff(tlim);
+                    case 3
+                        cc = corrcoef(tk(kk)-tk(1),dk(kk));
+                        r2 = sqrt(abs(cc(2)));
+                        tre(n) = stdx(1)*365.25/r2;
+                        fprintf('%s: R = %g\n',N(n).ALIAS,r2);
+                    otherwise
+                        tre(n) = stdx(1)*365.25;
+                    end
+                    % all errors are adjusted with sampling completeness factor
+                    if N(n).ACQ_RATE > 0
+                        acq = length(kk)*N(n).ACQ_RATE/abs(diff(tlim));
+                        tre(n) = tre(n)/sqrt(acq);
+                    end
+                end
+            end
+        end
 
-		% legend: station aliases
-		ylim = get(gca,'YLim');
-		nl = length(aliases);
-		for n = 1:nl
-			text(tlim(1)+n*diff(tlim)/(nl+1),ylim(2),aliases(n),'Color',scolor(ncolors(n),cmap), ...
-				'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',6,'FontWeight','bold')
-		end
-		set(gca,'YLim',ylim);
-	end
 
-	tlabel(tlim,P.TZ,'FontSize',8)
+        figure, clf, orient tall
 
-	mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P,OPT)
-	close
+        zones = length(find(~cellfun(@isempty,regexp(fieldnames(P),'ZONE._NAME'))));
+        for i = 1:zones
+            nlist = split(P.(sprintf('ZONE%d_NODELIST',i)),',');
+            subplot(2*zones,1,(i-1)*(zones-1)+(1:2)), extaxes(gca,[.07,0])
+            hold on
+            aliases = [];
+            ncolors = [];
+            for n = 1:length(N)
 
+                t = D(n).t;
+                d = D(n).d;
+                %e = D(n).e;
+                C = D(n).CLB;
+
+                k = find(t>=tlim(1) & t<=tlim(2));
+                if any(strcmp(N(n).FID,nlist)) && ~isempty(k)
+                    tk = t(k);
+                    dk = d(k,1);
+                    k1 = k(find(~isnan(d(k,1)),1));
+                    if ~isempty(k1)
+                        dk = dk - d(k1,1);
+                    end
+                    plot(tk,dk,summary_linestyle,'Color',scolor(n,cmap),'MarkerSize',P.GTABLE(r).MARKERSIZE,'MarkerFaceColor',scolor(n,cmap))
+                    aliases = cat(2,aliases,{N(n).ALIAS});
+                    ncolors = cat(2,ncolors,n);
+                end
+            end
+            hold off
+            set(gca,'XLim',tlim,'FontSize',fontsize)
+            box on
+            datetick2('x',P.GTABLE(r).DATESTR)
+            ylabel({sprintf('{\\bf%s}',P.(sprintf('ZONE%d_NAME',i))),sprintf('%s (%s)',C.nm{1},C.un{1})})
+
+            % legend: station aliases
+            ylim = get(gca,'YLim');
+            nl = length(aliases);
+            for n = 1:nl
+                text(tlim(1)+n*diff(tlim)/(nl+1),ylim(2),aliases(n),'Color',scolor(ncolors(n),cmap), ...
+                    'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',6,'FontWeight','bold')
+            end
+            set(gca,'YLim',ylim);
+        end
+
+        tlabel(tlim,P.TZ,'FontSize',8)
+
+        mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P,OPT)
+        close
+    end
 
 	% --- Vectors map
 	summary = 'VECTORS';

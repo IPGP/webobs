@@ -5,7 +5,7 @@ function ss=num2tex(x,fmt)
 %
 %	Author: F. Beauducel / WEBOBS
 %	Created: 2019-02-28 in Yogyakarta (Indonesia)
-%	Updated: 2021-01-18
+%	Updated: 2026-06-17
 
 if nargin < 2
 	fmt = '%g';
@@ -23,7 +23,7 @@ for n = 1:numel(x)
 	ss{n} = s;
 end
 
-if numel(x) == 1
-	ss = ss{:};
+if isscalar(x)
+    ss = ss{:};
 end
 

@@ -19,7 +19,7 @@ GENFORM form. See formGRID.pl for description of configuration.
 
 =over
 
-=item B<date selection>
+=item B<date selection
 
 time span of the data, including partial recordings.
 y1= , m1= , d1=
@@ -53,7 +53,7 @@ use List::Util qw[min max sum];
 
 # ---- webobs stuff
 use WebObs::Config;
-use WebObs::Users qw($CLIENT clientMaxAuth);
+use WebObs::Users qw($CLIENT clientMaxAuth userName);
 use WebObs::Grids;
 use WebObs::Utils;
 use WebObs::i18n;
@@ -78,6 +78,7 @@ my @columns_geoloc = ("latitude", "northern_error", "longitude", "eastern_error"
 my @columns_udate = ("date", "date_min", "yce", "yce_min");
 
 my $title = ($FORM{NAME} ? $FORM{NAME}:$FORM{DESCRIPTION});
+my $sort = (isok($FORM{SORT_ASCENDING}) ? "ASC":"DESC");
 
 # ---- DateTime inits ----------------------------------------
 my $Ctod  = time();  my @tod  = localtime($Ctod);
@@ -85,7 +86,8 @@ my $day   = strftime('%d',@tod);
 my $month = strftime('%m',@tod);
 my $year  = strftime('%Y',@tod);
 my $today = strftime('%F',@tod);
-my $default_days = $FORM{DEFAULT_DAYS} // 30;
+my $default_days = $FORM{DEFAULT_DAYS} // 365;
+my $datetime_format = $FORM{DATETIME_FORMAT} // "hm";
 my ($y1,$m1,$d1) = split(/[-T]/,DateTime->today()->subtract(days => $default_days - 1));
 
 # ---- get CGI parameters
@@ -97,7 +99,9 @@ $QryParm->{'y2'}        //= $year;
 $QryParm->{'m2'}        //= $month;
 $QryParm->{'d2'}        //= $day;
 $QryParm->{'node'}      //= "";
+$QryParm->{'quality'}   //= "";
 $QryParm->{'trash'}     //= "0";
+$QryParm->{'opers'}     //= "";
 $QryParm->{'debug'}     //= "";
 
 my $re = $QryParm->{'filter'};
@@ -113,6 +117,16 @@ for (@{$FORM{NODESLIST}}) {
     %Ns = (%Ns, %N);
     push(@formnodes, $id) if ($QryParm->{'node'} =~ /^($id|)$/);
     push(@allFormNodes, $id);
+}
+my @OpersSelList;
+foreach my $op (split(/[, ]/, $FORM{OPERATORS_LIST})) {
+    if ($op =~ /^+/) {
+        foreach my $u (WebObs::Users::groupListUser("$op")) {
+            push(@OpersSelList, $u."|".join('',userName($u))) if (!grep(/^$u$/, @OpersSelList));
+        }
+    } else {
+        push(@OpersSelList, $op."|".join('',userName($op))) if (!grep(/^$op$/, @OpersSelList));
+    }
 }
 
 my @validity = split(/[, ]/, ($FORM{VALIDITY_COLORS} ? $FORM{VALIDITY_COLORS}:"#66FF66,#FFD800,#FFAAAA"));
@@ -161,7 +175,7 @@ if ($WEBOBS{ROOT_DATA} && $PATH_FORMDOCS && $CLIENT && $form) {
 # ---- start html if not CSV output 
 
 print $cgi->header(-charset=>'utf-8');
-print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n",
+print "<!DOCTYPE html>\n",
   "<html><head><title>".$title."</title>\n",
   "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">",
   "<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">\n";
@@ -227,7 +241,10 @@ foreach my $k (@rownames) {
 
 # get the requested data
 my @filter = "trash = 0" if (!$QryParm->{'trash'});
+push(@filter, "quality = 0") if ($QryParm->{'quality'} eq "0");
+push(@filter, "quality = 'checked'") if ($QryParm->{'quality'} eq "1");
 push(@filter, "node IN ('".join("','",@formnodes)."')") if ($#formnodes >= 0);
+push(@filter, "operators = '".$QryParm->{'opers'}."'") if ($QryParm->{'opers'} ne "");
 foreach (keys %lists) {
     my $sel_list = $QryParm->{$_};
     push(@filter, "$_ = \"$sel_list\"") if ($sel_list ne "");
@@ -244,7 +261,7 @@ if ($FORM{BANG}) {
 
     $stmt = qq(SELECT t.*, end_date.date, end_date.date_min FROM $tbl t
     LEFT JOIN udate end_date ON t.edate = end_date.id LEFT JOIN udate start_date ON t.sdate = start_date.id
-    WHERE $filter ORDER BY end_date.date ASC;);
+    WHERE $filter ORDER BY end_date.date $sort;);
 } elsif ($QryParm->{'yce_min'} ne "" && $QryParm->{'yce'} ne "") {
     $startDate = $QryParm->{'yce_min'};
     $endDate = $QryParm->{'yce'};
@@ -256,12 +273,12 @@ if ($FORM{BANG}) {
 
     $stmt = qq(SELECT t.*, end_date.*, start_date.* FROM $tbl t
     LEFT JOIN udate end_date ON t.edate = end_date.id LEFT JOIN udate start_date ON t.sdate = start_date.id
-    WHERE $filter ORDER BY end_date.yce ASC;);
+    WHERE $filter ORDER BY end_date.yce $sort;);
 } else {
     $filter = @filter ? "WHERE " . join(" AND ", @filter) : "";
     $stmt = qq(SELECT t.*, end_date.yce FROM $tbl t
     LEFT JOIN udate end_date ON t.edate = end_date.id
-    $filter ORDER BY end_date.yce ASC;);
+    $filter ORDER BY end_date.yce $sort;);
 }
 
 $sth = $dbh->prepare($stmt);
@@ -335,16 +352,25 @@ if ($FORM{BANG}) {
     for (@list_days) { print "<OPTION value=\"$_\"".($QryParm->{'d2'} eq $_ ? " selected":"").">$_</OPTION>\n" }
     print "</SELECT>\n";
 } else {
-    print qq(<b>Date min</b>:&nbsp;<input size="30" value="$QryParm->{'yce_min'}" name="yce_min" type="number" onmouseout="nd()" onmouseover="overlib('')"> );
-    print qq(<b>Date max</b>:&nbsp;<input size="30" value="$QryParm->{'yce'}" name="yce" type="number" onmouseout="nd()" onmouseover="overlib('')">);
+    print qq(<b>Date min</b>:&nbsp;<INPUT size="30" value="$QryParm->{'yce_min'}" name="yce_min" type="number" onmouseout="nd()" onmouseover="overlib('')"> );
+    print qq(<b>Date max</b>:&nbsp;<INPUT size="30" value="$QryParm->{'yce'}" name="yce" type="number" onmouseout="nd()" onmouseover="overlib('')">);
 }
-print "&nbsp;&nbsp;<select name=\"node\" size=\"1\">";
+print "&nbsp;&nbsp;<SELECT name=\"node\" size=\"1\">";
 for ("|$__{'All nodes'}",@NODESSelList) {
     my ($key,$val) = split (/\|/,$_);
     my $sel = ("$key" eq "$QryParm->{'node'}" ? "selected":"");
     print "<option $sel value=$key>$val</option>\n";
 }
-print "</select>";
+print "</SELECT>";
+if (isok($FORM{OPERATORS_FILT})) {
+    print "&nbsp;&nbsp;<B>$__{'Operator(s)'}:</B> <SELECT name=\"opers\" size=\"1\">";
+    for ("|$__{'All operators'}",@OpersSelList) {
+        my ($key,$val) = split (/\|/,$_);
+        my $sel = ("$key" eq "$QryParm->{'opers'}" ? "selected":"");
+        print "<option $sel value=$key>$val</option>\n";
+    }
+    print "</SELECT>";
+}
 print "<BR>\n";
 print " \n";
 # filters for inputs/outputs with _FILT option
@@ -376,8 +402,19 @@ print "<IMG src=\"/icons/search.png\">&nbsp;<INPUT name=\"filter\" type=\"text\"
 if ($re ne "") {
     print "<img style=\"border:0;vertical-align:text-bottom\" src=\"/icons/cancel.gif\" onClick=eraseFilter()>";
 }
+print "<BR>";
+if (isok($FORM{QUALITY_CHECK})) {
+    print "<B>$__{'Quality:'}</B> <SELECT name='quality' size='1'>"
+        ." onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_genform_quality}')\">"
+        ."<OPTION value=''>$__{'All records'}</OPTION>"
+        ."<OPTION value='1'".($QryParm->{'quality'} eq "1" ? " selected":"").">$__{'Valid records'}</OPTION>"
+        ."<OPTION value='0'".($QryParm->{'quality'} eq "0" ? " selected":"").">$__{'Unvalid records'}</OPTION>"
+        ."<SELECT>\n";
+} else {
+    print "<INPUT type=\"hidden\" name=\"quality\">";
+}
 if ($clientAuth > 1) {
-    print "<BR><INPUT type=\"checkbox\" name=\"trash\" value=\"1\"".($QryParm->{'trash'} ? " checked":"")
+    print "<INPUT type=\"checkbox\" name=\"trash\" value=\"1\"".($QryParm->{'trash'} ? " checked":"")
         ." onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_show_trash}')\">&nbsp;<B>$__{'Trash'}</B>";
 } else {
     print "<INPUT type=\"hidden\" name=\"trash\">";
@@ -445,25 +482,9 @@ for (my $i = 0; $i <= $#fs_names; $i++) {
 }
 $csvTxt .= $dlm."Comment\n";
 
-# makes the table header
-$header = "<TR>";
-if ($clientAuth > 1) {
-    my $form_url = URI->new("/cgi-bin/formGENFORM.pl");
-    $form_url->query_form('form' => $form, 'site' => $QryParm->{'node'}, 'return_url' => $return_url, 'action' => 'new');
-    $header .= "<TH rowspan=2><A href=\"$form_url\"><IMG src=\"/icons/new.png\" border=\"0\" title=\"$__{'Enter a new record'}\"></A></TH>\n";
-}
-$header .= "<TH ".($starting_date ? "colspan=3>$__{'Sampling Interval'}" : "rowspan=2>$__{'Sampling Date'}")." <I>(UTC".sprintf("%+03d",$FORM{TZ}).")</I></TH>";
-$header .= "<TH rowspan=2>$__{'Site'}</TH><TH rowspan=2>$__{'Oper'}</TH>";
-foreach(@colnam) {
-    $header .= "<TH rowspan=2></TH><TH colspan=$colspan{$_}>$_</TH>\n";
-}
-$header .= "<TH rowspan=2></TH></TR>\n"; # end with comment column
-$header .= ($starting_date ? "<TH>$__{'Start'}</YH><TH>$__{'End'}</TH><TH align=right>$__{'Days'}</TH>" : "");
-foreach(@colnam2) {
-    $header .= "<TH>".$_."</TH>\n";
-}
-$header .= "</TR>\n";
+my $dur_max = 0;
 
+# make the data table first
 for (my $j = 0; $j <= $#rows; $j++) {
     my ($id, $trash, $quality, $site, $edate, $sdate, $opers, $rem, $ts0, $user) = @{$rows[$j]}[0..$ncol];
 
@@ -491,7 +512,8 @@ for (my $j = 0; $j <= $#rows; $j++) {
         my @sdate_vals = $dbh->selectrow_array($stmt);
         $sdate = simplify_date($sdate_vals[0], $sdate_vals[1]);
         $sdate = $sdate_vals[2] ? sprintf "[ %.2e - %.2e ]", $sdate_vals[3], $sdate_vals[2] : $sdate;
-        @dur = date_duration($sdate_vals[1], $sdate_vals[0], $edate_vals[1], $edate_vals[0])
+        @dur = date_duration($sdate_vals[1], $sdate_vals[0], $edate_vals[1], $edate_vals[0], $datetime_format);
+        $dur_max = $dur[1] if ($dur[1] > $dur_max); 
     }
     $dbh->disconnect();
 
@@ -532,8 +554,8 @@ for (my $j = 0; $j <= $#rows; $j++) {
     my @nameOper;
     my @namOper;
     foreach (@operators) {
-        push(@nameOper, "<B>$_</B>: ".join('',WebObs::Users::userName($_)));
-        push(@namOper, join('',WebObs::Users::userName($_)));
+        push(@nameOper, "<B>$_</B>: ".join('',userName($_)));
+        push(@namOper, join('',userName($_)));
     }
     my $form_url = URI->new("/cgi-bin/formGENFORM.pl");
     $form_url->query_form('form' => $form, 'id' => $id, 'return_url' => $return_url, 'action' => 'edit');
@@ -545,7 +567,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
         $text .= "<TH nowrap>$edit</TH>";
     }
     if ($starting_date) {
-        my $dur_str = ($dur[0] < $dur[1] ? "$dur[0] $__{'to_num'} $dur[1]" : $dur[0]);
+        my $dur_str = ($dur[0] ne $dur[1] ? "$dur[0] $__{'to_num'} $dur[1]" : $dur[0]);
         $text .= "<TD nowrap>$sdate</TD><TD nowrap>$edate</TD><TD class=\"tdResult\">$dur_str</TD>";
     } else {
         $text .= "<TD nowrap>$edate</TD>";
@@ -666,8 +688,8 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 my @uname;
                 my @unam;
                 foreach (@uid) {
-                    push(@uname, "<B>$_</B>: ".join('',WebObs::Users::userName($_)));
-                    push(@unam, join('',WebObs::Users::userName($_)));
+                    push(@uname, "<B>$_</B>: ".join('',userName($_)));
+                    push(@unam, join('',userName($_)));
                 }
                 $val = join(', ',@uid);
                 $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('".join('<br>',@uname)."')\"";
@@ -690,6 +712,29 @@ for (my $j = 0; $j <= $#rows; $j++) {
     $text .= "$remTxt</TR>\n";
 }
 
+# makes the table header
+$header = "<TR>";
+if ($clientAuth > 1) {
+    my $form_url = URI->new("/cgi-bin/formGENFORM.pl");
+    $form_url->query_form('form' => $form, 'site' => $QryParm->{'node'}, 'return_url' => $return_url, 'action' => 'new');
+    $header .= "<TH rowspan=2><A href=\"$form_url\"><IMG src=\"/icons/new.png\" border=\"0\" title=\"$__{'Enter a new record'}\"></A></TH>\n";
+}
+$header .= "<TH ".($starting_date ? "colspan=3>$__{'Sampling Interval'}" : "rowspan=2>$__{'Sampling Date'}")." <I>(UTC".sprintf("%+03d",$FORM{TZ}).")</I></TH>";
+$header .= "<TH rowspan=2>$__{'Site'}</TH><TH rowspan=2>$__{'Oper'}</TH>";
+foreach(@colnam) {
+    $header .= "<TH rowspan=2></TH><TH colspan=$colspan{$_}>$_</TH>\n";
+}
+$header .= "<TH rowspan=2></TH></TR>\n"; # end with comment column
+if ($starting_date) {
+    $header .= "<TH align=left>$__{'Start'}</TH><TH align=left>$__{'End'}</TH><TH align=right>$__{'Duration'}<BR>"
+        ."(".($datetime_format eq "hms" ? $__{'d:HH:MM:SS'}:($datetime_format eq "hm" ? $__{'d:HH:MM'}:$__{'days'})).")</TH>";
+}
+foreach(@colnam2) {
+    $header .= "<TH>".$_."</TH>\n";
+}
+$header .= "</TR>\n";
+
+# some debug info
 if ($QryParm->{'debug'}) {
     my $env = qx(env);
     $env = join(', ', map {s/^([^=]*=)/<b>$1<\/b>/g; $_;} split(/\n/, $env));
@@ -704,10 +749,13 @@ if ($QryParm->{'debug'}) {
     <LI>Fieldsets = ".join(',',@fieldsets)."</LI>
     <LI>Field names = ".join(";", map { join(",", @$_) } @field_names)."</LI>
     <LI>Filter = $filter</LI>
+    <LI>Operators = ".join(",",@OpersSelList)."</LI>
+    <LI>Duration max = $dur_max</LI>
     </UL>\n");
 }
+
 push(@html,"<P>$__{'Genform code'}: <B class='code'>FORM.$form</B><BR>\n");
-push(@html,"$__{'Date interval'} = <B>$delay days.</B><BR>\n");
+push(@html,"$__{'Date interval'} = <B>$delay $__{'days'}.</B><BR>\n");
 push(@html,"$__{'Number of records'} = <B>".($#rows+1)."</B> / $nbData.</P>\n");
 
 # displays all lists explicitely
@@ -770,7 +818,7 @@ Lucas Dassin, François Beauducel, Jérôme Touvier
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2025 - Institut de Physique du Globe Paris
+WebObs - 2012-2026 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

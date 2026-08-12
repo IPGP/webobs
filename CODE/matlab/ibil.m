@@ -10,7 +10,7 @@ function [x,y,z] = ibil(f,crop)
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2013-09-14, Paris, France
-%	Updated: 2016-07-07
+%	Updated: 2026-08-07
 
 
 cropflag = 0;
@@ -21,7 +21,7 @@ end
 fd = [f,'.bin'];
 fh = [f,'.hdr'];
 
-fprintf('WEBOBS{ibil}: importing "%s" file... ',fd);
+wolog('importing "%s" file... ',fd);
 
 if ~exist(fd,'file')
 	error('Cannot find data file %s',fd)

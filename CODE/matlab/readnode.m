@@ -36,7 +36,7 @@ function N=readnode(WO,nodefullid,NODES);
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22
-%   Updated: 2026-01-13
+%   Updated: 2026-08-07
 
 
 if ~exist('NODES','var')
@@ -55,7 +55,7 @@ f = sprintf('%s/%s/%s.cnf',NODES.PATH_NODES,id,id);
 [p,id,e] = fileparts(f);
 
 if ~exist(f,'file')
-	fprintf('WEBOBS{%s}: ** Warning: node %s does not exist.\n',mfilename,id);
+	wolog('** Warning: node %s does not exist.\n',id);
 	N = [];
 	return
 end
@@ -213,7 +213,7 @@ if ~isempty(tr) && ~isempty(tr{1})
 			nn = nn + 1;
 			N.TRANSMISSION.NODES{nn} = tr{n};
 			N.TRANSMISSION.(sprintf('REPEATER%d',nn)) = readcfg(WO,f);
-			fprintf('WEBOBS{readnode}: %s read (repeater %d).\n',f,nn);
+			wolog('%s read (repeater %d).\n',f,nn);
 		end
 	end
 end

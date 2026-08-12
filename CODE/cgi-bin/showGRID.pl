@@ -34,6 +34,11 @@ project=
    on
    off
 
+projectonly=
+ show only nodes with a project. Default is all nodes. Options are:
+   on
+   off
+
 procparam=
  show/hide the proc parameters columns. Default value is DEFAULT_PROCPARAM_FILTER variable in GRIDS.rc. Options are:
    on
@@ -108,6 +113,8 @@ my $usrNodes = checkParam($cgi->param('nodes'), qr/^[a-zA-Z]*$/, 'nodes')
   // $GRIDS{DEFAULT_NODES_FILTER};
 my $usrCoord = checkParam($cgi->param('coord'), qr/^[a-zA-Z]*$/, 'coord')
   // $GRIDS{DEFAULT_COORDINATES};
+my $usrProjectOnly = checkParam($cgi->param('projectonly'), qr/^(on|off)?$/, 'projectonly')
+  // "off";
 my $usrProject = checkParam($cgi->param('project'), qr/^(on|off)?$/, 'project')
   // $GRIDS{DEFAULT_PROJECT_FILTER};
 my $usrProcparam = checkParam($cgi->param('procparam'),
@@ -163,6 +170,7 @@ my $dbh;
 
 my $titrePage = "";
 my $editCGI = "/cgi-bin/nedit.pl";
+my $urnData;
 
 $GRID{UTM_LOCAL} //= '';
 my %UTM = %{setUTMLOCAL($GRID{UTM_LOCAL})};
@@ -206,7 +214,7 @@ if (-e $statusDB) {
 # ---- Start HTML page
 #
 print "Content-type: text/html\n\n";
-print '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">', "\n";
+print '<!DOCTYPE html>', "\n";
 print "<HTML><HEAD><title>$titrePage</title>";
 print "<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">
 <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">";
@@ -388,7 +396,7 @@ if ($isForm) {
     my $orphanNodes = join('',@row);
     $sth->finish();
 
-    my $urnData = "/cgi-bin/showGENFORM.pl?form=$GRIDName";
+    $urnData = "/cgi-bin/showGENFORM.pl?form=$GRIDName";
     $htmlcontents .= "<LI>$__{'Form structure:'} "
                     ."<B>".grep(/^INPUT.._NAME/,keys(%GRID))."</B> $__{'inputs'}, "
                     ."<B>".grep(/^OUTPUT.._NAME/,keys(%GRID))."</B> $__{'outputs'}, "
@@ -398,8 +406,8 @@ if ($isForm) {
       ." <B>".grep(/^FIELDSET.._NAME/,keys(%GRID))."</B> $__{'fieldsets'}</LI>\n";
     $htmlcontents .= "<LI>$__{'First year of data:'} <B>$GRID{BANG}</B></LI>\n";
     $htmlcontents .= "<LI>$__{'Time zone for all records:'} <B>UTC".sprintf("%+03d",$GRID{TZ})."</B></LI>\n";
-    $htmlcontents .= "<LI>$__{'Total number of records:'} <B>$nbData</B> ($__{'including'} <B>$nbTrash</B> $__{'in trash'} and <B>$orphanNodes</B> in orphan nodes)</LI>\n";
-    $htmlcontents .= "<LI>$__{'Access to data'}: <A href=\"$urnData\"><IMG src='/icons/form.png' style='vertical-align:middle'></A></LI>\n";
+    $htmlcontents .= "<LI>$__{'Total number of records:'} <B>$nbData</B> ($__{'including'} <B>$nbTrash</B> $__{'in trash'} $__{'and'} <B>$orphanNodes</B> $__{'in orphan nodes'})</LI>\n";
+    $htmlcontents .= "<LI>$__{'Access to data:'} <A href=\"$urnData\"><IMG src='/icons/form.png' style='vertical-align:middle'></A></LI>\n";
 
     # get associated PROCs
     my @procgenform;
@@ -510,12 +518,8 @@ print $htmlcontents;
 # ---- first, submenu line for selections (list Active nodes, All,..., Coordinates type, etc....)
 #
 print "<BR>";
-$htmlcontents = "<A name=\"NODES\"></A>";
-$htmlcontents .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#nodesID');\">&nbsp;&nbsp;";
-$htmlcontents .= "$nbNodes $snm".($nbNodes > 1 ? "s":"")."&nbsp;$go2top";
-$htmlcontents .= "</div><div id=\"nodesID\">";
 
-$htmlcontents .= "<P class=\"subTitleMenu\" style=\"margin-left: 5px\">";
+$htmlcontents = "<P class=\"subTitleMenu\" style=\"margin-left: 5px\">";
 
 my $procParm = '';
 if ($isProc) {
@@ -524,47 +528,50 @@ if ($isProc) {
 
 # -- Nodes list submenu Nodes
 $htmlcontents .= "$__{'Nodes'} [ ";
-$htmlcontents .= ($usrNodes eq "active" ? "<B>$__{'Active'}</B>":"<A href=\"$myself&amp;nodes=active&amp;coord=$usrCoord&amp;project=$usrProject&amp;$procParm#NODES\">$__{'Active'}</A>");
+$htmlcontents .= ($usrNodes eq "active" ? "<B>$__{'Active_nodes'}</B>":"<A href=\"$myself&amp;nodes=active&amp;coord=$usrCoord&amp;project=$usrProject&amp;projectonly=$usrProjectOnly&amp;$procParm#NODES\">$__{'Active_nodes'}</A>");
 $htmlcontents .= " | ";
-$htmlcontents .= ($usrNodes eq "inactive" ? "<B>$__{'Inactive'}</B>":"<A href=\"$myself&amp;nodes=inactive&amp;coord=$usrCoord&amp;project=$usrProject&amp;$procParm#NODES\">$__{'Inactive'}</A>");
+$htmlcontents .= ($usrNodes eq "inactive" ? "<B>$__{'Inactive_nodes'}</B>":"<A href=\"$myself&amp;nodes=inactive&amp;coord=$usrCoord&amp;project=$usrProject&amp;projectonly=$usrProjectOnly&amp;$procParm#NODES\">$__{'Inactive_nodes'}</A>");
 $htmlcontents .= " | ";
-$htmlcontents .= ($usrNodes eq "all" ? "<B>$__{'All'}</B>":"<A href=\"$myself&amp;nodes=all&amp;coord=$usrCoord&amp;project=$usrProject$procParm#NODES\">$__{'All'}</A>");
-if ( $admOK ) {
-    $htmlcontents .= " | ".($usrInvalid eq "on" ? "<A href=\"$myself&amp;invalid=off&amp;coord=$usrCoord&amp;project=$usrProject&amp;nodes=$usrNodes$procParm#NODES\">$__{'Hide invalid'}</A>"
-        :"<A href=\"$myself&amp;invalid=on&amp;coord=$usrCoord&amp;project=$usrProject&amp;nodes=$usrNodes$procParm#NODES\">$__{'Show invalid'}</A>");
-}
+$htmlcontents .= ($usrNodes eq "all" ? "<B>$__{'All_nodes'}</B>":"<A href=\"$myself&amp;nodes=all&amp;coord=$usrCoord&amp;project=$usrProject&amp;projectonly=$usrProjectOnly$procParm#NODES\">$__{'All_nodes'}</A>");
 $htmlcontents .= " ] ";
+if ( $admOK ) {
+    $htmlcontents .= " - $__{'Invalid nodes'} [ <A href=\"$myself&amp;coord=$usrCoord&amp;project=$usrProject&amp;projectonly=$usrProjectOnly&amp;nodes=$usrNodes$procParm&amp;invalid=";
+    $htmlcontents .= ($usrInvalid eq "on" ? "off#NODES\">$__{'Hide'}":"on#NODES\">$__{'Show'}")."</A> ]";
+}
 
 # -- Nodes list submenu Coordinates
-$htmlcontents .= "- $__{Coordinates} [ "
-  .($usrCoord eq "latlon" ? "<B>Lat/Lon</B>":"<A href=\"$myself&amp;project=$usrProject&amp;nodes=$usrNodes&amp;coord=latlon$procParm#NODES\">Lat/Lon</A>")." | "
-  .($usrCoord eq "utm"    ? "<B>UTM</B>":"<A href=\"$myself&amp;project=$usrProject&amp;nodes=$usrNodes&amp;coord=utm$procParm#NODES\">UTM</A>");
+$htmlcontents .= " - $__{Coordinates} [ "
+  .($usrCoord eq "latlon" ? "<B>Lat/Lon</B>":"<A href=\"$myself&amp;project=$usrProject&amp;projectonly=$usrProjectOnly&amp;nodes=$usrNodes&amp;coord=latlon$procParm#NODES\">Lat/Lon</A>")." | "
+  .($usrCoord eq "utm"    ? "<B>UTM</B>":"<A href=\"$myself&amp;project=$usrProject&amp;projectonly=$usrProjectOnly&amp;nodes=$usrNodes&amp;coord=utm$procParm#NODES\">UTM</A>");
 if (defined($GRID{UTM_LOCAL}) && -e $GRID{UTM_LOCAL} ) {
-    $htmlcontents .= " | ".($usrCoord eq "local" ? "<B>$localCS</B>":"<A href=\"$myself&amp;project=$usrProject&amp;nodes=$usrNodes&amp;coord=local$procParm#NODES\">$localCS</A>");
+    $htmlcontents .= " | ".($usrCoord eq "local" ? "<B>$localCS</B>":"<A href=\"$myself&amp;project=$usrProject&amp;projectonly=$usrProjectOnly&amp;nodes=$usrNodes&amp;coord=local$procParm#NODES\">$localCS</A>");
 }
 $htmlcontents .= " | "
-  .($usrCoord eq "xyz"    ? "<B>XYZ</B>":"<A href=\"$myself&amp;project=$usrProject&amp;nodes=$usrNodes&amp;coord=xyz$procParm#NODES\">XYZ</A>");
-$htmlcontents .= " ] - $__{Export} [";
+  .($usrCoord eq "xyz"    ? "<B>XYZ</B>":"<A href=\"$myself&amp;project=$usrProject&amp;projectonly=$usrProjectOnly&amp;nodes=$usrNodes&amp;coord=xyz$procParm#NODES\">XYZ</A>")." ]";
+
+# -- Nodes list submenu Proc paramaters
+if ($isProc) {
+    $htmlcontents .= " - $__{'Proc parameters'} [ <A href=\"$myself&amp;nodes=$usrNodes&amp;coord=$usrCoord&amp;project=$usrProject&amp;projectonly=$usrProjectOnly&amp;procparam="
+      .($usrProcparam eq "on" ? "off#NODES\">$__{'Hide'}":"on#NODES\">$__{'Show'}")."</A> ]";
+}
+
+# -- Nodes list submenu Project
+if ( $CLIENT ne 'guest' ) {
+    $htmlcontents .= " - $__{Project} [ "
+        .($usrProjectOnly eq "on" ? "<B>$__{'Only'}</B>":"<A href=\"$myself&amp;project=$usrProject&amp;nodes=$usrNodes&amp;coord=$usrCoord$procParm&amp;projectonly=on#NODES\">$__{'Only'}</A>")." | "
+        .($usrProjectOnly eq "off" ? "<B>$__{'All nodes'}</B>":"<A href=\"$myself&amp;project=$usrProject&amp;nodes=$usrNodes&amp;coord=$usrCoord$procParm&amp;projectonly=off#NODES\">$__{'All nodes'}</A>");
+    
+    $htmlcontents .= " | <A href=\"$myself&amp;nodes=$usrNodes&amp;coord=$usrCoord$procParm&amp;projectonly=$usrProjectOnly&amp;project="
+      .($usrProject eq "on"  ? "off#NODES\">$__{'Hide'}":"on#NODES\">$__{'Show'}")."</A> ]";
+}
+# -- submenu Export
+$htmlcontents .= " - $__{Export} [";
 $htmlcontents .= " <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$grid&format=txt&amp;coord=$usrCoord&amp;nodes=$usrNodes')\" title=\"Exports TXT file\">TXT</A> |";
 $htmlcontents .= " <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$grid&format=csv&amp;coord=$usrCoord&amp;nodes=$usrNodes')\" title=\"Exports CSV file\">CSV</A>";
 if ($WEBOBS{GOOGLE_EARTH_LINK} eq 1) {
     $htmlcontents .= " | <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$grid&format=kml&amp;nodes=$usrNodes')\" title=\"Exports KML file\">KML</A>";
 }
 $htmlcontents .= " ] ";
-
-# -- Nodes list submenu Proc paramaters
-if ($isProc) {
-    $htmlcontents .= "- $__{'Proc parameters'} [ "
-      .($usrProcparam eq "on"  ? "<B>On</B>" :"<A href=\"$myself&amp;nodes=$usrNodes&amp;coord=$usrCoord&amp;project=$usrProject&amp;procparam=on#NODES\">On</A>")." | "
-      .($usrProcparam ne "on" ? "<B>Off</B>":"<A href=\"$myself&amp;nodes=$usrNodes&amp;coord=$usrCoord&amp;project=$usrProject&amp;procparam=off#NODES\">Off</A>")." ] ";
-}
-
-# -- Nodes list submenu Project
-if ( $CLIENT ne 'guest' ) {
-    $htmlcontents .= "- $__{Project} [ "
-      .($usrProject eq "on"  ? "<B>On</B>" :"<A href=\"$myself&amp;nodes=$usrNodes&amp;coord=$usrCoord&amp;project=on$procParm#NODES\">On</A>")." | "
-      .($usrProject eq "off" ? "<B>Off</B>":"<A href=\"$myself&amp;nodes=$usrNodes&amp;coord=$usrCoord&amp;project=off$procParm#NODES\">Off</A>")." ] ";
-}
 $htmlcontents .= "</P>\n";
 
 # ---- then, the Nodes' table
@@ -582,11 +589,11 @@ $htmlcontents .= ($editOK ? "<TH width=\"14px\" rowspan=2>".($admOK ? $newNODE:"
   ."<TH rowspan=2>$__{'Alias'}</TH>"
   ."<TH rowspan=2 style=\"text-align: left\">$__{'Name'}</TH>"
   ."<TH colspan=3>$__{'Coordinates'}</TH><TH rowspan=2></TH>"
-  ."<TH colspan=2>$__{'Lifetime and Validity'}</TH>"
+  ."<TH colspan=2>$__{'Lifetime and Activity Status'}</TH>"
   ."<TH rowspan=2>$__{'Type'}</TH>";
 if ($CLIENT ne 'guest') {
     $htmlcontents .= "<TH rowspan=2>$__{'Nb<br>Evnt'}</TH>";
-    $htmlcontents .= "<TH rowspan=2>$__{'Project'}</TH>" if ($usrProject eq "on");
+    $htmlcontents .= "<TH rowspan=2>".($usrProject eq "on" ? $__{'Project'}:"")."</TH>";
 }
 $htmlcontents .= "<TH colspan=3>$__{'Proc Parameters'}</TH>" if ($usrProcparam eq 'on');
 $htmlcontents .= "<TH rowspan=2></TH><TH colspan=".(@procTS).">$__{'Proc Graphs'}</TH>" if ($procOUTG);
@@ -624,6 +631,7 @@ if ($isForm) {
 }
 $htmlcontents .= "</TR>\n";
 
+my $nbNodesDisplayed = 0;
 for (@{$GRID{NODESLIST}}) {
     my $displayNode = 1;
     my $NODEName      = $_;
@@ -646,7 +654,7 @@ for (@{$GRID{NODESLIST}}) {
             $nbValides++;
         }
 
-     # is NOT active if already 'ended' OR not yet 'installed' ? do we display ?
+        # is NOT active if already 'ended' OR not yet 'installed' ? do we display ?
         if (isok($NODE{VALID}) && ($NODE{END_DATE} ne "NA" && $NODE{END_DATE} lt $today) || ($NODE{INSTALL_DATE} ne "NA" && $NODE{INSTALL_DATE} gt $today)) {
             $tcolor="node-inactive";
             if ($usrNodes eq "active") {
@@ -658,7 +666,16 @@ for (@{$GRID{NODESLIST}}) {
             }
         }
 
-# trick: execute display logic even if we don't display, but html-comment out first
+        # look for projects (projectonly filter)
+        my $pathInter = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_INTERVENTIONS}";
+        my $fileProj = "$pathInter/$NODEName"."_Projet.txt";
+        if ($usrProjectOnly eq "on" && (!(-e $fileProj) || !(-s $fileProj))) {
+            $displayNode = 0;
+        }
+
+        $nbNodesDisplayed++ if ($displayNode);
+
+        # trick: execute display logic even if we don't display, but html-comment out first
         $htmlcontents .= (!$displayNode ? "<!--":"");
         $htmlcontents .= "<TR class=\"$tcolor\">";
         $htmlcontents .= ($editOK ? "<TH><A href=\"/cgi-bin/formNODE.pl?node=$grid.$NODEName\"><IMG title=\"Edit node $NODEName\" src=\"/icons/modif.png\"></TH>":"");
@@ -713,40 +730,39 @@ for (@{$GRID{NODESLIST}}) {
 
         # #Interventions and Project file
         if ( $CLIENT ne 'guest' ) {
-            my $textProj = "";
-            my $pathInter="$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_INTERVENTIONS}";
             my @interventions  = glob("$pathInter/$NODEName*.txt");
 
             #my $nbInter  = 0;
             #find(sub { $nbInter++ if /^$NODEName.*\.txt$/ }, $pathInter);
-            $htmlcontents .= "<TD align=center><A href=\"/cgi-bin/showNODE.pl?node=$grid.$NODEName#EVENTS\">".scalar(@interventions)."</A></TD>";
-            if ($usrProject eq "on") {
-                my $fileProjName = $NODEName."_Projet.txt";
-                my $fileProj = "$pathInter/$fileProjName";
-                if ((-e $fileProj) && (-s $fileProj)) {
-                    my @proj = readFile($fileProj);
-                    @proj = grep(!/^$|^WebObs: /, @proj);
-                    chomp(@proj);
-                    if ($proj[0] =~ "|") {
-                        my @pLigne = split(/\|/,$proj[0]);
-                        my @listeNoms = split(/\+/,$pLigne[0]);
-                        my $noms = join(", ",WebObs::Users::userName(@listeNoms));
-                        my $titre = $pLigne[1];
-                        shift(@proj);
-                        if (defined($titre) && $titre ne "") {
-                            $textProj = "<b>$titre</b>";
-                        }
-                        if ($noms ne "") {
-                            $textProj = $textProj." <I>($noms)</I>";
-                        }
-                        if ($textProj ne "") {
-                            $textProj = $textProj."<br>";
-                        }
+            $htmlcontents .= "<TD align=center><A href=\"/cgi-bin/showNODE.pl?node=$grid.$NODEName#EVENTS\">".scalar(@interventions)."</A></TD><TD align=center>";
+            my $textProj = "";
+            if ((-e $fileProj) && (-s $fileProj)) {
+                my @proj = readFile($fileProj);
+                @proj = grep(!/^$|^WebObs: /, @proj);
+                chomp(@proj);
+                if ($proj[0] =~ "|") {
+                    my @pLigne = split(/\|/,$proj[0]);
+                    my @listeNoms = split(/\+/,$pLigne[0]);
+                    my $noms = join(", ",WebObs::Users::userName(@listeNoms));
+                    my $titre = $pLigne[1];
+                    shift(@proj);
+                    if (defined($titre) && $titre ne "") {
+                        $textProj = "<b>$titre</b>";
                     }
-                    $textProj = $textProj.WebObs::Wiki::wiki2html(join("\n",@proj));
+                    if ($noms ne "") {
+                        $textProj = $textProj." <I>($noms)</I>";
+                    }
+                    if ($textProj ne "") {
+                        $textProj = $textProj."<br>";
+                    }
                 }
-                $htmlcontents .= "<TD>$textProj</TD>";
+                if ($usrProject eq "on") {
+                    $htmlcontents .= $textProj.WebObs::Wiki::wiki2html(join("\n",@proj));
+                } else {
+                    $htmlcontents .= "<IMG src=\"/icons/attention.gif\" onMouseOut=\"nd()\" onMouseOver=\"overlib('".WebObs::Wiki::wiki2html(join("\n",@proj))."',CAPTION,'$NODE{ALIAS}: $textProj')\">";
+                }
             }
+            $htmlcontents .= "</TD>";
         }
 
         # Node's proc parameters
@@ -833,7 +849,7 @@ for (@{$GRID{NODESLIST}}) {
             my $lastdelay = $NODE{"$GRIDType.$GRIDName.LAST_DELAY"};
             my $acqrate = $NODE{"$GRIDType.$GRIDName.ACQ_RATE"};
 
-            $htmlcontents .= "<TD></TD><TD align=\"center\"><A href=\"/cgi-bin/showGENFORM.pl?form=$GRIDName&node=$NODEName\" title=\"$__{'Access to form data'}\"><IMG src=\"/icons/form.png\"></A></TD>";
+            $htmlcontents .= "<TD></TD><TD align=\"center\"><A href=\"/cgi-bin/showGENFORM.pl?form=$GRIDName&node=$NODEName\" title=\"$__{'Access to form data'} ($NODE{ALIAS})\"><IMG src=\"/icons/form.png\"></A></TD>";
             $htmlcontents .= "<TD align=\"center\">$nbRec</TD>";
             $htmlcontents .= "<TD align=\"center\">$lastRec</TD>";
 
@@ -884,7 +900,14 @@ for (@{$GRID{NODESLIST}}) {
 }
 $htmlcontents .= "<TR><TH colspan=\"24\" class=\"th-bottom\"></TH></TR></TABLE>";
 $htmlcontents .= "</div></div>";
-print $htmlcontents;
+
+# title of nodes section contains the number of displayed nodes
+my $htmlNodesID = "<A name=\"NODES\"></A>";
+$htmlNodesID .= "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#nodesID');\">&nbsp;&nbsp;";
+$htmlNodesID .= "$nbNodesDisplayed/$nbNodes $snm".($nbNodes > 1 ? "s":"")."&nbsp;$go2top";
+$htmlNodesID .= "</div><div id=\"nodesID\">";
+
+print $htmlNodesID.$htmlcontents;
 
 # disconnect the DB
 $dbh->disconnect() if ($isForm);
@@ -1038,7 +1061,8 @@ sub tableStats {
         push(@itypes,$type);
     }
     my $txt = "<TD style='border:0;text-align:right;vertical-align:top'><TABLE class='trData'>"
-              ."<TR><TH rowspan=2></TH><TH colspan=".(uniq(@itypes)).">$__{'Type'}</TH><TH rowspan=2></TH><TH colspan=3>Export n°</TH></TR>\n"
+              ."<TR><TH rowspan=2>".(($editOK && $_[0] eq 'INPUT') ? "<A href=\"/cgi-bin/formGENFORM.pl?form=$GRIDName&return_url=/cgi-bin/showGRID.pl?grid=FORM.$GRIDName&action=new\" title=\"$__{'Add a new record'}\"><IMG src='/icons/new.png'></A>":"")."</TH>"
+              ."<TH colspan=".(uniq(@itypes)).">$__{'Type'}</TH><TH rowspan=2></TH><TH colspan=3>Export n°</TH></TR>\n"
               ."<TR>".join("",map{"<TH>$_</TH>"} uniq(@itypes))."<TH>Data</TH><TH>Error</TH><TH>Cell</TH><TR>\n";
     # adds operators and comment in front
     if ($_[0] eq 'INPUT') {
