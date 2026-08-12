@@ -28,7 +28,7 @@ function DOUT=extenso(varargin)
 %
 %   Authors: F. Beauducel + J.C. Komorowski / WEBOBS, IPGP
 %   Created: 2001-10-23
-%   Updated: 2026-07-06
+%   Updated: 2026-08-11
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -252,6 +252,11 @@ end
 % Summary graphs (all proc's nodes)
 
 for r = 1:length(P.GTABLE)
+    tr = nan(length(N),1); % trends per station per component (mm/yr)
+    tre = nan(length(N),1); % trends error (mm/yr)
+    az = nan(length(N),1);
+    vx = nan(length(N),1);
+    vy = nan(length(N),1);
 
 	% --- Time series graph by zones
 	summary = 'SUMMARY';
@@ -267,11 +272,6 @@ for r = 1:length(P.GTABLE)
         end
         OPT.EVENTS = [];
         OPT.INFOS = {''};
-        tr = nan(length(N),1); % trends per station per component (mm/yr)
-        tre = nan(length(N),1); % trends error (mm/yr)
-        az = nan(length(N),1);
-        vx = nan(length(N),1);
-        vy = nan(length(N),1);
 
         % computes trends
         for n = 1:length(N)

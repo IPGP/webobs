@@ -79,16 +79,16 @@ COPYRIGHT2|
 
 ##[config_general]
 #yes or short or no
-CONFIG--GENERAL_USE_GUI|no
+CONFIG_GENERAL_USE_GUI|no
 #Chose either downflow or downflowgo
-CONFIG--GENERAL_MODE|downflowgo
-CONFIG--GENERAL_MAPPING_DISPLAY|yes
+CONFIG_GENERAL_MODE|downflowgo
+CONFIG_GENERAL_MAPPING_DISPLAY|yes
 
 
 ##[paths]
-PATHS_ERUPTIONS_FOLDER|/opt/webobs/OUTG/PROC.DOWNFLOWGO
+PATHS_ERUPTIONS_FOLDER|$WEBOBS{ROOT_OUTG}/PROC.DOWNFLOWGO
 PATHS_DELETE_EXISTING_RESULTS|yes
-PATHS_DEM|/opt/webobs/CODE/python/downflowgo/src/test/srtm_48_17_utm.asc
+PATHS_DEM|$WEBOBS{PYTHON_PATH}/downflowgo/src/test/srtm_48_17_utm.asc
 #csv_vent_file is 0 it will take the UTM coordinate below, if path to a file it will take the file
 PATHS_CSV_VENT_FILE|0
 
@@ -104,12 +104,12 @@ DOWNFLOW_EPSG_CODE|32740
 
 
 ##[pyflowgo]
-PYFLOWGO_JSON|/opt/webobs/CODE/python/downflowgo/src/test/PdF_template.json
+PYFLOWGO_JSON|$WEBOBS{PYTHON_PATH}/downflowgo/src/test/PdF_template.json
 #effusion_rates_input should be either O, or a number or 3 numbers representing starting, ending and step
 PYFLOWGO_EFFUSION_RATES_INPUT|5,20,5
 
 ##[mapping]
-MAPPING_IMG_TIF_MAP_BACKGROUND_PATH|/opt/webobs/CODE/python/downflowgo/src/test/HS_srtm_48_17_utm.tif
+MAPPING_IMG_TIF_MAP_BACKGROUND_PATH|$WEBOBS{PYTHON_PATH}/downflowgo/src/test/HS_srtm_48_17_utm.tif
 #lava_flow_outline_path must be point geometry
 MAPPING_MONITORING_NETWORK_PATH|0
 #lava_flow_outline_path must be polygone geometry
