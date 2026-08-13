@@ -120,7 +120,6 @@ for n = 1:length(N)
 		k = find((t >= P.GTABLE(r).DATE1 | isnan(P.GTABLE(r).DATE1)) & (t <= P.GTABLE(r).DATE2 | isnan(P.GTABLE(r).DATE2)));
 		tlim = [P.GTABLE(r).DATE1,P.GTABLE(r).DATE2];
 		if isempty(k)
-			k1 = [];
 			ke = [];
 			if any(isnan(tlim))
 				tlim = P.NOW - [1,0];
@@ -260,7 +259,7 @@ for r = 1:length(P.GTABLE)
 
 	% --- Time series graph by zones
 	summary = 'SUMMARY';
-	if any(strcmp(P.SUMMARYLIST,summary))
+    if any(strcmp(P.SUMMARYLIST,summary))
         stitre = sprintf('%s',P.NAME);
         tlim = [P.GTABLE(r).DATE1,P.GTABLE(r).DATE2];
         if any(isnan(tlim))

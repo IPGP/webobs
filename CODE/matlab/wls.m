@@ -5,7 +5,7 @@ function [b,s] = wls(x,y,w)
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: ?
-%	Updated: 2026-08-11
+%	Updated: 2026-08-12
 
 
 if nargin < 3
@@ -16,7 +16,7 @@ X = [x(:),ones(size(x(:)))];
 % to avoid error in lscov, replaces Inf values of w by 1
 w(isinf(w)) = 1;
 
-[b,s,mse] = lscov(X,y(:),w(:));
+[b,s] = lscov(X,y(:),w(:));
 
 %s = s/sqrt(mse);
 s(isinf(s)) = NaN;
