@@ -794,6 +794,10 @@ else
 		
 		verbosecho "creating WEBOBSMETA.db"
 		${RELBASE}/SETUP/createdb-WEBOBSMETA
+	cd -
+ 
+	# create SQLite DataBases of DATA/DB
+	cd ${DOCROOT}/DATA/DB
 		
 		verbosecho "creating WEBOBSFORMS.db"
 		${RELBASE}/SETUP/createdb-WEBOBSFORMS
