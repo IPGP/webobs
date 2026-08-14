@@ -22,7 +22,7 @@ function N=readnodes(WO,grids,tlim,valid);
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-23
-%   Updated: 2026-08-07
+%   Updated: 2026-08-14
 
 if nargin < 2
 	error('No few input arguments')
@@ -52,7 +52,7 @@ for i = 1:length(grids)
     if strncmp(g,'SEFRAN.',7)
         ss = split(g,'.');
         S3 = readcfg(WO,sprintf('/etc/webobs.d/SEFRANS/%s/%s.conf',ss{2},ss{2}));
-        fdsnws = field2str(S3,'FDSNWS_SERVER');
+        fdsnws = field2str(S3,'FDSNWS_SERVER','x');
         if isempty(regexp(fdsnws,'^http'))
             fdsnws = ['https://',fdsnws];
         end
