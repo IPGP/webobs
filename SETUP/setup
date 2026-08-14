@@ -896,16 +896,6 @@ if [[ ${SETUPTYPE} == "install" ]]; then
 			fi
 			htpasswd -s ${OPTHTP} -i "${DOCROOT}/CONF/htpasswd" "${USERID}" <<< "${WO_USERPASSWD}"
 			errexit "htpasswd'ing ${DOCROOT}/CONF/htpasswd"
-			if ${WO_USERPASSWD_WAS_GENERATED}; then
-				echo
-				echo "**** IMPORTANT: no WO_USERPASSWD was set, so a random WebObs password"
-				echo "**** was generated for user '${USERID}':"
-				echo "****     ${WO_USERPASSWD}"
-				echo "**** It will not be shown again - store it now, then change it from the"
-				echo "**** WebObs web interface."
-				echo
-			fi
-			unset WO_USERPASSWD WO_USERPASSWD_WAS_GENERATED
 		else
 			verbosecho "running htpasswd -s ${OPTHTP} ${DOCROOT}/CONF/htpasswd ${USERID} "
 			htpasswd -s ${OPTHTP} ${DOCROOT}/CONF/htpasswd ${USERID}
@@ -1258,3 +1248,14 @@ if [[ $qsysrc == 2 ]]; then
 	echo "activating WebObs requires that you (re)start Apache, WebObs scheduler and WebObs postboard"
 fi
 echo
+
+if ${WO_USERPASSWD_WAS_GENERATED}; then
+	echo
+	echo "**** IMPORTANT: no WO_USERPASSWD was set, so a random WebObs password"
+	echo "**** was generated for user '${USERID}':"
+	echo "****     ${WO_USERPASSWD}"
+	echo "**** It will not be shown again - store it now, then change it from the"
+	echo "**** WebObs web interface."
+	echo
+fi
+unset WO_USERPASSWD WO_USERPASSWD_WAS_GENERATED
