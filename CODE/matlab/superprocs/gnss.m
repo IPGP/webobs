@@ -80,9 +80,6 @@ enu = {'E','N','U'};
 cmpnames = split(field2str(P,'COMPONENT_NAMELIST','Relative Eastern,Relative Northern,Relative Vertical'),',');
 disp_yscale = field2num(P,'DISP_YSCALE_M',0);
 
-export_header_proc_keylist = split(field2str(P,'EXPORT_HEADER_PROC_KEYLIST',''),',');
-export_header_node_keylist = split(field2str(P,'EXPORT_HEADER_NODE_KEYLIST',''),',');	
-
 % Harmonic correction: period list (day), pairs of sine, cosine (mm) for each component
 harm_refdate = field2num(P,'HARMONIC_ORIGIN_DATE');
 harm_period = field2num(P,'HARMONIC_PERIOD_DAY',0);
@@ -713,7 +710,7 @@ for r = 1:numel(P.GTABLE)
                 end
             else
                 E.d = nan(0,7);
-			end
+		    end
 
 			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P,r,N(n));
 		end
@@ -877,7 +874,7 @@ for r = 1:numel(P.GTABLE)
 	if any(strcmp(P.SUMMARYLIST,summary))
 
         % component indexes (5:6 for horizontal only, 5:7 for 3-components)
-		if strainmap_horizonly
+	    if strainmap_horizonly
             ndim = '2-D';
             ib = 5:6;
         else
@@ -1147,7 +1144,7 @@ for r = 1:numel(P.GTABLE)
             colormap(cmap)
             caxis([0,1])
             %title(sprintf('Linear deformation (%cstrain)',char(181)),'FontSize',10)
-		end
+        end
 
         % numeric information (max values in bold)
         axes('Position',[0.6,.05,.4,.4])
@@ -1415,7 +1412,7 @@ for r = 1:numel(P.GTABLE)
 
     % === VFLOW: vectors in time (dynamic interface)
 	summary = 'VFLOW';
-	if any(strcmp(P.SUMMARYLIST,summary))
+    if any(strcmp(P.SUMMARYLIST,summary))
 		vtlabel = cell(1,numel(vflow_period));
 		for m = 1:numel(vflow_period)
 			vtp = vflow_period(m);
@@ -1434,7 +1431,7 @@ for r = 1:numel(P.GTABLE)
             % initiates the vectors matrix
             W(m).v = nan(numel(W(m).t),numel(kn),6); % time x station x components
 
-			for w = 1:numel(W(m).t)
+            for w = 1:numel(W(m).t)
 				t2 = W(m).t(w);
 				if vflow_period(m) > 0
 					wlim = t2 - [vflow_period(m),0];
@@ -1498,7 +1495,7 @@ for r = 1:numel(P.GTABLE)
 		end
 
 		% exports data (1 file per station)
-		if isok(P,'EXPORTS')
+        if isok(P,'EXPORTS')
 			E.t = W(1).t;
 
             n = 6;
@@ -1704,7 +1701,7 @@ for r = 1:numel(P.GTABLE)
 		% minimum number of stations must be a valid number
 		modelnet_minsta = max(min(modelnet_minsta,length(kn)),1);
 
-		if length(kn) > 0
+		if ~isempty(kn)
 
 			% makes the XYZ space
 			if modelnet_target_included && ~isempty(targetll)
@@ -2402,7 +2399,7 @@ for r = 1:numel(P.GTABLE)
 		dt = max(modeltime_sampling,ceil(numel(modeltime_period)*diff(tlim)/modeltime_max/modeltime_sampling)*modeltime_sampling);
 
 		% loop on the model source type
-		for mst = split(modeltime_source_type,',')
+        for mst = split(modeltime_source_type,',')
 			mt = lower(char(mst));
 
 			switch mt
@@ -2473,7 +2470,6 @@ for r = 1:numel(P.GTABLE)
 					k = find(isinto(D(n).t,wlim));
 					for i = 1:3
 						if ~isempty(k) && ~all(isnan(D(n).d(k,i+4)))
-							k1 = k(find(~isnan(D(n).d(k,i+4)),1,'first'));
 							ke = k(find(~isnan(D(n).d(k,i+4)),1,'last'));
 							[tk,dk,lr,trd] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),D(n).e(k,i),P.GTABLE(r).DECIMATE,P,1);
 							tr(j,i) = trd(1);
@@ -2854,7 +2850,7 @@ for r = 1:numel(P.GTABLE)
 		clear IMAP
 
 		% exports data
-		if isok(P,'EXPORTS')
+        if isok(P,'EXPORTS')
 			E.t = M(1).t;
 
             % modeltime results
@@ -2875,7 +2871,7 @@ for r = 1:numel(P.GTABLE)
 			end
 			E.title = sprintf('%s {%s}',OPT.GTITLE,upper(sprintf('%s_%s',proc,summary)));
 			E.infos = {sprintf('Source type: %s',mt)};
-			for m = 1:numel(modeltime_period)
+            for m = 1:numel(modeltime_period)
                 E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,modeltime_period(m),days2h(modeltime_period(m),'round')));
             end
             mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P,r);
@@ -3005,9 +3001,9 @@ opt = {P.fault_rgb,'FaceColor','none','LineWidth',2,'EdgeAlpha',.5};
 
 switch geometry
 case 'xy'
-    patch(x_fault,y_fault,opt{:});
+    h = patch(x_fault,y_fault,opt{:});
 case 'xz'
-    patch(x_fault,z_fault,opt{:});
+    h = patch(x_fault,z_fault,opt{:});
 case 'zy'
-    patch(z_fault,y_fault,opt{:});
+    h = patch(z_fault,y_fault,opt{:});
 end

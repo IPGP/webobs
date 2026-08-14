@@ -794,6 +794,10 @@ else
 		
 		verbosecho "creating WEBOBSMETA.db"
 		${RELBASE}/SETUP/createdb-WEBOBSMETA
+	cd -
+ 
+	# create SQLite DataBases of DATA/DB
+	cd ${DOCROOT}/DATA/DB
 		
 		verbosecho "creating WEBOBSFORMS.db"
 		${RELBASE}/SETUP/createdb-WEBOBSFORMS
@@ -824,7 +828,7 @@ if $(confirmy "Create Python environment [Y/n] ?" WO_CREATE_PYTHON_VENV Y) ; the
     # -----------------------------------------------------------------------------
     echo
     echo 'Downflowgo installation'
-    if $(confirmy "Install Downflowgo [Y/n] ?" WO_INSTALL_DOWNFLOWGO Y) ; then
+    if $(confirm "Install Downflowgo [y/N] ?" WO_INSTALL_DOWNFLOWGO N) ; then
         # downflowgo repository install
         DFGO="${PYTHON_CODE}/downflowgo/src"
         rm -Rf "${DFGO}" && mkdir "${DFGO}"

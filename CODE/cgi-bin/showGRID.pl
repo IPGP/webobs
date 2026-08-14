@@ -308,6 +308,13 @@ if ($showOwnr && defined($GRID{OWNCODE})) {
 if ($showType && defined $GRID{TYPE} && $GRID{TYPE} ne "") {
     $htmlcontents .= "<LI>$__{'Type'}: <B>$GRID{TYPE}</B></LI>\n";
 }
+
+# -----------
+my $txt = "<B>SRTM/ETOPO</B> (default)";
+if (defined $GRID{DEM_FILE} && $GRID{DEM_FILE} ne "") {
+    $txt = "<B>$GRID{DEM_FILE}</B>".(-e "$GRID{DEM_FILE}" ? "":" <I>($__{'check file!'})</I>");
+}
+$htmlcontents .= "<LI>$__{'DEM:'} $txt</LI>\n";
     
 $GRID{RAWFORMAT} //= "";
 $GRID{URNDATA}   //= "";
@@ -397,17 +404,18 @@ if ($isForm) {
     $sth->finish();
 
     $urnData = "/cgi-bin/showGENFORM.pl?form=$GRIDName";
-    $htmlcontents .= "<LI>$__{'Form structure:'} "
+    $htmlcontents .= "<LI>$__{'Form parameters:'}<UL>\n";
+    $htmlcontents .= "<LI>$__{'Structure:'} "
                     ."<B>".grep(/^INPUT.._NAME/,keys(%GRID))."</B> $__{'inputs'}, "
                     ."<B>".grep(/^OUTPUT.._NAME/,keys(%GRID))."</B> $__{'outputs'}, "
                     ."<B>".grep(/(IN|OUT)PUT../,split(/,/,join(',',($GRID{PROC_DATA_LIST},$GRID{PROC_ERROR_LIST},$GRID{PROC_CELL_LIST}))))."</B> $__{'proc exports'}"
                     ."</LI>\n";
-    $htmlcontents .= "<LI>$__{'Form layout:'} <B>".grep(/^COLUMN.._LIST/,keys(%GRID))."</B> $__{'columns'},"
+    $htmlcontents .= "<LI>$__{'Layout:'} <B>".grep(/^COLUMN.._LIST/,keys(%GRID))."</B> $__{'columns'},"
       ." <B>".grep(/^FIELDSET.._NAME/,keys(%GRID))."</B> $__{'fieldsets'}</LI>\n";
     $htmlcontents .= "<LI>$__{'First year of data:'} <B>$GRID{BANG}</B></LI>\n";
     $htmlcontents .= "<LI>$__{'Time zone for all records:'} <B>UTC".sprintf("%+03d",$GRID{TZ})."</B></LI>\n";
     $htmlcontents .= "<LI>$__{'Total number of records:'} <B>$nbData</B> ($__{'including'} <B>$nbTrash</B> $__{'in trash'} $__{'and'} <B>$orphanNodes</B> $__{'in orphan nodes'})</LI>\n";
-    $htmlcontents .= "<LI>$__{'Access to data:'} <A href=\"$urnData\"><IMG src='/icons/form.png' style='vertical-align:middle'></A></LI>\n";
+    $htmlcontents .= "</UL></LI>\n";
 
     # get associated PROCs
     my @procgenform;
@@ -438,6 +446,7 @@ if ($isForm) {
         }
         $htmlcontents .= "</LI>\n";
     }
+    $htmlcontents .= "<BR><LI>$__{'Access to data:'} <A href=\"$urnData\"><IMG src='/icons/form.png' style='vertical-align:middle'></A></LI>\n";
 }
 
 # -----------
@@ -449,13 +458,6 @@ if (defined($GRID{URL})) {
         $htmlcontents .= "<LI>$__{'External link'}: <B><A href=\"$txt[1]\" target=\"_blank\">$txt[0]<\/A></B></LI>\n";
     }
 }
-
-# -----------
-my $txt = "<B>SRTM/ETOPO</B> (default)";
-if (defined $GRID{DEM_FILE} && $GRID{DEM_FILE} ne "") {
-    $txt = "<B>$GRID{DEM_FILE}</B>".(-e "$GRID{DEM_FILE}" ? "":" <I>($__{'check file!'})</I>");
-}
-$htmlcontents .= "<LI>$__{'DEM'}: $txt</LI>\n";
 
 $htmlcontents .= "</UL></TD>\n";
 
