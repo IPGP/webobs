@@ -114,7 +114,7 @@
 
 # Install Downflowgo (requires WO_CREATE_PYTHON_VENV=Y).
 # Auto default: N
-#WO_INSTALL_DOWNFLOWGO=Y
+#WO_INSTALL_DOWNFLOWGO=N
 
 
 # ===== Miscellaneous ============================================================
