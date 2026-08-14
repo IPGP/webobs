@@ -136,6 +136,7 @@ TREND_UNIT|mm/yr
 1. The **gridmaps** superproc is now optimized: it will update a grid map only if something has been modified (`GRIDMAPS.conf`, the grid `.conf` or any associated nodes).
 
 ### Fixed issues
+1. `!!` Fix several issues for initial install (demo data and configuration).
 1. `!!` Fix a potential security issue with Apache logins when the corresponding user does not exist in the users' db. The setup will fix any abnormal situation by editing the htpasswd file (deleting unknown users and commenting invalid users). In addition, setting the validity flag through the User Manager GUI will now comment/uncomment the corresponding login line in htpasswd file.
 1. `!!` Fix an issue giving edit button for any grid (view/proc/form) for users with only Edit level.
 1. Fix an issue with **hypomap** proc when `EVENTTYPE_EXCLUDED_LIST` and `EVENTSTATUS_EXCLUDED_LIST` are empty.
