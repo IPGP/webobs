@@ -1249,7 +1249,7 @@ if [[ $qsysrc == 2 ]]; then
 fi
 echo
 
-if ${WO_USERPASSWD_WAS_GENERATED}; then
+if ${WO_USERPASSWD_WAS_GENERATED} && ${AUTO}; then
 	echo
 	echo "**** IMPORTANT: no WO_USERPASSWD was set, so a random WebObs password"
 	echo "**** was generated for user '${USERID}':"
