@@ -40,7 +40,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2026-01-08
+%   Updated: 2026-08-07
 
 
 WO = readcfg;
@@ -72,6 +72,9 @@ else
 	P.DATE1 = datestr(now,'yyyy-mm-dd');
 	P.DATE2 = datestr(now,'yyyy-mm-dd');
 	request = 0;
+    % gets the timestamp of GRIDMAPS.conf
+    IM = dir(WO.GRIDMAPS);
+    P.TIMESTAMP = IM.datenum;
 end
 
 % loads transmission information
@@ -79,6 +82,7 @@ trans = isok(P,'PLOT_TRANSMISSION');
 
 % gets all VIEWS, PROCS, FORMS, and SEFRANS looks inside the GRIDS directories avoiding . .. and non-directory files
 if ~request && (nargin < 1 || isempty(grids))
+    allgrids = true;
 	VIEWS = dir(sprintf('%s/*',WO.PATH_VIEWS));
 	PROCS = dir(sprintf('%s/*',WO.PATH_PROCS));
 	FORMS = dir(sprintf('%s/*',WO.PATH_FORMS));
@@ -93,6 +97,7 @@ if ~request && (nargin < 1 || isempty(grids))
     if ~isempty(fl), grids = [grids,strcat('FORM.',fl)]; end
     if ~isempty(sl), grids = [grids,strcat('SEFRAN.',sl)]; end
 else
+    allgrids = false;
 	if ~iscell(grids)
 		grids = cellstr(grids);
 	end
@@ -150,13 +155,18 @@ demoptions = {'Interp','Lake','LakeZmin',0,'ZCut',zcut,'Azimuth',laz, ...
 	'Contrast',lct,'LandColor',cmap,'SeaColor',sea,'Watermark',feclair, ...
 	'Saturation',csat,'latlon','shading',shading,'legend','axisequal','manual'};
 
+
 % loads all needed grid's parameters & associated nodes
+outdated = zeros(size(grids));
 for g = 1:length(grids)
 	s = split(grids{g},'/.');
 	if length(s) < 2
 		error('%s: ** WARNING ** Invalid grid "%s": must use the full grid name GridType.GridName',wofun,grids{g});
 	end
-	GRIDS.(s{1}).(s{2}) = readcfg(WO,sprintf('/etc/webobs.d/%sS/%s/%s.conf',s{1},s{2},s{2}));
+	f = sprintf('/etc/webobs.d/%sS/%s/%s.conf',s{1},s{2},s{2});
+	GRIDS.(s{1}).(s{2}) = readcfg(WO,f);
+    FC = dir(f);
+	GRIDS.(s{1}).(s{2}).TIMESTAMP = FC.datenum;
 	% Loads all existing and valid NODES (declared at least in one VIEW)
 	N = readnodes(WO,grids{g});
 	GRIDS.(s{1}).(s{2}).N = N;
@@ -178,7 +188,31 @@ for g = 1:length(grids)
 	else
 		NN(g).kn = [];
 	end
+
+    % checks if the grid must be updated (all grids mode)
+    if allgrids && ~merge
+        % gets the timestamp of the main grid map file
+        fimg = sprintf('%s/%s/%s/%s_map.png',outd,grids{g},WO.PATH_OUTG_MAPS,grids{g});
+        if exist(fimg,'file')
+            IM = dir(fimg);
+            timg = IM.datenum;
+        else
+            timg = 0;
+        end
+
+        if timg < P.TIMESTAMP || timg < GRIDS.(s{1}).(s{2}).TIMESTAMP || any(timg < cat(1,N.TIMESTAMP))
+            outdated(g) = 1; 
+        end
+    else
+        outdated(g) = 1; 
+    end
 end
+
+% keeps only the outdated grids
+wolog('ok. End of all grids/nodes data import! -----------------------------\n');
+wolog(sprintf('%d grids to update (outdated or inexistant).\n',sum(outdated)));
+grids = grids(outdated ~= 0);
+NN = NN(outdated ~= 0);
 
 % merging case: computes the map limits from all nodes
 if merge
@@ -195,11 +229,11 @@ for g = 1:length(grids)
 
 	if merge
 		if g == 1
-			fprintf('%s: Making map of merged grids ',wofun);
+			wolog('Making map of merged grids ');
 		end
 		fprintf('%s... ',grids{g});
 	else
-		fprintf('%s: Making map of grid %s...\n',wofun,grids{g});
+		wolog('* %s: Making the map(s)...\n',grids{g});
 	end
 	s = split(grids{g},'.');
 	G = GRIDS.(s{1}).(s{2});
@@ -437,7 +471,7 @@ for g = 1:length(grids)
 				end
 
 				% prints the map (PostScript and PNG)
-				fprintf('%s: updating %s/%s.{eps,png} ... ',wofun,pimg,fimg);
+				wolog('updating %s/%s.{eps,png} ... ',pimg,fimg);
 
 				ftmp = sprintf('%s/%s',ptmp,fimg);
 				print(gcf,'-depsc','-loose','-painters',sprintf('%s.eps',ftmp));
@@ -452,7 +486,7 @@ for g = 1:length(grids)
 				close
 
 				% makes the HTML mapping
-				fprintf('%s: updating %s/%s.%s ... ',wofun,pimg,fimg,fext);
+				wolog('updating %s/%s.%s ... ',pimg,fimg,fext);
 				fid = fopen(sprintf('%s.%s',ftmp,fext),'w','n','UTF-8');
 				if html
 					fprintf(fid,'<HTML><HEAD><TITLE></TITLE></HEAD><BODY>\n<IMG src="%s.png" usemap="#map">\n<MAP name="map">\n',fimg);
@@ -514,9 +548,9 @@ for g = 1:length(grids)
 	else
 		if ~merge
 			delete(sprintf('%s/%s/%s/*',outd,grids{g},WO.PATH_OUTG_MAPS));
-			fprintf('%s: no georeferenced node found... No map produced.\n',wofun);
+			wolog('no georeferenced node found... No map produced.\n');
 		else
-			fprintf('%s: no georeferenced node found for grid %s...\n',wofun,grids{g});
+			wolog('no georeferenced node found for grid %s...\n',grids{g});
 		end
 	end
 	if merge && g == length(grids)

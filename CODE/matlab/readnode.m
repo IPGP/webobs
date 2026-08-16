@@ -1,4 +1,4 @@
-function N=readnode(WO,nodefullid,NODES);
+function N=readnode(WO,nodefullid,NODES)
 %READNODE Read WEBOBS node configuration
 %	N = READNODE(WO,NODEFULLID) returns a structure variable X containing
 %	every field key and corresponding value from the node .cnf
@@ -36,7 +36,7 @@ function N=readnode(WO,nodefullid,NODES);
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22
-%   Updated: 2026-01-13
+%   Updated: 2026-08-12
 
 
 if ~exist('NODES','var')
@@ -52,10 +52,10 @@ gridname = nodeparts{2};
 id = nodeparts{3};
 f = sprintf('%s/%s/%s.cnf',NODES.PATH_NODES,id,id);
 
-[p,id,e] = fileparts(f);
+[p,id] = fileparts(f);
 
 if ~exist(f,'file')
-	fprintf('WEBOBS{%s}: ** Warning: node %s does not exist.\n',mfilename,id);
+	wolog('** Warning: node %s does not exist.\n',id);
 	N = [];
 	return
 end
@@ -204,7 +204,7 @@ N.CLB.auto = auto;
 tr = split(N.TRANSMISSION,'|, ');
 
 if ~isempty(tr) && ~isempty(tr{1})
-	rmfield(N,'TRANSMISSION');	% needed since R2015... (?)
+	N = rmfield(N,'TRANSMISSION');	% needed since R2015... (?)
 	N.TRANSMISSION = struct('TYPE',str2double(tr{1}));
 	nn = 0;
 	for n = 2:length(tr)
@@ -213,7 +213,7 @@ if ~isempty(tr) && ~isempty(tr{1})
 			nn = nn + 1;
 			N.TRANSMISSION.NODES{nn} = tr{n};
 			N.TRANSMISSION.(sprintf('REPEATER%d',nn)) = readcfg(WO,f);
-			fprintf('WEBOBS{readnode}: %s read (repeater %d).\n',f,nn);
+			wolog('%s read (repeater %d).\n',f,nn);
 		end
 	end
 end

@@ -21,9 +21,7 @@ function D = readfmtdata_genform(WO,P,N,F)
 %
 %	Author: François Beauducel, WEBOBS/IPGP
 %	Created: 2024-07-03, in Surabaya (Indonesia)
-%	Updated: 2026-02-17
-
-wofun = sprintf('WEBOBS{%s}',mfilename);
+%	Updated: 2026-08-11
 
 fn = upper(F.raw{1});
 tn = lower(fn);
@@ -42,7 +40,10 @@ else
 end
 
 % datelim is finite dates limits of PROC (or NODE) expressed in the FORM's TZ (same for all nodes)
-datelim = [max([P.DATELIM(1),N.INSTALL_DATE,P.BANG]), min([P.DATELIM(2),N.END_DATE,P.NOW])] - P.TZ/24 + tz/24;
+datelim = [max([P.DATELIM(1),N.INSTALL_DATE]), min([P.DATELIM(2),N.END_DATE,P.NOW])] - P.TZ/24 + tz/24;
+if isnan(datelim(1))
+    datelim(1) = P.BANG;
+end
 d1 = datestr(datelim(1),'yyyy-mm-dd HH:MM:SS');
 d2 = datestr(datelim(2),'yyyy-mm-dd HH:MM:SS');
 

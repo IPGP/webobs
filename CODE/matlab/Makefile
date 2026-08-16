@@ -6,6 +6,7 @@ MCCmac := /Applications/MATLAB_R2011b.app/bin/mcc
 OPT32 := -glnx86
 SRC := .
 TMP := /tmp/mcc
+ADD_MATLAB = -a $(SRC)/rstd.m -a $(SRC)/rmean.m -a $(SRC)/rmedian.m
 
 allprocs: genplot gnss meteo waters afm jerk hypomap tremblemaps extenso naqssohplot music3c tilt volcgas raingauge helicorder rsam sara mc3stats
 allmaps: locastat gridmaps gnss hypomap tremblemaps extenso tilt rsam
@@ -22,6 +23,6 @@ clean:
 
 %: $(SRC)/superprocs/%.m
 	mkdir -p $(TMP)
-	$(MCC) $(OPT) -m -R -nodisplay -d $(TMP) $<
+	$(MCC) $(OPT) -m -R -nodisplay $(ADD_MATLAB) -d $(TMP) $<
 	mv -f $(TMP)/$(@F) $(OUT)/
 	chmod -R a+x $(OUT)/*$@*

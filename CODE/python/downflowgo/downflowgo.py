@@ -47,7 +47,7 @@ else:
     exit()
 
 config_dict = {}
-keys = ["CONFIG--GENERAL", "PATHS", "DOWNFLOW", "PYFLOWGO", "MAPPING", "LANGUAGE"]
+keys = ["CONFIG_GENERAL", "PATHS", "DOWNFLOW", "PYFLOWGO", "MAPPING", "LANGUAGE"]
 
 for k, v in conf.items():
     k = k.replace("PROC." + procname + ".", "")

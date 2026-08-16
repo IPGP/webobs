@@ -11,8 +11,13 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
+###############################################################################
+# ATTENTION : single quote must be escaped in msgstr string,
+# e.g., "Délai d\\'acquisition"
+###############################################################################
+
 msgid "die_client_not_valid"
-msgstr "Désolé, votre identifiant n'est pas activé/validé sur ce WebObs."
+msgstr "Désolé, votre identifiant n\\'est pas activé/validé sur ce WebObs."
 
 msgid "Node"
 msgstr "Node"
@@ -191,8 +196,8 @@ msgstr "Fréquence d\\'échantillonnage"
 msgid "Acquisition period"
 msgstr "Période d\\'acquisition"
 
-msgid "Access to data"
-msgstr "Accès aux données"
+msgid "Access to data:"
+msgstr "Accès aux données :"
 
 msgid "Default data format"
 msgstr "Format de données par défaut"
@@ -209,11 +214,14 @@ msgstr "Routine graphique"
 msgid "First year of data:"
 msgstr "Première année des données :"
 
-msgid "Form structure:"
-msgstr "Structure du Form :"
+msgid "Form parameters:"
+msgstr "Paramètres du Form :"
 
-msgid "Form layout:"
-msgstr "Mise en page du Form :"
+msgid "Structure:"
+msgstr "Structure :"
+
+msgid "Layout:"
+msgstr "Mise en page :"
 
 msgid "inputs"
 msgstr "entrées"
@@ -239,11 +247,11 @@ msgstr "dont"
 msgid "in trash"
 msgstr "dans la corbeille"
 
-msgid "Procs using this form"
+msgid "Procs using this form:"
 msgstr "Procs utilisant ce Form :"
 
-msgid "DEM"
-msgstr "MNT"
+msgid "DEM:"
+msgstr "MNT :"
 
 msgid "check file!"
 msgstr "vérifier le fichier !"
@@ -285,13 +293,13 @@ msgid "Valid"
 msgstr "Valides"
 
 msgid "Active"
-msgstr "Actives"
+msgstr "Actifs"
 
 msgid "Coordinates"
 msgstr "Coordonnées"
 
-msgid "Lifetime and Validity"
-msgstr "Durée de vie et validité"
+msgid "Lifetime and Events Time Zone"
+msgstr "Durée de vie et fuseau horaire"
 
 msgid "Export"
 msgstr "Exporter"
@@ -1240,8 +1248,11 @@ msgstr "Modification"
 msgid "Input"
 msgstr "Saisie"
 
+msgid "Show"
+msgstr "Afficher"
+
 msgid "Hide"
-msgstr "Cacher"
+msgstr "Masquer"
 
 msgid "Hide/trash this event"
 msgstr "Mettre cet événement à la corbeille"
@@ -1286,7 +1297,7 @@ msgid "Duration"
 msgstr "Durée"
 
 msgid "Number of events"
-msgstr "Nombre d'événements"
+msgstr "Nombre d\\'événements"
 
 msgid "Distance according to indicated S-P"
 msgstr "Distance selon le S-P indiqué"
@@ -1346,7 +1357,7 @@ msgid "Click on End of signal or enter duration"
 msgstr "Cliquez sur la fin du signal ou entrez la durée"
 
 msgid "Enter number of events"
-msgstr "Entrez le nombre d'événements"
+msgstr "Entrez le nombre d\\'événements"
 
 msgid "Select amplitude"
 msgstr "Choisissez une amplitude"
@@ -1355,10 +1366,10 @@ msgid "Enter overscale duration"
 msgstr "Entrez la durée de saturation"
 
 msgid "Event not flagged OVERSCALE"
-msgstr "L'événement n'est pas indiqué saturé"
+msgstr "L\\'événement n\\'est pas indiqué saturé"
 
 msgid "Event type is unknown/undetermined. Validate as is ?"
-msgstr "Type d'événement inconnu/indéterminé. Valider tel quel ?"
+msgstr "Type d\\'événement inconnu/indéterminé. Valider tel quel ?"
 
 msgid "You cannot validate an event of type AUTO"
 msgstr "Vous ne pouvez pas valider un événement de type AUTO"
@@ -1605,11 +1616,41 @@ msgstr "texte"
 
 # --- showGRID.pl
 
+msgid "Only"
+msgstr "Uniquement"
+
+msgid "Active_nodes"
+msgstr "Actifs"
+
+msgid "Inactive_nodes"
+msgstr "Inactifs"
+
+msgid "All_nodes"
+msgstr "Tous"
+
+msgid "Invalid nodes"
+msgstr "Nodes invalides"
+
+msgid "Lifetime and Activity Status"
+msgstr "Durée de vie et status d'activité"
+
 msgid "help_node_sampling"
 msgstr "Performance du taux d&rsquo;&eacute;chantillonnage (en %): nombre d&rsquo;&eacute;chantillons valides au cours de la derni&egrave;re p&eacute;riode de temps, compar&eacute; &agrave; l&rsquo;acquisition th&eacute;orique"
 
 msgid "help_node_status"
 msgstr "Status (en %): existence d&rsquo;&eacute;chantillons valides dans le dernier d&eacute;lai d&rsquo;acquisition pour tous les canaux"
+
+msgid "Add a new record"
+msgstr "Ajouter un nouvel enregistrement"
+
+msgid "and"
+msgstr "et"
+
+msgid "in orphan nodes"
+msgstr "associés à des nodes orphelins"
+
+msgid "Access to form data"
+msgstr "Accéder au données du form"
 
 # ---- formREQ.pl
 
@@ -1617,7 +1658,7 @@ msgid "No PROCS eligible for requests submission."
 msgstr "Aucune PROC disponible pour soumettre une requête."
 
 msgid "No PROC eligible for this user. Please ask an administrator."
-msgstr "Aucune PROC n'est accessible pour cet utilisateur. Demandez à un administrateur."
+msgstr "Aucune PROC n\\'est accessible pour cet utilisateur. Demandez à un administrateur."
 
 msgid "Results"
 msgstr "Résultats"
@@ -1767,7 +1808,7 @@ msgid "End Date"
 msgstr "Date de fin"
 
 msgid "Event Title"
-msgstr "Titre d'événement"
+msgstr "Titre d\\'événement"
 
 msgid "Comment/Observation"
 msgstr "Observations"
@@ -1785,7 +1826,7 @@ msgid "Start Date - decreasing"
 msgstr "Dates croissantes"
 
 msgid "Search Node Events"
-msgstr "Recherche d'événements"
+msgstr "Recherche d\\'événements"
 
 msgid "Search for:"
 msgstr "Chercher :"
@@ -1942,12 +1983,15 @@ msgstr "Noter toute présence d&rsquo;odeur, gaz, précipité, etc..."
 # ---- showRAINWATER.pl
 
 msgid "Number of records"
-msgstr "Nombre d'enregistrements"
+msgstr "Nombre d\\'enregistrements"
 
 msgid "Request results"
 msgstr "Résultat des requêtes"
 
 # ---- formNODE.pl
+
+msgid "Name and Description"
+msgstr "Nom, codes et description"
 
 msgid "show/hide THEIA metadata fields"
 msgstr "montrer/cacher les champs de métadonnées THEIA"
@@ -1968,22 +2012,25 @@ msgid "Remove a creator"
 msgstr "Supprimer un créateur"
 
 msgid "help_creationstation_creator"
-msgstr "Personnes en charge du jeu de données. 2 rôles existent : L'éditeur et le chercheur principal. L'éditeur est la personne en charge de la gestion des données, le chercheur principal est le référent scientifique du jeu de données. Au moins un chercheur principal est requis"
+msgstr "Personnes en charge du jeu de données. 2 rôles existent : L\\'éditeur et le chercheur principal. L\\'éditeur est la personne en charge de la gestion des données, le chercheur principal est le référent scientifique du jeu de données. Au moins un chercheur principal est requis"
 
 msgid "help_creationstation_subject"
 msgstr "Le thème INSPIRE fait référence à la description du modèle de données pour les différents thèmes INSPIRE disponibles; Les catégories thématiques font référence aux mots-clés représentant les catégories thématiques du jeu de données."
 
 msgid "help_creationstation_lineage"
-msgstr "Décrit la généalogie du jeu de données, c'est-à-dire l'histoire du jeu de données et, s'il est connu, son cycle de vie, depuis l'acquisition et la capture d'informations jusqu'à sa compilation avec d'autres jeux de données et les variantes de sa forme actuelle."
+msgstr "Décrit la généalogie du jeu de données, c\\'est-à-dire l\\'histoire du jeu de données et, s\\'il est connu, son cycle de vie, depuis l\\'acquisition et la capture d\\'informations jusqu\\'à sa compilation avec d\\'autres jeux de données et les variantes de sa forme actuelle."
 
-msgid "Auto-locatation"
+msgid "Auto-location"
 msgstr "Géolocalisation"
 
+msgid "Locate me!"
+msgstr "Localisez-moi !"
+
 msgid "beware_approximate_position"
-msgstr "Utilise l'API de géolocalisation HTML pour localiser l'utilisateur. Attention : la position peut être approximée de quelques mètres à plusieurs milliers de mètres, en fonction de votre localisation."
+msgstr "Utilise l\\'API de géolocalisation HTML pour localiser l\\'utilisateur. Attention : la position peut être approximée de quelques mètres à plusieurs milliers de mètres, en fonction de votre localisation."
 
 msgid "help_creationstation_shapefile"
-msgstr "Pour ajouter une couche de fichier de forme (.zip uniquement), cliquez ici"
+msgstr "Ajouter une couche de fichier de formes (.zip uniquement). ATTENTION: remplace les fichiers précédents s\\'ils existent."
 
 msgid "Features content"
 msgstr "Contenu des caractéristiques"
@@ -1998,10 +2045,10 @@ msgstr "Photos & documents"
 # ---- mailB3.pl
 
 msgid "Event origin"
-msgstr "Date de l'événement"
+msgstr "Date de l\\'événement"
 
 msgid "Event ID/name"
-msgstr "ID/nom de l'événement"
+msgstr "ID/nom de l\\'événement"
 
 msgid "Unauthorized action"
 msgstr "Action non autorisée"
@@ -2010,13 +2057,13 @@ msgid "Send felt earthquake report information"
 msgstr "Envoyer des informations sur un séisme ressenti"
 
 msgid "Send trigger email"
-msgstr "Envoyer l'email de déclenchement"
+msgstr "Envoyer l\\'email de déclenchement"
 
 msgid "Destination email"
 msgstr "Email du destinataire"
 
 msgid "Trigger email subject"
-msgstr "Sujet de l'email"
+msgstr "Sujet de l\\'email"
 
 msgid "Origin time (UT)"
 msgstr "Temps origine (TU)"
@@ -2043,7 +2090,7 @@ msgid "Attached file name"
 msgstr "Fichier attaché"
 
 msgid "Report subject"
-msgstr "Sujet de l'email"
+msgstr "Sujet de l\\'email"
 
 msgid "Report message"
 msgstr "Message"
@@ -2058,13 +2105,13 @@ msgid "Sending emails"
 msgstr "Envoi des emails"
 
 msgid "Trigger email has been successfully sent!"
-msgstr "L'email de déclenchement a été envoyé avec succès !"
+msgstr "L\\'email de déclenchement a été envoyé avec succès !"
 
 msgid "Sorry, an error occured during report email sending. Please contact an administator."
-msgstr "Désolé, une erreur est survenue lors de l'envoi de l'email. Veuillez contactez un administrateur."
+msgstr "Désolé, une erreur est survenue lors de l\\'envoi de l\\'email. Veuillez contactez un administrateur."
 
 msgid "Report email has been successfully sent!"
-msgstr "L'email du rapport a été envoyé avec succès !"
+msgstr "L\\'email du rapport a été envoyé avec succès !"
 
 # ---- showNODES.pl
 
@@ -2115,7 +2162,7 @@ msgid "Invalid object"
 msgstr "objet non valid"
 
 msgid "intervention event not specified"
-msgstr "L'événement n'est pas spécifié"
+msgstr "L\\'événement n\\'est pas spécifié"
 
 msgid "Do not know where to upload"
 msgstr "Ne sait pas où téléverser..."
@@ -2183,16 +2230,22 @@ msgid "Oper"
 msgstr "Opér."
 
 msgid "Sampling Date"
-msgstr "Date d'échantillonnage"
+msgstr "Date d\\'échantillonnage"
 
 msgid "Sampling Interval"
-msgstr "Période d'échantillonnage"
+msgstr "Période d\\'échantillonnage"
 
 msgid "Start"
 msgstr "Début"
 
 msgid "End"
 msgstr "Fin"
+
+msgid "d:HH:MM:SS"
+msgstr "j:HH:MM:SS"
+
+msgid "d:HH:MM"
+msgstr "j:HH:MM"
 
 msgid "to_num"
 msgstr "à"
@@ -2227,10 +2280,10 @@ msgstr "Inclure les fichiers attachés"
 # ---- formGENFORM.pl
 
 msgid "Input new record"
-msgstr "Saisie d'un nouvel enregistrement"
+msgstr "Saisie d\\'un nouvel enregistrement"
 
 msgid "Edit record n°"
-msgstr "Modification de l'enregistrement n°"
+msgstr "Modification de l\\'enregistrement n°"
 
 msgid "Validated record"
 msgstr "Enregistrement validé"
@@ -2272,7 +2325,7 @@ msgid "Enter a value for"
 msgstr "Entrer une valeur pour"
 
 msgid "Record timestamp:"
-msgstr "Horodatage de l'enregistrement :"
+msgstr "Horodatage de l\\'enregistrement :"
 
 # --- OSM.pl
 msgid "To import shapefile layer, click here:"
@@ -2286,7 +2339,7 @@ msgid "Elapsed time since"
 msgstr "Temps écoulé depuis"
 
 msgid "of event"
-msgstr "de l'événement"
+msgstr "de l\\'événement"
 
 msgid "start"
 msgstr "le début"

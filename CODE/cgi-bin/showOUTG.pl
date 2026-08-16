@@ -156,7 +156,7 @@ my %monthnames;
 # ---- Start HTML page
 #
 print "Content-type: text/html\n\n";
-print '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">', "\n";
+print '<!DOCTYPE html>', "\n";
 print "<HTML><HEAD><title>OUTPUT for $GRIDType.$GRIDName</title>";
 print "<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">
 <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">";
@@ -353,6 +353,8 @@ my (@glist) = sort glob "$OUTD/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*
 unshift(@glist, "VFLOW") if (grep(/^VFLOW$/, @SummaryList));
 
 my $glistHtml = "";
+my %glistnodes;
+
 # ======================== events ========================
 if ($QryParm->{'ts'} eq 'events' ) {
     # build @nlist = the list of available nodes (only if exist in event ID)
@@ -360,22 +362,25 @@ if ($QryParm->{'ts'} eq 'events' ) {
         if (grep( /$n/i, @ilist)) {
             my $txt = $DefinedNodes{$n}{ALIAS};
             if ($QryParm->{'g'} =~ /$n$/) {
-                $glistHtml .= " $txt |";
+                $glistnodes{$txt} = " $txt |";
             } else {
                 my $garg = $QryParm->{'g'};
                 $garg = "$garg/*/*/$n" if ($depth < 1); # g=yyyy
                 $garg = "$garg/*/$n" if ($depth == 1); # g=yyyy/mm
                 $garg = "$garg/$n" if ($depth == 2); # g=yyyy/mm/dd
                 $garg =~ s|^((?:[^/]*/){3}).*|$1$n| if ($depth > 2); # replace event ID 
-                $glistHtml .= " <A href=\"$baseurl&ts=events&g=$garg\"><B>$txt</B></A> |";
+                $glistnodes{$txt} = " <A href=\"$baseurl&ts=events&g=$garg\"><B>$txt</B></A> |";
             }
         }
     }
     # if at least one node available, adds a link to all nodes in front of the menu
-    if ($glistHtml ne "") {
+    if (keys %glistnodes != 0) {
         my $garg = substr($QryParm->{'g'},0,10);
         $garg =~ s|/\*.*$||g;
         $glistHtml = " <A href=\"$baseurl&ts=events&g=$garg\"><B>$__{'All nodes'}</B></A> |".$glistHtml;
+        for (sort keys(%glistnodes)) {
+            $glistHtml .= $glistnodes{$_};
+        }
     }
 # ======================== timescales ========================
 } else {
@@ -388,20 +393,31 @@ if ($QryParm->{'ts'} eq 'events' ) {
         $gname =~ s/^$/SUMMARY/;
         my $gbase = $gname;
         $gbase =~ s/(.*)_.*$/$1/;
-        my $gmenu = $gname;
+        my $gmenu = "";
         if ($gname ne 'SUMMARY' && !(grep( /^$gbase$/i, @SummaryList)) ) {
             if ( grep( /^$gname$/i, keys(%DefinedNodes)) ) {  # it's a node file AND node still in proc
-                my $alias = getNodeString(node=>uc($gname), style=>'alias');
-                $gmenu = $alias if ( $alias ne '' && $alias ne '-' );
+                my $alias = $DefinedNodes{uc($gname)}{ALIAS};
+                $glistnodes{$alias} = $gname if ( $alias ne '' && $alias ne '-' );
             } else { # it's a node file, but node NOT currently in proc == stale node that survived the housekeeping above
                 $gmenu = 'STALE';
             }
+        } else {
+            $gmenu = $gname;
         }
-        if ( $gmenu ne 'STALE' ) {
+        if ( $gmenu ne 'STALE' && $gmenu ne "") {
             if ($QryParm->{'g'} eq $gname) {
                 $glistHtml .= " $gmenu |";
             } else {
                 $glistHtml .= " <A href=\"$lnk$gname\"> $gmenu</A> |";
+            }
+        }
+    }
+    if (keys %glistnodes != 0) {
+        for (sort keys(%glistnodes)) {
+            if ($QryParm->{'g'} eq $glistnodes{$_}) {
+                $glistHtml .= " $_ |";
+            } else {
+                $glistHtml .= " <A href=\"$lnk$glistnodes{$_}\"> $_</A> |";
             }
         }
     }

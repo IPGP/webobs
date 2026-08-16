@@ -45,10 +45,17 @@ usage() {
 	echo "Usage: $0  [OPTION]..."
 	echo
 	echo 'Options:'
-	echo ' -f, --force         show but ignore errors'
-	echo ' -x, --expert-mode   ignore detected missing software'
-	echo ' -q, --quiet         be less verbose'
-	echo ' -h, --help          this help text'
+	echo ' -f, --force          show but ignore errors'
+	echo ' -x, --expert-mode    ignore detected missing software'
+	echo ' -q, --quiet          be less verbose'
+	echo ' -a, --auto           non-interactive mode: apply defaults to every prompt'
+	echo '                      instead of asking (see -c to override defaults)'
+	echo ' -c, --config <file>  in --auto mode, source <file> to override default'
+	echo '                      answers (see SETUP/setup-auto.conf.default)'
+	echo ' -h, --help           this help text'
+	echo
+	echo 'Unattended install/upgrade example:'
+	echo "   $0 --auto --config /path/to/my-webobs-setup.conf"
 	echo
 	exit 1
 }
@@ -108,7 +115,11 @@ install_systemd_services() {
 	if ! [[ -r "$postboard_tmpl" && -r "$scheduler_tmpl" ]]; then
 		echo "Error: unable to find systemd templates in ${RELBASE}/SETUP/systemd/ !"
 		echo "Cannot install systemd services. (This is a bug and should be reported.)"
-		read -p "Hit [enter] to continue setup " ans
+		if ${AUTO}; then
+			autonote "continuing setup without systemd services"
+		else
+			read -p "Hit [enter] to continue setup " ans
+		fi
 		return
 	fi
 
@@ -122,8 +133,7 @@ install_systemd_services() {
 		# Service are not installed yet
 
 		echo "  The systemd services ${postboard_service##*/} and/or ${scheduler_service##*/} are missing."
-		read -p "  Do you want to create and enable these systemd services ? [y/N] " ans
-		[[ $ans =~ (y|Y) ]] || return
+		$(confirm "  Do you want to create and enable these systemd services ? [y/N] " WO_INSTALL_SYSTEMD_SERVICES N) || return
 		echo
 		echo "  Copying $postboard_tmpl.tmp to $postboard_service"
 		cp "$postboard_tmpl.tmp" "$postboard_service"
@@ -154,30 +164,42 @@ install_systemd_services() {
 
 		echo "  The ${postboard_service##*/} and/or ${scheduler_service##*/} definition files differ"
 		echo "  from the templates provided by WebObs."
-		while true; do
-			echo
-			echo "  Do you want to update your service files ?"
-			read -p "  Y=[yes, update now] N=[no, do not update] S=[show the differences] " ans
-			if [[ $ans =~ (n|N) ]]; then
-				echo
+		if ${AUTO}; then
+			if $(confirm "  Do you want to update your service files ? [y/N] " WO_UPDATE_SYSTEMD_SERVICES N); then
+				mv -f "$postboard_tmpl.tmp" "$postboard_service"
+				mv -f "$scheduler_tmpl.tmp" "$scheduler_service"
+				echo "  Service files updated."
+			else
 				echo "Skipping update of systemd services."
 				echo
 				return
 			fi
-			if [[ $ans =~ (y|Y) ]]; then
+		else
+			while true; do
 				echo
-				mv -f "$postboard_tmpl.tmp" "$postboard_service"
-				mv -f "$scheduler_tmpl.tmp" "$scheduler_service"
-				echo "  Service files updated."
-				break
-			fi
-			echo
-			echo "Proposed changes in ${postboard_service##*/}:"
-			diff -u "$postboard_service" "$postboard_tmpl.tmp"
-			echo
-			echo "Proposed changes in ${scheduler_service##*/}:"
-			diff -u "$scheduler_service" "$scheduler_tmpl.tmp"
-		done
+				echo "  Do you want to update your service files ?"
+				read -p "  Y=[yes, update now] N=[no, do not update] S=[show the differences] " ans
+				if [[ $ans =~ (n|N) ]]; then
+					echo
+					echo "Skipping update of systemd services."
+					echo
+					return
+				fi
+				if [[ $ans =~ (y|Y) ]]; then
+					echo
+					mv -f "$postboard_tmpl.tmp" "$postboard_service"
+					mv -f "$scheduler_tmpl.tmp" "$scheduler_service"
+					echo "  Service files updated."
+					break
+				fi
+				echo
+				echo "Proposed changes in ${postboard_service##*/}:"
+				diff -u "$postboard_service" "$postboard_tmpl.tmp"
+				echo
+				echo "Proposed changes in ${scheduler_service##*/}:"
+				diff -u "$scheduler_service" "$scheduler_tmpl.tmp"
+			done
+		fi
 
 		systemctl daemon-reload
 		echo "  Systemd configuration reloaded."
@@ -198,9 +220,11 @@ FORCE=false
 DEPMISS=false
 LOCMISS=false
 EXPERT_MODE=${EXPERT_MODE:-0}
+AUTO=false
+CONFFILE=""
 
 # parse requested options
-ARGS=`getopt -o "hqfx" -l "help,quiet,force,expert-mode" -n "$0" -- "$@"`
+ARGS=`getopt -o "hqfxaw:c:" -l "help,quiet,force,expert-mode,auto,webobs:,config:" -n "$0" -- "$@"`
 if [ $? -ne 0 ]; then exit 1; fi
 eval set -- "$ARGS"
 while true; do
@@ -228,16 +252,47 @@ while true; do
 			EXPERT_MODE=1
 			shift;;
 
+		-a|--auto)
+			AUTO=true
+			shift;;
+
+		-c|--config)
+			if [ -n "$2" ]; then
+				CONFFILE=$2
+			fi
+			shift 2;;
+
 		--)
 			shift
 			break;;
 	esac
 done
 
+# auto/config mode setup -------------------------------------------------------
+# -------------------------------------------------------------------------------
+if [[ -n "${CONFFILE}" ]]; then
+	if ! [[ -r "${CONFFILE}" ]]; then
+		echo "**** Cannot read configuration file '${CONFFILE}'. Bye."
+		exit 64
+	fi
+	echo "Loading configuration overrides from ${CONFFILE}"
+	. "${CONFFILE}"
+	errexit "loading configuration file ${CONFFILE}"
+	if ! ${AUTO}; then
+		echo "**** Note: --config has no effect without --auto (prompts stay interactive)."
+	fi
+elif ${AUTO}; then
+	echo "**** --auto was given without --config: every prompt will use its built-in default."
+fi
+
 #
 
-clear
-echo "WebObs Setup $(date +'%A %F %T %Z')"
+if ${AUTO}; then
+	echo "WebObs Setup $(date +'%A %F %T %Z') -- AUTOMATIC (non-interactive) mode"
+else
+	clear
+	echo "WebObs Setup $(date +'%A %F %T %Z')"
+fi
 echo
 
 # discover system -------------------------------------------------------------
@@ -342,7 +397,7 @@ if [[ ${DOCROOT} == ${OPERROOT} ]]; then
 	echo "and any WebObs running processes before proceeding ... ";
 	echo
 fi
-if ! $(confirm "Confirm setup [y/N] ? ") ; then echo "Aborted." ; exit 64; fi
+if ! $(confirm "Confirm setup [y/N] ? " WO_CONFIRM_SETUP Y) ; then echo "Aborted." ; exit 64; fi
 
 umask 0002
 
@@ -472,8 +527,7 @@ if ${DEPMISS}; then
 	else
 		echo -e '\n**** Some required software were detected missing (see above), but expert mode is enabled.'
 		echo '     Only continue if you know what you are doing.'
-		read -p'     Are you sure you want to continue anyway ? [y/N] ' ans
-		if [ "$ans" = "y" ]; then
+		if $(confirm "     Are you sure you want to continue anyway ? [y/N] " WO_CONTINUE_DESPITE_MISSING_DEPS N); then
 			echo 'OK, continuing at your own risks.'
 		else
 			echo 'OK, aborting. Please install missing software and run this script again.'
@@ -501,7 +555,7 @@ if ! perlmod_installed "WebObs::Config"; then
 else
   echo "Some WebObs perl modules seem to already be installed system-wide (re-installing won't hurt)."
 fi
-if $(confirmy "Install WebObs perl modules system-wide (using symlinks) [Y/n] ? ")
+if $(confirmy "Install WebObs perl modules system-wide (using symlinks) [Y/n] ? " WO_INSTALL_PERL_MODULES_SYSTEMWIDE Y)
 then  # Note: this won't do any harm if the links already exist
   eval $(perl -V:installsitelib)
   echo "Creating symlinks to perl modules in $installsitelib:"
@@ -528,7 +582,7 @@ echo
 # webobs user -----------------------------------------------------------------
 # -----------------------------------------------------------------------------
 if [[ ${SETUPTYPE} == "install" ]]; then
-	USERID=$(readkbn "Enter WebObs userid (default will be wo): ")
+	USERID=$(readkbn "Enter WebObs userid (default will be wo): " WO_USERID)
 	if [[ -z ${USERID} ]];then
 		USERID="wo"
 	fi
@@ -536,13 +590,13 @@ if [[ ${SETUPTYPE} == "install" ]]; then
 		echo "${USERID} already exists"
 	else
 		rcmd="useradd -r -m -U ${USERID}"
-		if $(confirmy "Confirm create WebObs user (${rcmd}) [Y/n] ? ") ; then
+		if $(confirmy "Confirm create WebObs user (${rcmd}) [Y/n] ? " WO_CREATE_USER Y) ; then
 			${rcmd}
 			errexit "creating user ${USERID}"
 		fi
 	fi
 	USERGID=$(id -n -g ${USERID})
-	USERMAIL=$(readkbn "Enter WebObs user email address (default: ${USERID}@localhost): ")
+	USERMAIL=$(readkbn "Enter WebObs user email address (default: ${USERID}@localhost): " WO_USERMAIL)
 	USERHOME=$(eval "echo ~$USERID")
 	if [[ -z ${USERMAIL} ]]; then
 		USERMAIL="${USERID}@localhost"
@@ -571,7 +625,6 @@ REPORT=${DOCROOT}/SETUP.CONF.README
 cp ${RELBASE}/README ${REPORT}
 cp ${RELBASE}/release-notes.md ${DOCROOT}
 mkdir -p ${DOCROOT}/DATA/DB/ # To make sure that the DB directory is there.
-mkdir -p ${DOCROOT}/DATA/NODES/ # To make sure that the NODES directory is there.
 if [[ -d ${DOCROOT}/CONF ]]; then
 	# when there already exists a ${DOCROOT}/CONF, show delta with new release:
 	echo "checking for changes to the existing ${DOCROOT}/CONF"
@@ -596,7 +649,7 @@ if [[ -d ${DOCROOT}/CONF ]]; then
 	#printf "%s\n" "Changes to configuration files:" >>${DOCROOT}/SETUP.CONF.README
 	#${RELBASE}/SETUP/cmpcnf ${DOCROOT}/CONF ${RELBASE}/SETUP/CONF 1>>${DOCROOT}/SETUP.CONF.README 2>>${DOCROOT}/SETUP.CONF.README.diffs
 
-	if $(confirmy "Automatically update and check all your configuration files (recommanded) [Y/n] ?"); then
+	if $(confirmy "Automatically update and check all your configuration files (recommanded) [Y/n] ?" WO_AUTO_UPDATE_CONF_FILES Y); then
 		WRITE=${DOCROOT}/SETUP.CONF.updated
 		> ${WRITE}
 	else
@@ -610,7 +663,7 @@ if [[ -d ${DOCROOT}/CONF ]]; then
 		CONFUP=($(cat ${WRITE}))
 		IFS=${oIFS}
 		if [[ ${#CONFUP[@]} != 0 ]]; then
-			if $(confirmy "Edit each of the ${#CONFUP[@]} updated configuration files [Y/n] ?"); then
+			if $(confirmy "Edit each of the ${#CONFUP[@]} updated configuration files [Y/n] ?" WO_EDIT_UPDATED_CONF_FILES N); then
 				for conf in "${CONFUP[@]}"; do
 					L=$(grep -n "Upgrade to release ${RELREL} " -m 1 $conf | cut -f1 -d:)
 					vim +$L $conf
@@ -687,7 +740,7 @@ if [[ -d ${DOCROOT}/CONF ]]; then
     echo
 
 else
-	MIGRATION=$(confirm "Do you want to migrate some old (pre-2012) WebObs stuff [y/N] ?")
+	MIGRATION=$(confirm "Do you want to migrate some old (pre-2012) WebObs stuff [y/N] ?" WO_MIGRATE_OLD_STUFF N)
 
 	# need to initialize a new CONF/ directory
 	echo "setting up new ${DOCROOT}/CONF from default configuration"
@@ -702,7 +755,7 @@ else
 	errexit "copying ${RELBASE}/SETUP/CONF/* to ${DOCROOT}/CONF"
 
 	verbosecho "updating ${DOCROOT}/CONF/WEBOBS.rc (InstallDocumentRoot+WebObsIdentification)"
-	WEBOBSID=$(readkbn "Enter your WebObs Identification string (short/alphanumeric only)  ")
+	WEBOBSID=$(readkbn "Enter your WebObs Identification string (short/alphanumeric only)  " WO_WEBOBSID)
 	WEBOBSID=$(echo "$WEBOBSID"|sed -e 's/[^a-zA-Z0-9_\-]/_/g')
 	if [[ -z ${WEBOBSID} ]]; then
 		WEBOBSID="${YEARNOW}"
@@ -729,9 +782,9 @@ else
 		verbosecho "creating WEBOBSUSERS.db"
 		#[FB-was:]opr="${RELBASE}/SETUP/CONF/OPERATORS.conf"
 		opr=""
-		if $MIGRATION ; then
-			if $(confirm "Do you want to import your own OPERATORS/USERS file [y/N] ? ") ; then
-				opr=$(readkbn "Enter its filename ")
+		if ${MIGRATION:-false} ; then
+			if $(confirm "Do you want to import your own OPERATORS/USERS file [y/N] ? " WO_IMPORT_OPERATORS_FILE N) ; then
+				opr=$(readkbn "Enter its filename " WO_OPERATORS_FILE)
 			fi
 		fi
 		${RELBASE}/SETUP/createdb-WEBOBSUSERS ${USERID} ${USERMAIL} ${opr};
@@ -741,6 +794,10 @@ else
 		
 		verbosecho "creating WEBOBSMETA.db"
 		${RELBASE}/SETUP/createdb-WEBOBSMETA
+	cd -
+ 
+	# create SQLite DataBases of DATA/DB
+	cd ${DOCROOT}/DATA/DB
 		
 		verbosecho "creating WEBOBSFORMS.db"
 		${RELBASE}/SETUP/createdb-WEBOBSFORMS
@@ -759,7 +816,7 @@ fi
 # Python environment ----------------------------------------------------------
 # -----------------------------------------------------------------------------
 echo 'Python environment installation'
-if $(confirm "Create Python environment [y/N] ?") ; then
+if $(confirmy "Create Python environment [Y/n] ?" WO_CREATE_PYTHON_VENV Y) ; then
     python3 -m venv ${DOCROOT}/venv/
     chown -R ${USERID}:${USERGID} ${DOCROOT}/venv/
     source ${DOCROOT}/venv/bin/activate
@@ -771,7 +828,7 @@ if $(confirm "Create Python environment [y/N] ?") ; then
     # -----------------------------------------------------------------------------
     echo
     echo 'Downflowgo installation'
-    if $(confirm "Install Downflowgo [y/N] ?") ; then
+    if $(confirm "Install Downflowgo [y/N] ?" WO_INSTALL_DOWNFLOWGO N) ; then
         # downflowgo repository install
         DFGO="${PYTHON_CODE}/downflowgo/src"
         rm -Rf "${DFGO}" && mkdir "${DFGO}"
@@ -804,7 +861,7 @@ fi
 echo
 
 # update FDSN network codes
-if $(confirm "Do you want to update the FDSN network codes [y/N] ? ") ; then
+if $(confirm "Do you want to update the FDSN network codes [y/N] ? " WO_UPDATE_FDSN_CODES N) ; then
 	wget http://www.fdsn.org/networks/?type=csv -O ${DOCROOT}/CODE/etc/fdsncodes.csv
 fi
 echo
@@ -812,9 +869,9 @@ echo
 # webobs htpasswd -------------------------------------------------------------
 # -----------------------------------------------------------------------------
 if [[ ${SETUPTYPE} == "install" ]]; then
-		if $MIGRATION ; then
-			if $(confirm "Do you want to copy your own htpasswd file [y/N] ? ") ; then
-				htu=$(readkbn "Enter its full path/filename ")
+		if ${MIGRATION:-false} ; then
+			if $(confirm "Do you want to copy your own htpasswd file [y/N] ? " WO_IMPORT_HTPASSWD N) ; then
+				htu=$(readkbn "Enter its full path/filename " WO_HTPASSWD_FILE)
 				if [[ -f ${htu} ]] ; then
 					cp -a ${htu} ${DOCROOT}/CONF/htpasswd
 					errexit "copying ${htu} to ${DOCROOT}/CONF/htpasswd"
@@ -822,16 +879,35 @@ if [[ ${SETUPTYPE} == "install" ]]; then
 			fi
 		fi
 		if [[ -f ${DOCROOT}/CONF/htpasswd ]]; then OPTHTP=""; else OPTHTP="-c"; fi
-		verbosecho "running htpasswd -s ${OPTHTP} ${DOCROOT}/CONF/htpasswd ${USERID} "
-		htpasswd -s ${OPTHTP} ${DOCROOT}/CONF/htpasswd ${USERID}
-		errexit "htpasswd'ing ${DOCROOT}/CONF/htpasswd"
+		if ${AUTO}; then
+			# htpasswd itself prompts interactively for the password twice
+			# (New password: / Re-type new password:) - not something
+			# confirm/readkbn can intercept. Feed it from stdin instead
+			# (-i), so nothing sensitive ever appears in argv/ps output.
+			WO_USERPASSWD_WAS_GENERATED=false
+			if [[ -z "${WO_USERPASSWD}" ]]; then
+				WO_USERPASSWD=$( (openssl rand -base64 18 2>/dev/null) || tr -dc 'A-Za-z0-9' </dev/urandom | head -c 24)
+				WO_USERPASSWD_WAS_GENERATED=true
+			fi
+			if ${WO_USERPASSWD_WAS_GENERATED}; then
+				autonote "Set WebObs password for user '${USERID}' -> <randomly generated>"
+			else
+				autonote "Set WebObs password for user '${USERID}' -> <from config: WO_USERPASSWD>"
+			fi
+			htpasswd -s ${OPTHTP} -i "${DOCROOT}/CONF/htpasswd" "${USERID}" <<< "${WO_USERPASSWD}"
+			errexit "htpasswd'ing ${DOCROOT}/CONF/htpasswd"
+		else
+			verbosecho "running htpasswd -s ${OPTHTP} ${DOCROOT}/CONF/htpasswd ${USERID} "
+			htpasswd -s ${OPTHTP} ${DOCROOT}/CONF/htpasswd ${USERID}
+			errexit "htpasswd'ing ${DOCROOT}/CONF/htpasswd"
+		fi
 	echo
 fi
 
 # DATA/ setup -----------------------------------------------------------------
 # -----------------------------------------------------------------------------
-if [[ -d ${DOCROOT}/DATA ]]; then
-	# when there already exists a ${DOCROOT}/DATA, show delta with new release
+if [[ -d ${DOCROOT}/DATA/NODES ]]; then
+	# when there already exists a ${DOCROOT}/DATA/NODES, show delta with new release
 	echo "checking for default files missing in existing ${DOCROOT}/DATA"
 	echo "" >>${REPORT}
 	echo "DATA/ missing default files:" >>${REPORT}
@@ -841,15 +917,10 @@ if [[ -d ${DOCROOT}/DATA ]]; then
 else
 	# need to initialize a new DATA/ directory
 	echo "setting up ${DOCROOT}/DATA from default data"
-	verbosecho "creating ${DOCROOT}/DATA"
-	rm -rf ${DOCROOT}/DATA
-	mkdir -p ${DOCROOT}/DATA
-	errexit "creating ${DOCROOT}/DATA"
 	NEWVERSION=$(grep -E 'VERSION\|' ${RELBASE}/SETUP/CONF/WEBOBS.rc)
 	NEWVERSION=${NEWVERSION##\VERSION|}
 
 	verbosecho "copying ${RELBASE}/SETUP/DATA/* to ${DOCROOT}/DATA"
-	#FB-was: cp -r ${RELBASE}/SETUP/DATA/* ${DOCROOT}/DATA
 	cp -a ${RELBASE}/SETUP/DATA/* ${DOCROOT}/DATA
 	errexit "copying default data to ${DOCROOT}/DATA"
 
@@ -859,8 +930,8 @@ if [[ ! -f ${DOCROOT}/DATA/DB/Gazette.db ]];then
 	cd ${DOCROOT}/CONF
 		verbosecho "creating Gazette.db"
 		hebdo=""
-		if $MIGRATION ; then
-			if $(confirm "Do you want to import the local HEBDO.DAT file [y/N] ? ") ; then
+		if ${MIGRATION:-false} ; then
+			if $(confirm "Do you want to import the local HEBDO.DAT file [y/N] ? " WO_IMPORT_HEBDO N) ; then
 				#hebdo=$(readkbn "Enter its filename ")
 				hebdo=${DOCROOT}/DATA/DB/HEBDO.DAT
 				gazetteconf=Gazette_categories.conf
@@ -910,7 +981,7 @@ fi
 # set up where to drop our virtual host configuration:
 # RedHat: /etc/httpd/conf.d/  ...  Debian: /etc/apache2/sites-available/
 # -------------------------------------------------------------------------------
-if [[ ${SETUPTYPE} == "install" || $(confirm "Want to redefine Apache stuff [y/N] ? ") == true ]]; then
+if [[ ${SETUPTYPE} == "install" || $(confirm "Want to redefine Apache stuff [y/N] ? " WO_REDEFINE_APACHE N) == true ]]; then
 	echo "Updating Apache setup"
 	if [[ ${#USER_APACHE[@]} == 0 ]]; then
 		echo "**** Could not figure out who is the Apache user. Bye."
@@ -923,7 +994,7 @@ if [[ ${SETUPTYPE} == "install" || $(confirm "Want to redefine Apache stuff [y/N
 	verbosecho "Apache user/group = ${USER_APACHE[0]}/${USER_APACHE[1]}, config dir = ${DIRC_APACHE}"
 
 	# create/update Apache VirtualHost configuration
-	if [[ $(confirmy "Updating Apache will force ${DOCROOT}, release ${RELREL}, to become your Production WebObs. OK [Y/n] ? ") == true ]]; then
+	if [[ $(confirmy "Updating Apache will force ${DOCROOT}, release ${RELREL}, to become your Production WebObs. OK [Y/n] ? " WO_ACTIVATE_APACHE_PRODUCTION Y) == true ]]; then
 		ACTIVATEWO="FORCED"
 		VHOST_CONF="webobs.conf"
 		LOG_FILENAME=${VHOST_CONF%.conf}
@@ -934,7 +1005,7 @@ if [[ ${SETUPTYPE} == "install" || $(confirm "Want to redefine Apache stuff [y/N
 			cp -a ${DIRC_APACHE}/$VHOST_CONF ${DOCROOT}/$VHOST_CONF.setup.backup
 			errexit "Backing up existing ${DIRC_APACHE}/$VHOST_CONF"
 		fi
-		VARLOG=$(readkbn "Enter vhost log files prefix (default: /var/log/${N_APACHE}/$LOG_FILENAME): ")
+		VARLOG=$(readkbn "Enter vhost log files prefix (default: /var/log/${N_APACHE}/$LOG_FILENAME): " WO_APACHE_VARLOG)
 		if [[ -z ${VARLOG} ]]; then
 			VARLOG="/var/log/${N_APACHE}/$LOG_FILENAME"
 		fi
@@ -962,8 +1033,8 @@ fi
 # best effort to create the 'non-DocumenRoot' structures ----------------------
 # (sefran output/data directory is one example of such structure)
 # -----------------------------------------------------------------------------
-if [[ ${SETUPTYPE} == "install" || $(confirm "Want to redefine directories other than DocumentRoot [y/N] ? ") == true ]]; then
-	SEFRANROOT=$(readkbn "Enter SEFRAN output+data directory (default will be $USERHOME/sefran): ")
+if [[ ${SETUPTYPE} == "install" || $(confirm "Want to redefine directories other than DocumentRoot [y/N] ? " WO_REDEFINE_OTHER_DIRS N) == true ]]; then
+	SEFRANROOT=$(readkbn "Enter SEFRAN output+data directory (default will be $USERHOME/sefran): " WO_SEFRANROOT)
 	if [[ "${SEFRANROOT}" == "" && ! -z ${USERID} ]]; then
 		if [[ -d "$USERHOME" ]]; then SEFRANROOT="$USERHOME/sefran"; fi
 	fi
@@ -987,7 +1058,7 @@ if [[ ${SETUPTYPE} == "install" || $(confirm "Want to redefine directories other
 	fi
 	echo
 
-	RAWDATA=$(readkbn "Enter RAW DATA directory (default will be $USERHOME/rawdata): ")
+	RAWDATA=$(readkbn "Enter RAW DATA directory (default will be $USERHOME/rawdata): " WO_RAWDATA)
 	if [[ "${RAWDATA}" == "" && ! -z ${USERID} ]]; then
 		if [[ -d "$USERHOME" ]]; then RAWDATA="$USERHOME/rawdata"; fi
 	fi
@@ -1012,8 +1083,8 @@ fi
 # Update WEBOBS.rc corresponding path
 # -----------------------------------------------------------------------------
 if [[ -n ${MCRZIP} ]]; then
-	if $(confirmy "Do you want to install Matlab Compiler Runtime '${MCRZIP}' [Y/n] ? ") ; then
-		MCRDIR=$(readkbn "Enter MCR directory (defaults to ${DOCROOT}/MCR): ")
+	if $(confirmy "Do you want to install Matlab Compiler Runtime '${MCRZIP}' [Y/n] ? " WO_INSTALL_MCR Y) ; then
+		MCRDIR=$(readkbn "Enter MCR directory (defaults to ${DOCROOT}/MCR): " WO_MCRDIR)
 		if [[ "${MCRDIR}" == "" ]]; then MCRDIR="${DOCROOT}/MCR"; fi
 		mkdir -p ${MCRDIR}
 		errexit "creating ${MCRDIR}"
@@ -1032,7 +1103,7 @@ if [[ -n ${MCRZIP} ]]; then
 		sed -i -e "s=^PATH_MCR|.*$=PATH_MCR|${realMCRDIR}=g" ${DOCROOT}/CONF/WEBOBS.rc
 		echo "*** Please verify PATH_MCR in ${DOCROOT}/CONF/WEBOBS.rc"
 		errexit "updating PATH_MCR"
-		if $(confirm "MCR now installed - delete '${MCRZIP}' [y/N] ? ") ; then rm ${MCRZIP}; fi
+		if $(confirm "MCR now installed - delete '${MCRZIP}' [y/N] ? " WO_DELETE_MCRZIP N) ; then rm ${MCRZIP}; fi
 	fi
 	echo
 fi
@@ -1060,7 +1131,7 @@ else
 		chmod -R 775 ${MENUS}
 		chmod -R g+s ${MENUS}
 	fi
-	if [[ ${SETUPTYPE} == "install" || $(confirm "Reassess groups, owners and mods [y/N] ? ") == true ]]; then
+	if [[ ${SETUPTYPE} == "install" || $(confirm "Reassess groups, owners and mods [y/N] ? " WO_REASSESS_RIGHTS N) == true ]]; then
 		owner="chown -R ${USERID}:${USERGID} ${DOCROOT}/CONF ${DOCROOT}/LOGS ${DOCROOT}/DATA ${DOCROOT}/OUTG ${DOCROOT}/OUTR ${SEFRANROOT}"
 		cmode="chmod -R 775 ${DOCROOT}/CONF ${DOCROOT}/LOGS ${DOCROOT}/DATA ${DOCROOT}/OUTG ${DOCROOT}/OUTR ${SEFRANROOT}"
 		emode="chmod ug+s ${DOCROOT}/OUTR"
@@ -1070,21 +1141,21 @@ else
 		sgid="chmod -R g+s ${DOCROOT}/CONF ${DOCROOT}/DATA ${SEFRANROOT}"
 
 		action="changing CONF,LOGS,DATA,OUTx access rights"
-		if $(confirmy "Confirm ${action}: ${cmode} [Y/n] ? "); then
+		if $(confirmy "Confirm ${action}: ${cmode} [Y/n] ? " WO_CHMOD_RIGHTS Y); then
 			verbosecho "${action}"
 			${cmode}
 			errexit "${action}"
 		fi
 
 		action="changing CONF,LOGS,DATA,OUTx ownership"
-		if $(confirmy "Confirm ${action}: ${owner} [Y/n] ? "); then
+		if $(confirmy "Confirm ${action}: ${owner} [Y/n] ? " WO_CHOWN_RIGHTS Y); then
 			verbosecho "${action}"
 			${owner}
 			errexit "${action}"
 		fi
 
 		action="changing OUTR execution mode"
-		if $(confirmy "Confirm ${action}: ${emode} [Y/n] ? "); then
+		if $(confirmy "Confirm ${action}: ${emode} [Y/n] ? " WO_CHMOD_OUTR_SETGID Y); then
 			verbosecho "${action}"
 			${emode}
 			errexit "${action}"
@@ -1092,13 +1163,13 @@ else
 
 		action="adding group ${USERGID} to apache user"
 		if [ "${SYS_OS}" != "Darwin" ] ;then
-			if $(confirmy "Confirm ${action}: ${group} [Y/n] ? "); then
+			if $(confirmy "Confirm ${action}: ${group} [Y/n] ? " WO_ADD_APACHE_GROUP Y); then
 				verbosecho "${action}"
 				${group}
 				errexit "${action}"
 			fi
 		else
-			if $(confirmy "Confirm ${action}: ${macgroup} [Y/n] ? "); then
+			if $(confirmy "Confirm ${action}: ${macgroup} [Y/n] ? " WO_ADD_APACHE_GROUP Y); then
 				verbosecho "${action}"
 				${macgroup}
 				errexit "${action}"
@@ -1106,7 +1177,7 @@ else
 		fi
 
 		action="* setgid on CONF/ and DATA/"
-		if $(confirmy "Confirm ${action}: ${sgid} [Y/n] ? "); then
+		if $(confirmy "Confirm ${action}: ${sgid} [Y/n] ? " WO_SETGID_CONF_DATA Y); then
 			verbosecho "${action}"
 			${sgid}
 			errexit "${action}"
@@ -1115,7 +1186,7 @@ else
 		umsk="umask 002"
 		if ! [[ $(grep "$umsk" ${APACHE_VARS}) ]]; then
 			action="* preparing apache umask"
-			if $(confirmy "Confirm ${action}: echo ${umsk} >>${APACHE_VARS} [Y/n] ? "); then
+			if $(confirmy "Confirm ${action}: echo ${umsk} >>${APACHE_VARS} [Y/n] ? " WO_APACHE_UMASK Y); then
 				verbosecho "${action}"
 				echo ${umsk} >>${APACHE_VARS}
 				errexit "${action}"
@@ -1127,7 +1198,13 @@ else
 fi
 
 # 2) show ${DOCROOT}/SETUP.CONF.README
-if [[ -f ${REPORT} ]]; then less ${REPORT}; fi
+if [[ -f ${REPORT} ]]; then
+	if ${AUTO}; then
+		echo "Setup report available at: ${REPORT}"
+	else
+		less ${REPORT}
+	fi
+fi
 
 # 2-a) optionnaly 'vimdiff' the configuration files updates if any
 #oIFS=${IFS}; IFS=$'\n'
@@ -1146,7 +1223,7 @@ if   [[ ${ACTIVATEWO} == "FORCED" ]]; then activateWO;
 elif [[ ${SETUPTYPE} == "install" ]]; then
 	ACTIVATEWO="YES"
 	if [[ ${OPERROOT} && ${DOCROOT} != ${OPERROOT} ]]; then
-		if [[ $(confirm "Have this install replace current Production [y/N] ? ") == false ]]; then
+		if [[ $(confirm "Have this install replace current Production [y/N] ? " WO_REPLACE_PRODUCTION N) == false ]]; then
 			ACTIVATEWO="NO"
 		fi
 	fi
@@ -1171,3 +1248,14 @@ if [[ $qsysrc == 2 ]]; then
 	echo "activating WebObs requires that you (re)start Apache, WebObs scheduler and WebObs postboard"
 fi
 echo
+
+if ${WO_USERPASSWD_WAS_GENERATED} && ${AUTO}; then
+	echo
+	echo "**** IMPORTANT: no WO_USERPASSWD was set, so a random WebObs password"
+	echo "**** was generated for user '${USERID}':"
+	echo "****     ${WO_USERPASSWD}"
+	echo "**** It will not be shown again - store it now, then change it from the"
+	echo "**** WebObs web interface."
+	echo
+fi
+unset WO_USERPASSWD WO_USERPASSWD_WAS_GENERATED

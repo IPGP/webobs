@@ -320,7 +320,7 @@ foreach (keys %FORM) {
 #
 print qq[Content-type: text/html
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE html>
 <html>
 <head>
 <title>] . $FORM{NAME} . qq[</title>
@@ -354,14 +354,39 @@ function update_form()
     if (yy1[0]) {
         var date1 = new Date(yy1[0].value, mm1[0].value-1, dd1[0].value, hr1[0].value, mn1[0].value, sc1[0].value);
         var date2 = new Date(yy2[0].value, mm2[0].value-1, dd2[0].value, hr2[0].value, mn2[0].value, sc2[0].value);
+        if (date2 < date1) {
+           yy2[0].value = yy1[0].value;
+           mm2[0].value = mm1[0].value;
+           dd2[0].value = dd1[0].value;
+           hr2[0].value = hr1[0].value;
+           mn2[0].value = mn1[0].value;
+           sc2[0].value = sc1[0].value;
+        }
+
         duration = (date2.getTime() - date1.getTime())/86400000;
-        if (duration > 1) {
-            form.duration.value = duration.toFixed(2);
-        } else {
-            form.duration.value = duration.toFixed(5);
+        var dur = duration;
+        form.durstr.value = "";
+        if (dur >= 1) {
+            form.durstr.value = Math.floor(dur) + " $__{day}";
+            if (dur >= 2) {
+                form.durstr.value = form.durstr.value + "s";
+            }
+        }
+        dur = (dur - Math.floor(dur))*24;
+        if (dur >= 1) {
+            form.durstr.value = form.durstr.value + " " + String(Math.floor(dur)).padStart(2,"0") + " $__{h}";
+        }
+        dur = (dur - Math.floor(dur))*60;
+        if (dur >= 1) {
+            form.durstr.value = form.durstr.value + " " + String(Math.floor(dur)).padStart(2,"0") + " $__{mn}";
+        }
+        dur = (dur - Math.floor(dur))*60;
+        if (dur >= 1) {
+            form.durstr.value = form.durstr.value + " " + String(dur.toFixed(0)).padStart(2,"0") + " $__{s}";
         }
     } else {
         form.duration.value = "0";
+        form.durstr.value = "";
     }
 ];
 foreach my $f (@formulas) {
@@ -444,10 +469,16 @@ function verif_form()
         } else { cbox.value = ""; }
     });
     console.log(\$("#theform"));
-    if(document.form.site.value == "") {
+    if (document.form.site.value == "") {
         alert("$__{'You must select a node associated to this record!'}");
         document.form.site.focus();
         return false;
+    }
+    
+    if (document.form.quality0.value == "checked") {
+        if (!confirm("$__{'You are modifying a validated record. Are you sure?'}")) {
+            return false;
+        }
     }
 
     var form = document.getElementById("theform");
@@ -582,7 +613,8 @@ my $title2;
 my $recinfo;
 my $val;
 my %prev_inputs;
-my $trash;
+my $trash; 
+my $qualOK;
 
 my @edate_vals;
 my @sdate_vals;
@@ -652,8 +684,9 @@ print qq[<form name="form" id="theform" action="">
 <input type="hidden" name="user" value="$client">
 <input type="hidden" name="trash" value="$trash">
 <input type="hidden" name="delete" value="">
-<input type=\"hidden\" name=\"action\" value="save">
-<input type=\"hidden\" name=\"form\" value=\"$form\">
+<input type="hidden" name=\"action\" value="save">
+<input type="hidden" name=\"form\" value=\"$form\">
+<input type="hidden" name=\"quality0\" value=\"$quality\">
 
 <table width="100%">
   <tr>
@@ -673,7 +706,7 @@ if (isok($FORM{QUALITY_CHECK})) {
             push(@uid, $_);
         }
     }
-    my $qualOK = ($clientAuth>2 || grep(/^$USERS{$CLIENT}{UID}$/,@uid));
+    $qualOK = ($clientAuth>2 || grep(/^$USERS{$CLIENT}{UID}$/,@uid));
     print "<P><input type=\"checkbox\"".($quality ? " checked":"")
       .(!$qualOK ? " disabled=\"disabled\"":"")
       ." name=\"quality\" value=\"1\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'help_genform_quality'}')\">"
@@ -707,17 +740,18 @@ for (@NODESSelList) {
 }
 print qq(</select><BR>);
 
+print qq(<input type="hidden" name="duration">);
 if ($starting_date) {
     datetime_input(\%FORM, "sdate", \@sdate_vals, "Start Date");
     datetime_input(\%FORM, "edate", \@edate_vals, "End Date");
     if ($FORM{BANG}) {
-        print qq(<B>$__{'Duration'} =</B> <input size=5 readOnly class=inputNumNoEdit name="duration"> $__{'days'}<BR>);
+        print qq(<B>$__{'Duration'} =</B> <input size=20 readOnly class=inputNoEdit name="durstr"><BR>);
     } else {
-        print qq(<input type="hidden" name="duration">);
+        print qq(<input type="hidden" name="durstr">);
     }
 } else {
     datetime_input(\%FORM, "edate", \@edate_vals);
-    print qq(<input type="hidden" name="duration">);
+    print qq(<input type="hidden" name="durstr">);
 }
 
 # Add mandatory operator input
@@ -1007,7 +1041,7 @@ Lucas Dassin, François Beauducel, Jérôme Touvier
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2025 - Institut de Physique du Globe Paris
+WebObs - 2012-2026 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

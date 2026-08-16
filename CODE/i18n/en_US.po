@@ -35,6 +35,9 @@ msgstr "Oper."
 msgid "Owner"
 msgstr "Operator"
 
+msgid "node's name"
+msgstr "node \\' name"
+
 # formulaireCREATION_STATION.pl
 
 msgid "help_creationstation_valid"
@@ -215,6 +218,15 @@ msgstr "Year %Y"
 
 # ---- showGRID.pl
 
+msgid "Active_nodes"
+msgstr "Active"
+
+msgid "Inactive_nodes"
+msgstr "Inactive"
+
+msgid "All_nodes"
+msgstr "All"
+
 msgid "help_node_sampling"
 msgstr "Sampling rate performance (in %):  number of valid samples over the last time period, compared to theoretical acquisition period"
 
@@ -314,7 +326,7 @@ msgid "beware_approximate_position"
 msgstr "Use the HTML geolocation API to locate the user. Beware : the location could be approximated from several meters to several thousand meters, depending on your location."
 
 msgid "help_creationstation_shapefile"
-msgstr "To add a shapefile (.zip only) layer, click here"
+msgstr "Add a shapefile (.zip only) layer. WARNING: will replace all previous shapes if exist."
 
 
 # ---- vsearch.pl

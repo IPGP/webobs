@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-06-19
+%   Updated: 2026-08-10
 
 WO = readcfg;
 
@@ -79,9 +79,6 @@ end
 enu = {'E','N','U'};
 cmpnames = split(field2str(P,'COMPONENT_NAMELIST','Relative Eastern,Relative Northern,Relative Vertical'),',');
 disp_yscale = field2num(P,'DISP_YSCALE_M',0);
-
-export_header_proc_keylist = split(field2str(P,'EXPORT_HEADER_PROC_KEYLIST',''),',');
-export_header_node_keylist = split(field2str(P,'EXPORT_HEADER_NODE_KEYLIST',''),',');	
 
 % Harmonic correction: period list (day), pairs of sine, cosine (mm) for each component
 harm_refdate = field2num(P,'HARMONIC_ORIGIN_DATE');
@@ -206,12 +203,15 @@ strainmap_timeseries_linestyle = field2str(P,'STRAINMAP_TIMESERIES_LINESTYLE','.
 strainmap_timeseries_mavr = field2num(P,'STRAINMAP_TIMESERIES_MOVING_AVERAGE',30,'notempty');
 strainmap_timeseries_offset = field2num(P,'STRAINMAP_TIMESERIES_PAIRS_OFFSET_M',0);
 strainmap_timeseries_sorting = isok(P,'STRAINMAP_TIMESERIES_PAIRS_SORT',1);
+strainmap_timeseries_fontsize = field2num(P,'STRAINMAP_TIMESERIES_FONTSIZE',8);
 strainmap_win = field2num(P,'STRAINMAP_WINDOW_DAYS');
 strainmap_demopt = field2cell(P,'STRAINMAP_DEM_OPT','watermark',1.5,'interp','saturation',0,'hlegend');
 strainmap_linewidth = field2num(P,'STRAINMAP_LINEWIDTH',3);
 strainmap_colorref = field2str(P,'STRAINMAP_COLORREF');
 strainmap_cmap = field2num(P,'STRAINMAP_COLORMAP',ryb(256),'notempty');
 strainmap_fontsize = field2num(P,'STRAINMAP_FONTSIZE',10);
+strainmap_table_fontsize = field2num(P,'STRAINMAP_TABLE_FONTSIZE',8);
+strainmap_table_maxlines = field2num(P,'STRAINMAP_TABLE_MAXLINES',20);
 
 
 % MOTION parameters
@@ -710,7 +710,7 @@ for r = 1:numel(P.GTABLE)
                 end
             else
                 E.d = nan(0,7);
-			end
+		    end
 
 			mkexport(WO,sprintf('%s_%s',N(n).ID,P.GTABLE(r).TIMESCALE),E,P,r,N(n));
 		end
@@ -874,7 +874,7 @@ for r = 1:numel(P.GTABLE)
 	if any(strcmp(P.SUMMARYLIST,summary))
 
         % component indexes (5:6 for horizontal only, 5:7 for 3-components)
-		if strainmap_horizonly
+	    if strainmap_horizonly
             ndim = '2-D';
             ib = 5:6;
         else
@@ -974,6 +974,11 @@ for r = 1:numel(P.GTABLE)
             B(n).d = d;
             B(n).o = o;
             B(n).t = tka;
+            if ~isempty(tka)
+                B(n).tlast = tka(end);
+            else
+                B(n).tlast = now;
+            end
             kvel = (isinto(B(n).t,tvel) & ~isnan(B(n).d));
             if sum(kvel)
                 B(n).rlin = polyfit(B(n).t(kvel),B(n).d(kvel),1);
@@ -1000,6 +1005,9 @@ for r = 1:numel(P.GTABLE)
             end
             fprintf('   velocity %s = %+g mm/yr, total displacement = %+g mm, total deformation = %+g µstrain\n', ...
                 B(n).name,roundsd([B(n).vel,B(n).dis,B(n).def],4));
+
+            % for export: Lat1,Lon1,Lat2,Lon2,Dist,Vel_mm/yr','Disp_mm',sprintf('Def_(%cstr)',char(181))};
+            B(n).dexport = [geo(a,1:2),geo(b,1:2),B(n).length,B(n).vel,B(n).dis,B(n).def];
         end
         fprintf('---> Baselines timeseries offset = ')
         if strainmap_timeseries_offset > 0
@@ -1053,9 +1061,9 @@ for r = 1:numel(P.GTABLE)
                 if isempty(lda) || isnan(lda)
                     lda = rmean(dd);
                 end
-                text(tlim(2),lda,['   ',B(n).line],'Color',scolor(n),'FontWeight','bold', ...
+                text(tlim(2),lda,['   ',B(n).line],'Color',scolor(n),'FontSize',strainmap_timeseries_fontsize,'FontWeight','bold', ...
                     'HorizontalAlignment','left','VerticalAlignment','middle')
-                ylim = minmax([ylim,lda+boffset*[-.5,.5]]);
+                ylim = minmax([ylim,lda+boffset*[-1,1]]);
             end
         end
         if any(isnan(ylim))
@@ -1136,7 +1144,7 @@ for r = 1:numel(P.GTABLE)
             colormap(cmap)
             caxis([0,1])
             %title(sprintf('Linear deformation (%cstrain)',char(181)),'FontSize',10)
-		end
+        end
 
         % numeric information (max values in bold)
         axes('Position',[0.6,.05,.4,.4])
@@ -1169,7 +1177,18 @@ for r = 1:numel(P.GTABLE)
             end
             bscol(i+1,[1,5]) = repmat({B(n).col},1,2);
         end
-        plottable(bstab,[.1,.3,.5,.7,.9],[.85,0],'ccccc',bscol,'FontSize',8)
+
+        if strainmap_table_maxlines > 1
+            bstab = bstab(1:strainmap_table_maxlines+1,:);
+            bscol = bscol(1:strainmap_table_maxlines+1,:);
+            db = length(B) - strainmap_table_maxlines;
+            if db > 0
+                bstab = [bstab;{'','',sprintf('... and %d more baselines ...',db),'',''}];
+                bscol = [bscol;repmat({'none'},1,size(bstab,2))];
+            end
+        end
+
+        plottable(bstab,[.1,.3,.5,.7,.9],[.85,0],'ccccc',bscol,'FontSize',strainmap_table_fontsize)
         set(gca,'YLim',[0,1])
         axis off
 
@@ -1184,7 +1203,7 @@ for r = 1:numel(P.GTABLE)
 		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
    
-        % exports strain timeseries data
+        % exports strain timeseries data and parameters table
         if isok(P,'EXPORTS')
             for i = 1:length(B)
                 E.title = sprintf('%s: %s',OPT.GTITLE,B(i).name);
@@ -1194,6 +1213,14 @@ for r = 1:numel(P.GTABLE)
                 E.d = [B(i).d,B(i).strain];
                 mkexport(WO,sprintf('%s_%s_%s',summary,B(i).line,P.GTABLE(r).TIMESCALE),E,P,r);
             end
+            % parameters (sorted as in the table)
+            E.title = OPT.GTITLE;
+            E.infos = {sprintf('baselines: %s',strjoin(cat(1,{B(ix).line}),','))};
+            E.t = cat(1,B(ix).tlast);
+            E.header = {'Lat1_(N)','Lon1_(E)','Lat2_(N)','Lon2_(E)','Dist_(km)','Vel_mm/yr','Disp_mm',sprintf('Def_(%cstr)',char(181))};
+            E.d = cat(1,B(ix).dexport);
+            mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P,r);
+
         end
 	end
 
@@ -1385,7 +1412,7 @@ for r = 1:numel(P.GTABLE)
 
     % === VFLOW: vectors in time (dynamic interface)
 	summary = 'VFLOW';
-	if any(strcmp(P.SUMMARYLIST,summary))
+    if any(strcmp(P.SUMMARYLIST,summary))
 		vtlabel = cell(1,numel(vflow_period));
 		for m = 1:numel(vflow_period)
 			vtp = vflow_period(m);
@@ -1404,7 +1431,7 @@ for r = 1:numel(P.GTABLE)
             % initiates the vectors matrix
             W(m).v = nan(numel(W(m).t),numel(kn),6); % time x station x components
 
-			for w = 1:numel(W(m).t)
+            for w = 1:numel(W(m).t)
 				t2 = W(m).t(w);
 				if vflow_period(m) > 0
 					wlim = t2 - [vflow_period(m),0];
@@ -1468,7 +1495,7 @@ for r = 1:numel(P.GTABLE)
 		end
 
 		% exports data (1 file per station)
-		if isok(P,'EXPORTS')
+        if isok(P,'EXPORTS')
 			E.t = W(1).t;
 
             n = 6;
@@ -1674,7 +1701,7 @@ for r = 1:numel(P.GTABLE)
 		% minimum number of stations must be a valid number
 		modelnet_minsta = max(min(modelnet_minsta,length(kn)),1);
 
-		if length(kn) > 0
+		if ~isempty(kn)
 
 			% makes the XYZ space
 			if modelnet_target_included && ~isempty(targetll)
@@ -2372,7 +2399,7 @@ for r = 1:numel(P.GTABLE)
 		dt = max(modeltime_sampling,ceil(numel(modeltime_period)*diff(tlim)/modeltime_max/modeltime_sampling)*modeltime_sampling);
 
 		% loop on the model source type
-		for mst = split(modeltime_source_type,',')
+        for mst = split(modeltime_source_type,',')
 			mt = lower(char(mst));
 
 			switch mt
@@ -2443,7 +2470,6 @@ for r = 1:numel(P.GTABLE)
 					k = find(isinto(D(n).t,wlim));
 					for i = 1:3
 						if ~isempty(k) && ~all(isnan(D(n).d(k,i+4)))
-							k1 = k(find(~isnan(D(n).d(k,i+4)),1,'first'));
 							ke = k(find(~isnan(D(n).d(k,i+4)),1,'last'));
 							[tk,dk,lr,trd] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),D(n).e(k,i),P.GTABLE(r).DECIMATE,P,1);
 							tr(j,i) = trd(1);
@@ -2824,7 +2850,7 @@ for r = 1:numel(P.GTABLE)
 		clear IMAP
 
 		% exports data
-		if isok(P,'EXPORTS')
+        if isok(P,'EXPORTS')
 			E.t = M(1).t;
 
             % modeltime results
@@ -2845,7 +2871,7 @@ for r = 1:numel(P.GTABLE)
 			end
 			E.title = sprintf('%s {%s}',OPT.GTITLE,upper(sprintf('%s_%s',proc,summary)));
 			E.infos = {sprintf('Source type: %s',mt)};
-			for m = 1:numel(modeltime_period)
+            for m = 1:numel(modeltime_period)
                 E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,modeltime_period(m),days2h(modeltime_period(m),'round')));
             end
             mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P,r);
@@ -2975,9 +3001,9 @@ opt = {P.fault_rgb,'FaceColor','none','LineWidth',2,'EdgeAlpha',.5};
 
 switch geometry
 case 'xy'
-    patch(x_fault,y_fault,opt{:});
+    h = patch(x_fault,y_fault,opt{:});
 case 'xz'
-    patch(x_fault,z_fault,opt{:});
+    h = patch(x_fault,z_fault,opt{:});
 case 'zy'
-    patch(z_fault,y_fault,opt{:});
+    h = patch(z_fault,y_fault,opt{:});
 end

@@ -7,17 +7,15 @@ function mkendreq(WO,P)
 %
 %   Author: F. Beauducel, WEBOBS/IPGP
 %   Created: 2014-07-12
-%   Updated: 2026-02-20
+%   Updated: 2026-08-07
 
-
-wofun = sprintf('WEBOBS{%s}',mfilename);
 
 % makes a .tgz archive of in the upper directory of OUTDIR
 ptgz = P.OUTDIR;
 preq = regexprep(ptgz,'/[^/]*$','');
 freq = regexprep(ptgz,'/.*/([^/]*)$','$1');
 ftgz = [ptgz, '.tgz'];
-fprintf('%s: creating archive %s ... ',wofun,ftgz);
+wolog('creating archive %s ... ',ftgz);
 
 wosystem(sprintf('mkdir -p %s',ptgz));
 wosystem(sprintf('tar zcf %s -C %s %s',ftgz,preq,freq));

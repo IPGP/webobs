@@ -45,6 +45,9 @@ STARTING_DATE|NO
 # may contain any +GID and/or UID list (comma separated)
 OPERATORS_LIST|+DUTY
 
+# default is descending order for showGENFORM.pl (set YES for ascending)
+SORT_ASCENDING|NO
+
 # default window time for showGENFORM.pl (in days)
 DEFAULT_DAYS|365
 

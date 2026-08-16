@@ -10,7 +10,7 @@
 # -----------------------------------------------------------------------------
 # --- GRID common parameters
 
-NAME|Banque de données chimie des eaux
+NAME|Banque de donnï¿½es chimie des eaux
 DESCRIPTION|Analyse physico-chimique des eaux (FR) 
 OWNCODE|
 TYPE|
@@ -44,6 +44,9 @@ STARTING_DATE|NO
 # may contain any +GID and/or UID list (comma separated)
 OPERATORS_LIST|+DUTY
 
+# default is descending order for showGENFORM.pl (set YES for ascending)
+SORT_ASCENDING|NO
+
 # default window time for showGENFORM.pl (in days)
 DEFAULT_DAYS|3650
 
@@ -51,7 +54,7 @@ DEFAULT_DAYS|3650
 VALIDITY_COLORS|\#66FF66,\#FFD800,\#FFAAAA
 
 COMMENT_SIZE|80
-COMMENT_HELP|Noter toute présence d'odeur, gaz, précipité, etc...
+COMMENT_HELP|Noter toute prï¿½sence d'odeur, gaz, prï¿½cipitï¿½, etc...
 
 
 # -----------------------------------------------------------------------------
@@ -63,22 +66,22 @@ COMMENT_HELP|Noter toute présence d'odeur, gaz, précipité, etc...
 # the database. You might only add new inputs, increasing the number
 # ############################### WARNING #####################################
 
-INPUT01_NAME|Type d'échantillon
+INPUT01_NAME|Type d'ï¿½chantillon
 INPUT01_TYPE|list: FORM.WATERS_fr.list_type.conf
 INPUT01_FILT|YES
 
 INPUT02_NAME|Temp. ambiante
-INPUT02_UNIT|°C
+INPUT02_UNIT|ï¿½C
 
 INPUT03_NAME|Temp. liquide
-INPUT03_UNIT|°C
+INPUT03_UNIT|ï¿½C
 
 INPUT04_NAME|pH
 
-INPUT05_NAME|Débit
+INPUT05_NAME|Dï¿½bit
 INPUT05_UNIT|l/min
 
-INPUT06_NAME|Conductivité
+INPUT06_NAME|Conductivitï¿½
 INPUT06_UNIT|&mu;S
 
 INPUT07_NAME|Niveau
@@ -133,8 +136,8 @@ INPUT23_NAME|&delta;D
 # --- Outputs names, units, and types
 # valid types: formula: (algebric formula using INPUT and/or OUTPUT), text: (html text to display)
 
-OUTPUT01_NAME|Cond. @25°C
-OUTPUT01_UNIT|°S
+OUTPUT01_NAME|Cond. @25ï¿½C
+OUTPUT01_UNIT|ï¿½S
 OUTPUT01_TYPE|formula: INPUT06 / (1 + 0.02*(INPUT03 - 25))
 
 OUTPUT02_NAME|H<sup>+</sup>
@@ -236,7 +239,7 @@ FIELDSET02_CELLS|2
 FIELDSET02_C01|INPUT08,INPUT09,INPUT10,INPUT11,INPUT12
 FIELDSET02_C02|INPUT13,INPUT14,INPUT15,INPUT16,INPUT17,INPUT18,INPUT19
 
-FIELDSET03_NAME|Concentration en autres éléments
+FIELDSET03_NAME|Concentration en autres ï¿½lï¿½ments
 FIELDSET03_CELLS|1
 FIELDSET03_C01|INPUT20
 

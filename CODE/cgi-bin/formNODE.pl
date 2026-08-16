@@ -306,7 +306,10 @@ print $cgi->header(
     -charset                     => 'utf-8',
     -access_control_allow_origin => 'http://localhost',
   ),
-  $cgi->start_html("$__{'Node configuration form'}");
+  $cgi->start_html(
+    -dtd => undef,
+    -title => "$__{'Node configuration form'}"
+  );
 
 print <<"FIN";
 <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
@@ -563,7 +566,6 @@ function openOSM() {
 function selectShape() {
     loadShape();
     document.form.locMap.value = 1;
-    document.form.saveAuth.value = 1;
 }
 
 function addGeoJSONToMap(geojson, map) {
@@ -779,28 +781,34 @@ function getGeometry(geojson) {
 }
 function getBoundingBox(coordinates) {
     /**
-     * Calculate the bounding box of given coordinates
-     * \@param  {Array} coordinates Array of coordinates
-     * \@return {Array} The calculated bounding box as an array of coordinates
-     */
-    var bounds = {}, coords, point, latitude, longitude;
+    * Calculate the bounding box of given coordinates, whatever the
+    * nesting depth (Point, LineString, Polygon, Multi* ...)
+    * \@param  {Array} coordinates Nested array of coordinates
+    * \@return {Array} Closed ring [[xMin,yMin],[xMax,yMin],[xMax,yMax],[xMin,yMax],[xMin,yMin]]
+    */
+    var bounds = {xMin: Infinity, xMax: -Infinity, yMin: Infinity, yMax: -Infinity};
 
-    coords = coordinates;
-
-    for (var j = 0; j < coords.length; j++) {
-        longitude = coords[j][0];
-        latitude = coords[j][1];
-        bounds.xMin = bounds.xMin < longitude ? bounds.xMin : longitude;
-        bounds.xMax = bounds.xMax > longitude ? bounds.xMax : longitude;
-        bounds.yMin = bounds.yMin < latitude ? bounds.yMin : latitude;
-        bounds.yMax = bounds.yMax > latitude ? bounds.yMax : latitude;
+    function walk(coords) {
+        if (typeof coords[0] === 'number') {
+            var longitude = coords[0];
+            var latitude = coords[1];
+            bounds.xMin = Math.min(bounds.xMin, longitude);
+            bounds.xMax = Math.max(bounds.xMax, longitude);
+            bounds.yMin = Math.min(bounds.yMin, latitude);
+            bounds.yMax = Math.max(bounds.yMax, latitude);
+        } else {
+            coords.forEach(walk);
+        }
     }
-    var coordinates = [bounds.xMin, bounds.xMax, bounds.yMin, bounds.yMax, bounds.xMin];
-    coordinates = coordinates.map(tuple =>
-      tuple.map(x => parseFloat(x.toFixed(7)))
-    );
-
-    return coordinates;
+    walk(coordinates);
+    var box = [
+        [bounds.xMin, bounds.yMin],
+        [bounds.xMax, bounds.yMin],
+        [bounds.xMax, bounds.yMax],
+        [bounds.xMin, bounds.yMax],
+        [bounds.xMin, bounds.yMin]
+    ];
+    return box.map(pair => pair.map(x => parseFloat(x.toFixed(7))));
 }
 
 function addCreator() {
@@ -1081,87 +1089,89 @@ print "</TD></TR></TABLE>\n";
 
 # --- show THEIA fields ?
 if ($theia_selected) {
-print "<INPUT type=\"hidden\" name=\"theia_selected\" value=\"1\">";
-print "<DIV id=\"theiaChecked\" style=\"display:none;\"><HR><LABEL>$__{'show/hide THEIA metadata fields'} ?<INPUT type=\"checkbox\" onchange=\"showHideTheia(this)\" value=0></LABEL>&nbsp;<BR><BR></DIV>";
-print "<DIV id=\"showHide\" style=\"display:none;\">";
+    print "<INPUT type=\"hidden\" name=\"theia_selected\" value=\"1\">";
+    print "<DIV id=\"theiaChecked\" style=\"display:none;\"><HR><LABEL>$__{'show/hide THEIA metadata fields'} ?<INPUT type=\"checkbox\" onchange=\"showHideTheia(this)\" value=0></LABEL>&nbsp;<BR><BR></DIV>";
+    print "<DIV id=\"showHide\" style=\"display:none;\">";
 
-# --- PRODUCER
-print "<LABEL style=\"width:80px\" for=\"producer\">$__{'Producer'}:</LABEL>";
-print "<INPUT size=\"15\" onMouseOut=\"nd()\" value=\"$usrProducer\" onmouseover=\"overlib('$__{help_creationstation_producer}')\" size=\"8\" name=\"producer\" id=\"producer\">&nbsp;&nbsp;<BR>";
+    # --- PRODUCER
+    print "<LABEL style=\"width:80px\" for=\"producer\">$__{'Producer'}:</LABEL>";
+    print "<INPUT size=\"15\" onMouseOut=\"nd()\" value=\"$usrProducer\" onmouseover=\"overlib('$__{help_creationstation_producer}')\" size=\"8\" name=\"producer\" id=\"producer\">&nbsp;&nbsp;<BR>";
 
-# --- CREATOR
-print "<BUTTON style=\"text-align:center\" onclick=\"addCreator(); return false;\">$__{'Add a creator'} </BUTTON>";
-print "<BUTTON onclick=\"removeCreator(); return false;\">$__{'Remove a creator'} </BUTTON>";
-print "<INPUT type='hidden' name=\"count_creator\" value='1'></INPUT>";
-print "<INPUT type='hidden' name=\"creators\" value=''></INPUT>";
-print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Creator'}:</LABEL><BR><BR>";
-print "<DIV id=\"creator\">";
-print "<SELECT onMouseOut=\"nd()\" value=\"$usrRole[0]\" onmouseover=\"overlib('$__{help_creationstation_creator}')\" name=\"role\" id=\"creator\" size=\"1\">";
-for (@creators) {
-    if ($_ eq $usrRole[0]){
-        print "<OPTION value=\"$_\" selected>$_</option>\n";
-    } else {
-        print "<OPTION value=\"$_\">$_</option>\n";
-    }
-}
-print "</SELECT>&nbsp;&nbsp";
-print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName[0]\" placeholder=\"first name\" onmouseoverd=\"overlib('$__{help_creation_firstName}')\" name=\"firstName\" id=\"firstName_0\">&nbsp;&nbsp;";
-print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName[0]\" placeholder=\"last name\" onmouseoverd=\"overlib('$__{help_creation_lastName}')\" name=\"lastName\" id=\"lastName_0\">&nbsp;&nbsp;";
-print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail[0]\" placeholder=\"email\" onmouseoverd=\"overlib('$__{help_creation_email}')\" name=\"email\" id=\"email_0\">&nbsp;&nbsp;<BR></DIV>";
-print "<DIV id='creator_add'>";
-for (my $i = 1; $i <= $#usrRole; $i++) {
-    my $cnt = $i+1;
-    print "<DIV id=new_creator$cnt>";
-    print "<SCRIPT>var form = \$('#theform')[0];form.count_creator.value = parseInt(form.count_creator.value);</SCRIPT>";
-    print "<SELECT onMouseOut=\"nd()\" value=\"$usrRole[$i]\" onmouseover=\"overlib('$__{help_creationstation_creator}')\" name=\"role\" id=\"creator\" size=\"1\">";
+    # --- CREATOR
+    print "<BUTTON style=\"text-align:center\" onclick=\"addCreator(); return false;\">$__{'Add a creator'} </BUTTON>";
+    print "<BUTTON onclick=\"removeCreator(); return false;\">$__{'Remove a creator'} </BUTTON>";
+    print "<INPUT type='hidden' name=\"count_creator\" value='1'>";
+    print "<INPUT type='hidden' name=\"creators\" value=''>";
+    print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Creator'}:</LABEL><BR><BR>";
+    print "<DIV id=\"creator\">";
+    print "<SELECT onMouseOut=\"nd()\" value=\"$usrRole[0]\" onmouseover=\"overlib('$__{help_creationstation_creator}')\" name=\"role\" id=\"creator\" size=\"1\">";
     for (@creators) {
-        if ($_ eq $usrRole[$i]){
+        if ($_ eq $usrRole[0]){
             print "<OPTION value=\"$_\" selected>$_</option>\n";
         } else {
             print "<OPTION value=\"$_\">$_</option>\n";
         }
     }
     print "</SELECT>&nbsp;&nbsp";
-    print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName[$i]\" placeholder=\"first name\" onmouseoverd=\"overlib('$__{help_creation_firstName}')\" name=\"firstName\" id=\"firstName_$i\">&nbsp;&nbsp;";
-    print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName[$i]\" placeholder=\"last name\" onmouseoverd=\"overlib('$__{help_creation_lastName}')\" name=\"lastName\" id=\"lastName_$i\">&nbsp;&nbsp;";
-    print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail[$i]\" placeholder=\"email\" onmouseoverd=\"overlib('$__{help_creation_email}')\" name=\"email\" id=\"email_$i\">&nbsp;&nbsp;<BR>";
+    print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName[0]\" placeholder=\"first name\" onmouseoverd=\"overlib('$__{help_creation_firstName}')\" name=\"firstName\" id=\"firstName_0\">&nbsp;&nbsp;";
+    print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName[0]\" placeholder=\"last name\" onmouseoverd=\"overlib('$__{help_creation_lastName}')\" name=\"lastName\" id=\"lastName_0\">&nbsp;&nbsp;";
+    print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail[0]\" placeholder=\"email\" onmouseoverd=\"overlib('$__{help_creation_email}')\" name=\"email\" id=\"email_0\">&nbsp;&nbsp;<BR></DIV>";
+    print "<DIV id='creator_add'>";
+    for (my $i = 1; $i <= $#usrRole; $i++) {
+        my $cnt = $i+1;
+        print "<DIV id=new_creator$cnt>";
+        print "<SCRIPT>var form = \$('#theform')[0];form.count_creator.value = parseInt(form.count_creator.value);</SCRIPT>";
+        print "<SELECT onMouseOut=\"nd()\" value=\"$usrRole[$i]\" onmouseover=\"overlib('$__{help_creationstation_creator}')\" name=\"role\" id=\"creator\" size=\"1\">";
+        for (@creators) {
+            if ($_ eq $usrRole[$i]){
+                print "<OPTION value=\"$_\" selected>$_</option>\n";
+            } else {
+                print "<OPTION value=\"$_\">$_</option>\n";
+            }
+        }
+        print "</SELECT>&nbsp;&nbsp";
+        print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName[$i]\" placeholder=\"first name\" onmouseoverd=\"overlib('$__{help_creation_firstName}')\" name=\"firstName\" id=\"firstName_$i\">&nbsp;&nbsp;";
+        print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName[$i]\" placeholder=\"last name\" onmouseoverd=\"overlib('$__{help_creation_lastName}')\" name=\"lastName\" id=\"lastName_$i\">&nbsp;&nbsp;";
+        print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail[$i]\" placeholder=\"email\" onmouseoverd=\"overlib('$__{help_creation_email}')\" name=\"email\" id=\"email_$i\">&nbsp;&nbsp;<BR>";
+        print "</DIV>";
+    }
+    print "</DIV><BR>";
+
+    # --- INSPIRE THEME
+    print "<LABEL style=\"width:80px\" for=\"alias\">$__{'INSPIRE theme'}:</LABEL>";
+    print "<SELECT onMouseOut=\"nd()\" value=\"$usrTheme\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" name=\"theme\" id=\"theme\" size=\"1\">";
+    for (@themes) {
+        if ($_ eq $usrTheme) {
+            print "<OPTION value=\"$_\" selected>$_</option>\n";
+        } else {
+            print "<OPTION value=\"$_\">$_</option>\n";
+        }
+    }
+    print "</SELECT><BR>";
+
+    # --- TOPIC CATEGORIES
+    print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Topic categories'}:</LABEL>";
+
+    #print "<INPUT type=\"hidden\" name=\"topics\">";
+    print "<SELECT multiple onMouseOut=\"nd()\" value=\"@usrTopic\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" name=\"topics\">";
+    for (@topics) {
+        if ($_ ~~ @usrTopic) {
+            print "<OPTION value=\"$_\" selected>$_</option>\n";
+        } else {
+            print "<OPTION value=\"$_\">$_</option>\n";
+        }
+    }
+    print "</SELECT><BR>";
+
+    # --- Lineage
+    print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Lineage'}:</LABEL>";
+    print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrLineage\" onmouseover=\"overlib('$__{help_creationstation_lineage}')\" size=\"8\" name=\"lineage\" id=\"lineage\">&nbsp;&nbsp;<BR>";
     print "</DIV>";
-}
-print "</DIV><BR>";
-
-# --- INSPIRE THEME
-print "<LABEL style=\"width:80px\" for=\"alias\">$__{'INSPIRE theme'}:</LABEL>";
-print "<SELECT onMouseOut=\"nd()\" value=\"$usrTheme\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" name=\"theme\" id=\"theme\" size=\"1\">";
-for (@themes) {
-    if ($_ eq $usrTheme) {
-        print "<OPTION value=\"$_\" selected>$_</option>\n";
-    } else {
-        print "<OPTION value=\"$_\">$_</option>\n";
-    }
-}
-print "</SELECT><BR>";
-
-# --- TOPIC CATEGORIES
-print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Topic categories'}:</LABEL>";
-
-#print "<INPUT type=\"hidden\" name=\"topics\">";
-print "<SELECT multiple onMouseOut=\"nd()\" value=\"@usrTopic\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" name=\"topics\">";
-for (@topics) {
-    if ($_ ~~ @usrTopic) {
-        print "<OPTION value=\"$_\" selected>$_</option>\n";
-    } else {
-        print "<OPTION value=\"$_\">$_</option>\n";
-    }
-}
-print "</SELECT><BR>";
-
-# --- Lineage
-print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Lineage'}:</LABEL>";
-print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrLineage\" onmouseover=\"overlib('$__{help_creationstation_lineage}')\" size=\"8\" name=\"lineage\" id=\"lineage\">&nbsp;&nbsp;<BR>";
-print "</DIV>";
-print "</FIELDSET>";
+    print "</FIELDSET>";
 } # fin THEIA
-else { print "<input type=hidden id=theiaChecked>"; }
+else {
+    print "<INPUT type=\"hidden\" id=theiaChecked>";
+}
 
 print "</TD>\n";                                                               # end left column
 print "<TD style=\"border:0;vertical-align:top;padding-left:40px\" nowrap>";   # right column
@@ -1174,7 +1184,7 @@ print "<TD style=\"border:0;text-align:left\">";
 print "<DIV id='map' style=\"position: relative ;width: 347px; height: 347px\"></DIV>";
 print "</TD>";
 print "<TD style=\"border:0;text-align:left;rows:6;\">";
-print "<label>$__{'Auto-location'} :</label><button id=\"auto-loc\" style=\"position:relative;\" onmouseover=\"overlib('$__{beware_approximate_position}')\">$__{'Locate me'} !</button>&nbsp;<BR>";
+print "<label>$__{'Auto-location'} :</label><button id=\"auto-loc\" style=\"position:relative;\" onmouseover=\"overlib('$__{beware_approximate_position}')\">$__{'Locate me!'}</button>&nbsp;<BR>";
 print "<label for=\"latwgs84\">$__{'Latitude'}  WGS84:</label>";
 print "<input size=\"8\" class=inputNum value=\"$usrLat\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84\" name=\"latwgs84\" oninput=\"onInputWrite()\"><B>&#176;&nbsp;</B>";
 print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84min\" name=\"latwgs84min\"><B>'&nbsp;</B>";
@@ -1228,7 +1238,7 @@ print "<INPUT type=\"hidden\" name=\"outWKT\" value=\"\"\n>";
 print "<INPUT type=\"hidden\" name=\"geojson\" value=\"\"\n>";
 print "<INPUT type=\"hidden\" name=\"saveAuth\" value=\"0\">";
 print "<label for=\"shpfile\">$__{'Shapefile'} (.zip): </label> "
-  ."<INPUT type='file' id='shpfile' onchange='selectShape();form.saveAuth.value=1' value=\"\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_shapefile}')\"><BR>";
+  ."<INPUT type='file' id='shpfile' onchange='selectShape()' value=\"\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_shapefile}')\"><BR>";
 print "</TD>";
 print <<FIN;
 <script>

@@ -16,9 +16,9 @@ WebObs server can run on most Linux systems. It has been succesfully installed/t
 <a name="latest"></a>
 ## Download the latest release
 
-- [WebObs-2.8.2.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.8.2/WebObs-2.8.2.tar.gz) (104 Mb) updated July 1, 2026
-- [Release notes](https://github.com/IPGP/webobs/blob/v2.8.1/release-notes.md) (see also the [What's new?](#whatsnew) section below)
-- [User manual](https://github.com/IPGP/webobs/releases/download/v2.8.1/WebObs_Manual.pdf) (in progress)
+- [WebObs-2.8.3.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.8.3/WebObs-2.8.3.tar.gz) (104 Mb) updated August 16, 2026
+- [Release notes](https://github.com/IPGP/webobs/blob/v2.8.3/release-notes.md) (see also the [What's new?](#whatsnew) section below)
+- [User manual](https://github.com/IPGP/webobs/releases/download/v2.8.3/WebObs_Manual.pdf) (in progress)
 - And, for a first install:
   - Mandatory (license free): **Matlab runtime** for [Linux 64bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip) (386 Mb) or [Linux 32bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnx86_installer.zip) (389 Mb)
   - Recommanded: **ETOPO1** (see [below](#srtm1) for download and install)

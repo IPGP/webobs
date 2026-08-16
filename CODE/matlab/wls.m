@@ -5,23 +5,18 @@ function [b,s] = wls(x,y,w)
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: ?
-%	Updated: 2019-02-13
+%	Updated: 2026-08-12
 
 
 if nargin < 3
 	w = ones(size(y));
 end
+
 X = [x(:),ones(size(x(:)))];
-[b,s,mse] = lscov(X,y(:),w(:));
+% to avoid error in lscov, replaces Inf values of w by 1
+w(isinf(w)) = 1;
+
+[b,s] = lscov(X,y(:),w(:));
+
 %s = s/sqrt(mse);
-
 s(isinf(s)) = NaN;
-
-%S = sum(w);
-%Sx = sum(w.*x);
-%Sy = sum(w.*y);
-%Sxx= sum(w.*x.^2);
-%Sxy= sum(w.*x.*y);
-%Delta = S*Sxx - (Sx)^2;
-%a = (Sxx*Sy - Sx*Sxy)./Delta;
-%b = (S*Sxy - Sx*Sy)./Delta;

@@ -108,7 +108,7 @@ my @minuteList = ('00'..'59');
 # ---- Start HTML page
 my $titlePage = "Edit - $__{'Calibration file'}";
 print "Content-type: text/html\n\n
-<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n
+<!DOCTYPE html>\n
 <HTML><HEAD>\n
 <title>$titlePage</title>\n
 <link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">\n

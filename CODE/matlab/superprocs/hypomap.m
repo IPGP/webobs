@@ -25,7 +25,7 @@ function DOUT=hypomap(varargin)
 %
 %   Authors: F. Beauducel, J.M. Saurel and F. Massin / WEBOBS, IPGP
 %   Created: 2014-11-25 in Paris, France
-%   Updated: 2026-06-02
+%   Updated: 2026-08-14
 
 
 WO = readcfg;
@@ -206,7 +206,7 @@ for m = 1:length(summarylist)
 		mks = (max((dk(:,4)-M(m).mlim(1))/diff(M(m).mlim),0)*5*P.GTABLE(r).MARKERSIZE).^2 + 1;
 		if strcmpi(M(m).cref,'time')
 			mkc = tk;
-			clim = tlim;
+			clim = tlim + (diff(tlim)==0)*[-1,1]/86400; % adds +/- 1s if tlim(1)==tlim(2)
 		else
 			mkc = dk(:,3);
 			clim = zlim;

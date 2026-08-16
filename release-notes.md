@@ -10,7 +10,7 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 If you have any question which is not answered in the user manual, do not hesitate to write to developpers through the mailing list [webobs-devs@services.cnrs.fr](mailto:webobs-devs@services.cnrs.fr), or start a public discussion thread at [github.com/IPGP/webobs/discussions](https://github.com/IPGP/webobs/discussions).
 
-## v2.8.2  (July 2026)
+## v2.8.3  (August 2026)
 
 ### New features
 1. **New grids FORM**: manual databases (formerly dedicated forms) are now fully integrated as a grid type along with PROCs and VIEWs. A FORM is then associated to a DOMAIN and some NODES, appears in the GRIDs table and has its own page with description, nodes table list, map location, and events. FORM is based on the new GENFORM user-defined manual database tool (introduced in the previous release): a freely configurazble SQLite database managed through a GUI form (for entering new data, editing and deleting), a table data display with options and filters, data export as CSV file or as raw data source for PROCs. Creating a FORM becomes as simple as creating a PROC or VIEW, by selecting a template (a dozen are available), if necessary modifying it partially or completely, associating a DOMAIN, associating or creating NODES, and editing the configuration file to set the database structure (inputs and outputs) and the form layout. GENFORM is able to store numerical values, checkboxes, lists, text strings, images, and mathematical output formulas. It aims to replace spreadsheets files for (potentially) any structured scientific data. See the user manual for more details.
@@ -23,6 +23,12 @@ If you have any question which is not answered in the user manual, do not hesita
 
     where FORMNAME is the legacy form name, and PROCNAME is the associated PROC which becomes also the new FORM name. Note that previous link `showFORMNAME.pl` without argument, when legacy form was associated to more than one PROC (for instance the `EAUX` database), has no strict equivalent in the new structure; it must be replaced by as many links as there are procs associated to this form.
 1. **GeoJSON**: shapes (polygons, lines, and points) can be associated to a NODE or a GRID using the OSM.pl link (map marker pin icon), using import of a shapefile (.zip archive) or manual drawing. Resulting shapes will be saved to a .geojson file, and displayed on maps (gridmaps and locastat).
+1. **PROC's data export**: exported data files from procs (.txt) are now written only if `EXPORTS` key is true. Also, the default header can be completed by any NODE (for pernode graphs) or PROC key values, using the new following keys in the proc's configuration:
+```
+EXPORT_HEADER_NODE_KEYLIST|
+EXPORT_HEADER_PROC_KEYLIST|
+```
+The `EXPORT_HEADER_PROC_KEYLIST` accepts any SUMMARY name as prefix (e.g., VECTORS:VECTORS_VELOCITY_REF), so the key will be written only for corresponding summary export file(s).
 1. **GNSS superproc**: new summary plot STRAINMAP to plot baseline pairs and associated strain map. To activate it, add `STRAINMAP` in the `SUMMARYLIST` list. Parameters are:
 ```
 STRAINMAP_TITLE|{\fontsize{14}{\bf$name - Baselines} ($timescale)}
@@ -36,6 +42,7 @@ STRAINMAP_TIMESERIES_LINESTYLE|.
 STRAINMAP_TIMESERIES_MOVING_AVERAGE|30
 STRAINMAP_TIMESERIES_PAIRS_OFFSET_M|
 STRAINMAP_TIMESERIES_PAIRS_SORT|YES
+STRAINMAP_TIMESERIES_FONTSIZE|8
 STRAINMAP_WINDOW_DAYS|
 STRAINMAP_DEM_OPT|'watermark',1.5,'saturation',0,'interp','hlegend','cartesian'
 STRAINMAP_LINEWIDTH|.5,4
@@ -43,6 +50,8 @@ STRAINMAP_LINEWIDTH|.5,4
 STRAINMAP_COLORREF|strain
 STRAINMAP_COLORMAP|ryb(256)
 STRAINMAP_FONTSIZE|10
+STRAINMAP_TABLE_FONTSIZE|8
+STRAINMAP_TABLE_MAXLINES|20
 ```
     If node pairs are not defined, it computes pairs using Delaunay triangle from all nodes of the network, or selected using exclude/include options (`STRAINMAP_EXCLUDED_FROM_TARGET_KM`, `STRAINMAP_EXCLUDE_NODELIST`, `STRAINMAP_INLUDED_NODELIST`). An additional option `STRAINMAP_TIMESERIES_PAIRS_SORT` allows automatic sorting of pairs for the timeseries graph (using velocity). The summary plot computes some linear trend parameters: velocity (mm/yr), total displacement (mm), and total deformation (µstrain) from the entire window or a sub-window defined by `STRAINMAP_WINDOW_DAYS`. Baselines are computed when the time reference is the same for the two timeseries of station pair, considering a tolerance of `STRAINMAP_TOL_DAYS`. Other options are similar to the BASELINES summary plot. A map of stations is also plotted with a basemap using proc's DEM ans options `STRAINMAP_DEM_OPT` (see dem.m function). Baselines are plotted with constant linewidth of proportional to absolute strain (`STRAINMAP_LINEWIDTH` with 1 or 2 values, respectively) and color identical to timeseries (one per station) or using strain colormap (`STRAINMAP_COLORREF` and `STRAINMAP_COLORMAP`).
 1. **GNSS superproc**: active fault slip/open can be set as a priori correction on displacement data, using the Okada (1985) model, as rectangular fault in elastic medium:
@@ -124,8 +133,11 @@ TREND_UNIT|mm/yr
     * automatic filtering to avoid outliers in raw signals,
     * improves graph rendering and add a legend.
 1. In **showOUTG.pl** the proc outputs of event type (tremblemaps, helicorder, ...) have now navigation buttons to access directly to previous/next image, and year, month, day selection accross available images and events.
+1. The **gridmaps** superproc is now optimized: it will update a grid map only if something has been modified (`GRIDMAPS.conf`, the grid `.conf` or any associated nodes).
 
 ### Fixed issues
+1. `!!` Fix several issues for initial install (demo data and configuration).
+1. `!!` Fix encoding issue with menus. Needs to add &encoding=utf8 in the xedit.pl call for any menu edit link.
 1. `!!` Fix a potential security issue with Apache logins when the corresponding user does not exist in the users' db. The setup will fix any abnormal situation by editing the htpasswd file (deleting unknown users and commenting invalid users). In addition, setting the validity flag through the User Manager GUI will now comment/uncomment the corresponding login line in htpasswd file.
 1. `!!` Fix an issue giving edit button for any grid (view/proc/form) for users with only Edit level.
 1. Fix an issue with **hypomap** proc when `EVENTTYPE_EXCLUDED_LIST` and `EVENTSTATUS_EXCLUDED_LIST` are empty.
@@ -136,6 +148,7 @@ TREND_UNIT|mm/yr
 1. `!!` Fix an issue with error filtering strategy in **gnss** superproc. To avoid NaNs, check that `ENU_MIN_ERROR_M` combined with `ORBIT_ERROR_RATIO` has lower values than `FILTER_MAX_ERROR_M`.
 1. `!!` Fix an issue with relative mode in **gnss** superproc: the `VECTORS_RELATIVE_HORIZONTAL_ONLY` was not applied when `VECTORS_VELOCITY_REF` contains a station or list of stations.
 1. `!!` Fix an issue with relative mode in **gnss** superproc: when the `VECTORS_VELOCITY_REF` contains a list of stations for local reference, the wrong stations were used.
+1. Fix an issue when importing shapefile into a node (was operationnal only if `THEIA_USER_FLAG` true@). Fix also an issue with MultiPolygon shapes.
 
 ### Code improvement
 1. `!!` remove cedit.pl and fedit.pl. Replace former links with nedit.pl and formGENFORM.pl, respectively.

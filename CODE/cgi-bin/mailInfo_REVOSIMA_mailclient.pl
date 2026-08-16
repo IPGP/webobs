@@ -190,7 +190,7 @@ my $timePeriodHTML = "Bulletin pr&eacute;liminaire d'activit&eacute; du $dateEnd
 if ($dateStart ne $dateEnd && !defined($send)) {
     print $cgi->header(-charset=>'utf-8');
     print <<"PART1";
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE html>
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -223,7 +223,7 @@ PART1
 
     print $cgi->header(-charset=>'utf-8');
 
-    $html = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">';
+    $html = '<!DOCTYPE html>';
     $html .= '<html>';
     $html .= '  <head>';
     $html .= '    <meta http-equiv="content-type" content="text/html; charset=utf-8">';
@@ -446,7 +446,7 @@ Ce bulletin quotidien est distribu&eacute; publiquement. Les informations dans c
 } else {
     print $cgi->header(-charset=>'utf-8');
     print <<"PART1";
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE html>
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">

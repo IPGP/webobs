@@ -25,11 +25,10 @@ function [P,N,D] = readproc(WO,varargin)
 %
 %	Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %	Created: 2013-04-05 in Paris (France)
-%	Updated: 2026-03-02
+%	Updated: 2026-08-07
 
 
 proc = varargin{1};
-wofun = sprintf('WEBOBS{%s}',mfilename);
 
 if strncmp(proc,'/',1)	% if argument contains a path filename, will read it as is...
 	f = proc;
@@ -39,7 +38,7 @@ else
 end
 
 if ~exist(f,'file')
-	fprintf('%s: ** Warning: file %s does not exist.\n',wofun,f);
+	wolog('** Warning: file %s does not exist.\n',f);
 	P = [];
 	return
 end
@@ -166,7 +165,7 @@ else
 	% reads the req/REQUEST.rc file (from postREQ.pl)
 	freq = [req,'/REQUEST.rc'];
 	if ~exist(freq,'file')
-		error('%s: cannot find request file %s.',wofun,freq);
+		error('Cannot find request file %s.',freq);
 	end
 	REQ = readcfg(WO,freq,'novsub');
 
@@ -205,7 +204,7 @@ else
 end
 
 if nargin > 2 && isempty(P.GTABLE)
-	fprintf('%s: ** WARNING ** invalid timescale. Please check TIMESCALELIST of proc "%s"...\n',wofun,proc);
+	wolog('** WARNING ** invalid timescale. Please check TIMESCALELIST of proc "%s"...\n',proc);
 else
 	d1 = cat(1,P.GTABLE.DATE1);
 	d2 = cat(1,P.GTABLE.DATE2);

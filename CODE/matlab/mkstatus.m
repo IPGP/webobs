@@ -13,10 +13,8 @@ function s = mkstatus(WO,S)
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2001-06-01 in Guadeloupe (French West Indies)
-%   Updated: 2017-09-05
+%   Updated: 2026-08-07
 
-
-wofun = sprintf('WEBOBS{%s}',mfilename);
 
 NODES = readcfg(WO,WO.CONF_NODES);
 f = field2str(NODES,'SQL_DB_STATUS',sprintf('%s/NODESSTATUS.db',WO.PATH_DATA_DB));
@@ -35,7 +33,7 @@ if isnan(S.ACQ)
 	S.ACQ = 0;
 end
 
-fprintf('%s: updating %s (%s) ... ',wofun,f,S.NODE);
+wolog('updating %s (%s) ... ',f,S.NODE);
 
 wosystem(sprintf('sqlite3 %s "create table if not exists status (NODE varchar(150) PRIMARY KEY, STA int, ACQ int, TS timestamp, UPDATED timestamp, COMMENT varchar(1000));"',f),'warning');
 

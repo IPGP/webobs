@@ -89,7 +89,7 @@ if ( WebObs::Users::clientHasEdit(type=>'authwikis',name=>'*') ) {
 # ---- create the HTML now ! ------------------------------------------------- 
 #
 print "Content-type: text/html\n\n";
-print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">
+print "<!DOCTYPE html>
 <HTML>
 <head>
 <link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">

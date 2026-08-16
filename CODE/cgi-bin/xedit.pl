@@ -108,6 +108,7 @@ my $me = $ENV{SCRIPT_NAME};
 my $QryParm    = $cgi->Vars;
 my $fs         = $QryParm->{'fs'}     // "";
 my $action     = $QryParm->{'action'} // "edit";
+my $encoding   = $QryParm->{'encoding'} // "";
 my $tpl        = $QryParm->{'tpl'}    // "";
 my $txt        = $QryParm->{'txt'}    // "";
 my $TS0        = $QryParm->{'ts0'}    // "";
@@ -177,11 +178,11 @@ if ($action eq 'save') {
             flock(FILE, LOCK_EX);
         }
         qx(cp -a $absfile $absfile~ 2>&1);
-        if ( $?  == 0 ) {
+        if ( $? == 0 ) {
             truncate(FILE, 0);
             seek(FILE, 0, SEEK_SET);
             $txt =~ s{\r\n}{\n}g;   # 'cause js-serialize() forces 0d0a
-            push(@lignes,u2l($txt)); # forces ISO encoding in any conf file
+            push(@lignes,($encoding eq "" ? u2l($txt):$txt)); # forces ISO encoding in any conf file
             print FILE @lignes ;
             close(FILE);
             htmlMsgOK($relfile);
@@ -197,13 +198,14 @@ if ($action eq 'save') {
 #
 @lignes = readFile($absfile);
 $TS0 = (stat($absfile))[9] ;
-$txt = l2u(join("",@lignes));
+$txt = join("",@lignes);
+$txt = l2u($txt) if ($encoding eq "");
 
 # build html page
 # - page, common
 print "Content-type: text/html; charset=utf-8
 
-<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">
+<!DOCTYPE html>
 <HTML>
 <HEAD>
 <TITLE>WebObs xedit</TITLE>
@@ -256,6 +258,7 @@ print "<h2>$relfile</h2>";
 print "<form id=\"theform\" name=\"form\" action=\"\" style=\"margin: 0px 0px 0px 10px; height:600px; width: 650px;\">
 <input type=\"hidden\" name=\"fs\" value=\"$fs\">
 <input type=\"hidden\" name=\"action\" value=\"save\">
+<input type=\"hidden\" name=\"encoding\" value=\"$encoding\">
 <input type=\"hidden\" name=\"ts0\" value=\"$TS0\">\n";
 
 # - page, file contents textarea
@@ -303,7 +306,7 @@ François Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2025 - Institut de Physique du Globe Paris
+WebObs - 2012-2026 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
