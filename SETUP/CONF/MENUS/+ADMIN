@@ -23,11 +23,11 @@
 *             <li><a href="/cgi-bin/xedit.pl?fs=CLB_CONF">CLB.conf</a></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=CONF_NODES(FILE_TELE)">TRANStypes.conf</a></li>
 *             <li class="menutitle">Menus</li>
-*             <li><a href="/cgi-bin/xedit.pl?fs=FILE_MENU(NAVIGATION)">Main Menu Edit</a></li>
-*             <li><a href="/cgi-bin/xedit.pl?fs=CONF/MENUS/%2BADMIN">+ADMIN Menu Edit</a></li>
-*             <li><a href="/cgi-bin/xedit.pl?fs=CONF/MENUS/%2BDUTY">+DUTY Menu Edit</a></li>
-*             <li><a href="/cgi-bin/xedit.pl?fs=CONF/MENUS/%2BOBSERVER">+OBSERVER Menu Edit</a></li>
-*             <li><a href="/cgi-bin/xedit.pl?fs=CONF/MENUS/%2BVISITOR">+VISITOR Menu Edit</a></li>
+*             <li><a href="/cgi-bin/xedit.pl?fs=FILE_MENU(NAVIGATION)&encoding=utf8">Main Menu Edit</a></li>
+*             <li><a href="/cgi-bin/xedit.pl?fs=CONF/MENUS/%2BADMIN&encoding=utf8">+ADMIN Menu Edit</a></li>
+*             <li><a href="/cgi-bin/xedit.pl?fs=CONF/MENUS/%2BDUTY&encoding=utf8">+DUTY Menu Edit</a></li>
+*             <li><a href="/cgi-bin/xedit.pl?fs=CONF/MENUS/%2BOBSERVER&encoding=utf8">+OBSERVER Menu Edit</a></li>
+*             <li><a href="/cgi-bin/xedit.pl?fs=CONF/MENUS/%2BVISITOR&encoding=utf8">+VISITOR Menu Edit</a></li>
 *             <li class="menutitle">Contents</li>
 *             <li><a href="/cgi-bin/wdir.pl?dir=HTML">Html Contents</a></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=CONF/events_World.conf">events_World.conf</a></li>
