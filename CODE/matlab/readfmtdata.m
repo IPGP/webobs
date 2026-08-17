@@ -24,7 +24,7 @@ function [D,P] = readfmtdata(WO,P,N)
 %
 %	Authors: François Beauducel, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2013-12-29, in Guadeloupe, French West Indies
-%	Updated: 2026-04-28
+%	Updated: 2026-08-17
 
 debug = isok(P,'DEBUG');
 
@@ -45,7 +45,10 @@ for n = 1:length(N)
     end
 
     % datelim is finite dates limits of PROC (or NODE) expressed in the NODE's TZ
-    F.datelim = [max([P.DATELIM(1),N(n).INSTALL_DATE - N(n).UTC_DATA + P.TZ/24,P.BANG]), min([P.DATELIM(2),N(n).END_DATE - N(n).UTC_DATA + P.TZ/24,P.NOW + P.TZ/24])] - P.TZ/24 + N(n).UTC_DATA;
+    F.datelim = [max([P.DATELIM(1),N(n).INSTALL_DATE - N(n).UTC_DATA + P.TZ/24]), min([P.DATELIM(2),N(n).END_DATE - N(n).UTC_DATA + P.TZ/24,P.NOW + P.TZ/24])] - P.TZ/24 + N(n).UTC_DATA;
+    if isnan(F.datelim(1))
+        F.datelim(1) = P.BANG;
+    end
 
     wolog('loading data [%s] for node "%s" {%s} from %s to %s ...', ...
         F.fmt,N(n).FID,N(n).ID,datestr(F.datelim(1)),datestr(F.datelim(2)));

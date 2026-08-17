@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-08-10
+%   Updated: 2026-08-17
 
 WO = readcfg;
 
@@ -1178,7 +1178,7 @@ for r = 1:numel(P.GTABLE)
             bscol(i+1,[1,5]) = repmat({B(n).col},1,2);
         end
 
-        if strainmap_table_maxlines > 1
+        if isinto(strainmap_table_maxlines,[2,length(B)]) 
             bstab = bstab(1:strainmap_table_maxlines+1,:);
             bscol = bscol(1:strainmap_table_maxlines+1,:);
             db = length(B) - strainmap_table_maxlines;

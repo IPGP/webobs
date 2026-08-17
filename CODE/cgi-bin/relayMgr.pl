@@ -129,7 +129,7 @@ if ($QryParm->{'send'} eq "Envoyer" && $QryParm->{'action'} ne "nothing") {
 
      #        print $cgi->header(-charset=>'utf-8');
      #        print <<"PART1";
-     #<!DOCTYPE html>
+     #<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">
      #<html>
      #  <head>
      #    <meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -157,7 +157,7 @@ if ($QryParm->{'send'} eq "Envoyer" && $QryParm->{'action'} ne "nothing") {
 } else {
     print $cgi->header(-charset=>'utf-8');
     print <<"PART1";
-<!DOCTYPE html>
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">

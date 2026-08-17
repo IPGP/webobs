@@ -10,7 +10,7 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 If you have any question which is not answered in the user manual, do not hesitate to write to developpers through the mailing list [webobs-devs@services.cnrs.fr](mailto:webobs-devs@services.cnrs.fr), or start a public discussion thread at [github.com/IPGP/webobs/discussions](https://github.com/IPGP/webobs/discussions).
 
-## v2.8.3  (August 2026)
+## v2.8.3a  (August 2026)
 
 ### New features
 1. **New grids FORM**: manual databases (formerly dedicated forms) are now fully integrated as a grid type along with PROCs and VIEWs. A FORM is then associated to a DOMAIN and some NODES, appears in the GRIDs table and has its own page with description, nodes table list, map location, and events. FORM is based on the new GENFORM user-defined manual database tool (introduced in the previous release): a freely configurazble SQLite database managed through a GUI form (for entering new data, editing and deleting), a table data display with options and filters, data export as CSV file or as raw data source for PROCs. Creating a FORM becomes as simple as creating a PROC or VIEW, by selecting a template (a dozen are available), if necessary modifying it partially or completely, associating a DOMAIN, associating or creating NODES, and editing the configuration file to set the database structure (inputs and outputs) and the form layout. GENFORM is able to store numerical values, checkboxes, lists, text strings, images, and mathematical output formulas. It aims to replace spreadsheets files for (potentially) any structured scientific data. See the user manual for more details.
@@ -78,6 +78,17 @@ TREND_UNIT|mm/yr
     where `TREND_FACTOR` is a dimensionless factor applied to the trend value initially in m/day, and `TREND_UNIT` is the resulting unit string (for display purposes) for individual node timeseries and VECTORS graph. Also, the `VECTORS` summary map now have a displacement scale below the velocity scale.
 
 1. **Downflowgo**: The lava flow modeling software, [Downflowgo](https://github.com/oryalava/DOWNFLOWGO), can now be integrated to WebObs during the setup.
+
+1. **Automated (non-interactive) setup**: `SETUP/setup` now supports a `-a`/`--auto` option to run a fully automated installation or upgrade, answering every prompt with a sensible default instead of asking interactively. Default answers can be individually overridden with a configuration file:  
+```
+SETUP/setup --auto --config /path/to/myobs.conf
+```  
+A fully commented template listing every overridable setting is provided at `SETUP/setup-auto.conf.default`. This makes `setup` suitable for scripted deployments, provisioning tools (Ansible, cloud-init...), and container image builds, in addition to its usual interactive use. Regular interactive setup remains entirely unchanged; `--auto` is strictly opt-in.
+ 
+    `!!` **Security note**: in `--auto` mode, if no password is provided for the WebObs (`wo`) account, `setup` generates a random one and prints it once at the end of the run. As build logs (Docker, CI...) are generally not a safe place to persist secrets, `--auto` installs meant to run during a container/image build should instead supply the password through `WO_USERPASSWD_FILE` (pointing at a mounted secret, e.g. a Docker or Kubernetes secret) or defer account creation to container start-up. See the [webobs-docker](https://github.com/IPGP/webobs-docker) project below for a reference implementation.
+ 
+1. **webobs-docker**: a new companion project, [IPGP/webobs-docker](https://github.com/IPGP/webobs-docker), provides ready-to-use Dockerfiles and compose files to build and run WebObs in containers. It relies on the new `setup --auto`/`--config` mechanism above to produce reproducible, unattended builds, and follows container best practices for secrets (WebObs account password, database credentials...), which are injected or generated at container start-up rather than baked into the image. See the project's README for build/run instructions and available configuration options.
+
 
 ### Enhancements and modifications
 1. **Theia/OZCAR interface**: Extensive rewriting of the Theia/OZCAR interface with improved database design and improved execution speed. The MULTIOBS format is now used.

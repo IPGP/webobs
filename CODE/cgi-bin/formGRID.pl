@@ -564,7 +564,7 @@ my $cm_edit = ($editOK || $admOK) ? 1 : 0;
 print <<_EOD_;
 Content-type: text/html; charset=utf-8
 
-<!DOCTYPE html>
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">
 <HTML>
 <HEAD>
  <link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
