@@ -92,7 +92,7 @@ if ($file ne "") {
 } else { die "$__{'No filename specified'}" }
 
 print "Content-type: text/html\n\n";
-print "<!DOCTYPE html>
+print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">
 <HTML>
 <head>";
 print "<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">";
