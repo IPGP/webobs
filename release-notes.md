@@ -79,6 +79,17 @@ TREND_UNIT|mm/yr
 
 1. **Downflowgo**: The lava flow modeling software, [Downflowgo](https://github.com/oryalava/DOWNFLOWGO), can now be integrated to WebObs during the setup.
 
+1. **Automated (non-interactive) setup**: `SETUP/setup` now supports a `-a`/`--auto` option to run a fully automated installation or upgrade, answering every prompt with a sensible default instead of asking interactively. Default answers can be individually overridden with a configuration file:  
+```
+SETUP/setup --auto --config /path/to/myobs.conf
+```  
+A fully commented template listing every overridable setting is provided at `SETUP/setup-auto.conf.default`. This makes `setup` suitable for scripted deployments, provisioning tools (Ansible, cloud-init...), and container image builds, in addition to its usual interactive use. Regular interactive setup remains entirely unchanged; `--auto` is strictly opt-in.
+ 
+    `!!` **Security note**: in `--auto` mode, if no password is provided for the WebObs (`wo`) account, `setup` generates a random one and prints it once at the end of the run. As build logs (Docker, CI...) are generally not a safe place to persist secrets, `--auto` installs meant to run during a container/image build should instead supply the password through `WO_USERPASSWD_FILE` (pointing at a mounted secret, e.g. a Docker or Kubernetes secret) or defer account creation to container start-up. See the [webobs-docker](https://github.com/IPGP/webobs-docker) project below for a reference implementation.
+ 
+1. **webobs-docker**: a new companion project, [IPGP/webobs-docker](https://github.com/IPGP/webobs-docker), provides ready-to-use Dockerfiles and compose files to build and run WebObs in containers. It relies on the new `setup --auto`/`--config` mechanism above to produce reproducible, unattended builds, and follows container best practices for secrets (WebObs account password, database credentials...), which are injected or generated at container start-up rather than baked into the image. See the project's README for build/run instructions and available configuration options.
+
+
 ### Enhancements and modifications
 1. **Theia/OZCAR interface**: Extensive rewriting of the Theia/OZCAR interface with improved database design and improved execution speed. The MULTIOBS format is now used.
 1. New CSS!
