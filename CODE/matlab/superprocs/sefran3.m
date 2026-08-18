@@ -23,7 +23,6 @@ function sefran3(name,fdate)
 %	Updated: 2024-07-10
 
 WO = readcfg;
-wofun = sprintf('WEBOBS{%s}',mfilename);
 
 % --- Reads and imports Sefran3 parameters
 if nargin < 1
@@ -78,7 +77,7 @@ if ~isempty(strfind(datasource,'winston'))
 	if exist(winstonjar,'file')
 		javaaddpath(winstonjar);
 	else
-		printf('%s: ** WARNING ** cannot find the Java Winston class ("%s"). Please check WINSTON_JAVA parameter in WEBOBS.rc.\n',wofun,winstonjar);
+		wolog('** WARNING ** cannot find the Java Winston class ("%s"). Please check WINSTON_JAVA parameter in WEBOBS.rc.\n',winstonjar);
 	end
 end
 
@@ -128,7 +127,7 @@ else
 end
 pngquant = field2prog(WO,'PRGM_PNGQUANT');
 if isempty(pngquant)
-	fprintf('%s** WARNING ** you should install pngquant as it will reduce file size by 75%%!\n',wofun);
+	wolog('** WARNING ** you should install pngquant as it will reduce file size by 75%%!\n');
 end
 pngq_ncol = field2num(SEFRAN3,'PNGQUANT_NCOLORS',16);
 sgram_pngq_ncol = field2num(SEFRAN3,'SGRAM_PNGQUANT_NCOLORS',32);
@@ -180,7 +179,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 		mlist = fdate2mlist(fdate);
 	end
 	if isok(SEFRAN3,'DEBUG')
-		fprintf('%s: minutes to process:\n',wofun);
+		wolog('minutes to process:\n');
 		disp(datestr(mlist))
 	end
 
@@ -215,7 +214,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 						% third condition: channels over max. gap not over max. "dead channels"
 						if gaps > bwmdead
 							bw = 1;
-							fprintf('%s: Broom wagon @%gh will pick up "%s" (%d channels over %g%% gap)...\n',wofun,24*bwd,fpng,gaps,100*bwmgap);
+							wolog('Broom wagon @%gh will pick up "%s" (%d channels over %g%% gap)...\n',24*bwd,fpng,gaps,100*bwmgap);
 						end
 					end
 				end
@@ -373,7 +372,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 				else
 					pngq = '';
 				end
-				fprintf('%s: creating %s ... ',wofun,fpng);
+				wolog('creating %s ... ',fpng);
 				ftmp2 = sprintf('%s/sefran.eps',ptmp);
 				print(1,'-depsc','-painters','-loose',ftmp2)
 				%wosystem(sprintf('%s %s -set sefran3:speed "%g" -density %g %s %s %s',convert,tag,vits,ppi,ftmp2,pngq,fpng),SEFRAN3);
@@ -390,7 +389,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 
 				% prints high-speed image (doesn't replot but modifies the paper size...)
 				if vitsh
-					fprintf('%s: creating %s ... ',wofun,fpng_high);
+					wolog('creating %s ... ',fpng_high);
 					fsxy = [vitsh,hip]; % image size (in inches)
 					set(gcf,'PaperSize',fsxy,'PaperUnits','inches','PaperPosition',[0,0,fsxy],'Color','w')
 					print(1,'-depsc','-painters','-loose',ftmp2)
@@ -465,7 +464,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 						pngq = '';
 					end
 					fpng = sprintf('%s/%s/%4d%02d%02d%02d%02d%02.0fs.png',pdat,sgrampath,tv);
-					fprintf('%s: creating %s ... ',wofun,fpng);
+					wolog('creating %s ... ',fpng);
 					ftmp3 = sprintf('%s/sgram.eps',ptmp);
 					fsxy = [vits,hip]; % image size (in inches)
 					set(gcf,'PaperSize',fsxy,'PaperUnits','inches','PaperPosition',[0,0,fsxy],'Color','w')
@@ -480,7 +479,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 				close
 				mdone(m) = true;
 			else
-				fprintf('%s: ** WARNING ** no miniSEED file produced at %s. Abort.\n',wofun,datestr(t0));
+				wolog('** WARNING ** no miniSEED file produced at %s. Abort.\n',datestr(t0));
 			end
 		end
 	end
@@ -517,14 +516,14 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 				end
 				hold off
 				axis off
-				fprintf('%s: creating %s ... ',wofun,fpng);
+				wolog('creating %s ... ',fpng);
 				print(1,'-depsc','-painters','-loose',ftmp)
 				wosystem(sprintf('%s -density %g %s %s',convert,ppi,ftmp,fpng),SEFRAN3);
 				fprintf('done.\n');
 				close
 				flag = 1;
 			else
-				fprintf('%s: updating %s (channels banner) ... ',wofun,fpng);
+				wolog('updating %s (channels banner) ... ',fpng);
 				wosystem(sprintf('%s -density %g %s %s',convert,ppi,ftmp,fpng),SEFRAN3);
 				fprintf('done.\n');
 			end
@@ -538,7 +537,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 		D = dir(sprintf('%s/%s/%4d%02d%02d%02d*00.png',pdat,SEFRAN3.PATH_IMAGES_MINUTE,tv(1:4)));
 		nimg = length(D);
 		if nimg > 0
-			fprintf('%s: updating %s.jpg (hourly thumbnail) ... ',wofun,f);
+			wolog('updating %s.jpg (hourly thumbnail) ... ',f);
 			wosystem(sprintf('%s -depth 8 %s/%s/%4d%02d%02d%02d??00.png +append %s', ...
 				convert,pdat,SEFRAN3.PATH_IMAGES_MINUTE,tv(1:4),ftmp),SEFRAN3,'warning');
 			% reduces concatenated minutes image to single hourly thumbnail
@@ -548,7 +547,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 				convert,ftmp,round(whour*nimg/60),hhour,gamma,f),SEFRAN3,'warning');
 			fprintf('done.\n');
 			if sgram
-				fprintf('%s: updating %ss.jpg (hourly spectrogram thumbnail) ... ',wofun,f);
+				wolog('updating %ss.jpg (hourly spectrogram thumbnail) ... ',f);
 				wosystem(sprintf('%s -depth 8 %s/%s/%4d%02d%02d%02d??00s.png +append %s', ...
 					convert,pdat,SEFRAN3.PATH_IMAGES_SGRAM,tv(1:4),ftmp),SEFRAN3,'warning');
 				wosystem(sprintf('%s %s -resize %dx%d\\! %ss.jpg', ...
@@ -569,7 +568,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 		f = sprintf('%s/last_hour.jpg',SEFRAN3.ROOT);
 		ftmp = sprintf('%s/lh.jpg',ptmp);
 		if exist(f0,'file') && exist(f1,'file')
-			fprintf('%s: updating %s ... ',wofun,f);
+			wolog('updating %s ... ',f);
 			wosystem(sprintf('%s +append %s %s -scale %1.1f%% %s',convert,f1,f0,100*wlh/whour,ftmp),SEFRAN3);
 			if exist(ftmp,'file')
 				IM = imfinfo(ftmp,'jpg');
@@ -584,7 +583,7 @@ while (~force && (now - tstart) < minruntime) || (force && nrun < 2)
 	end
 
 	if isempty(hdone)
-		fprintf('%s: nothing to do in the last %g hours (all OK).\n',wofun,update);
+		wolog('nothing to do in the last %g hours (all OK).\n',update);
 	end
 
 
@@ -630,7 +629,6 @@ fprintf('WEBOBS{sefran3): forces update of all minutes in %s* (from %s to %s)\n'
 
 function D = readdata(WO,SEFRAN3,dataformat,datasource,t0,C,ptmp)
 
-wofun = sprintf('WEBOBS{%s}',mfilename);
 fmsd = sprintf('%s/mseed.tmp',ptmp); % temporary miniseed file
 wosystem(sprintf('rm -f %s',fmsd),SEFRAN3); % delete previous temporary file
 slinktool = sprintf('%s %g %s',WO.PRGM_ALARM,field2num(SEFRAN3,'SEEDLINK_SERVER_TIMEOUT_SECONDS',5),WO.SLINKTOOL_PRGM);
@@ -650,7 +648,7 @@ case 'seedlink'
 	% checks data availability on SeedLink server
 	[s,w] = wosystem(sprintf('%s -Q %s',slinktool,datasource),SEFRAN3);
 	if isempty(w) || ~isempty(strfind(w,'error: INFO type requested is not enabled'))
-		fprintf('%s: ** WARNING ** SEEDLINK server %s seems to not accept INFO request... use blind mode with timeout.\n',wofun,datasource);
+		wolog('** WARNING ** SEEDLINK server %s seems to not accept INFO request... use blind mode with timeout.\n',datasource);
 		chan = 1:length(C{2});
 	else
 		stream = textscan(w,'%s','Delimiter','\n'); % one line for each seedlink stream
@@ -664,10 +662,10 @@ case 'seedlink'
 				if datenum(dte{1}(1:6)') <= t0 && datenum(dte{1}(7:12)') >= t1
 					chan(n) = n; % channel n is available at time interval [t0,t1]
 				else
-					fprintf('%s: ** WARNING ** SEEDLINK server %s at %s has no data for channel %s !\n',wofun,datasource,datestr(t1),sfr{n});
+					wolog('** WARNING ** SEEDLINK server %s at %s has no data for channel %s !\n',datasource,datestr(t1),sfr{n});
 				end
 			else
-				fprintf('%s: ** WARNING ** SEEDLINK server %s has no channel %s available ! \n',wofun,datasource,sfr{n});
+				wolog('** WARNING ** SEEDLINK server %s has no channel %s available ! \n',datasource,sfr{n});
 			end
 		end
 		chan(isnan(chan)) = []; % removes non-existant channels
@@ -692,7 +690,7 @@ case 'seedlink'
 		wosystem(sprintf('%s -d -o %s -S "%s" -tw %d,%d,%d,%d,%d,%1.0f:%d,%d,%d,%d,%d,%1.0f %s', ...
 			slinktool,fmsd,streams,datevec(t0-max(dt)),datevec(t1),datasource),SEFRAN3,'warning');
 	else
-		fprintf('%s: ** WARNING ** SEEDLINK server %s at %s has no channel available !\n',wofun,datasource,datestr(t1));
+		wolog('** WARNING ** SEEDLINK server %s at %s has no channel available !\n',datasource,datestr(t1));
 	end
 
 % =============================================================================
@@ -713,7 +711,7 @@ case 'arclink'
 	% makes ArcLink request and save to temporary miniseed file
 	[~,w] = wosystem(sprintf('%s -u %s -a %s -o %s %s',alfetch,aluser,datasource,fmsd,freq),SEFRAN3);
 	if any(strfind(w,'no data'))
-		fprintf('%s: ** WARNING ** ARCLINK server %s at %s has some channels not available !\n',wofun,datasource,datestr(t1));
+		wolog('** WARNING ** ARCLINK server %s at %s has some channels not available !\n',datasource,datestr(t1));
 	end
 
 % =============================================================================
@@ -741,20 +739,20 @@ case 'miniseed'
 % =============================================================================
 case 'winston'
 	if ~exist('gov.usgs.winston.server.WWSClient','class')
-		error('%s: cannot find the needed class to read Winston data... Abort.\n',wofun);
+		error('cannot find the needed class to read Winston data... Abort.\n');
 	end
 	ws = split(datasource,':');
 	if length(ws) < 2
-		error('%s: DATASOURCE (%s) must be in the form host:port.\n',wofun,datasource);
+		error('DATASOURCE (%s) must be in the form host:port.\n',datasource);
 	end
-	fprintf('\n%s: connect to Winston Wave Server %s ...\n',wofun,datasource);
+	wolog('\nconnect to Winston Wave Server %s ...\n',datasource);
 	WWS = gov.usgs.winston.server.WWSClient(ws{1},str2num(ws{2}));
 	WWS.setTimeout(field2num(SEFRAN3,'DATALINK_TIMEOUT',10000));
 
 	% make a request for all channels and possible multiple calibrations periods
 	for n = 1:length(sfr)
 		c = textscan(sfr{n},'%s','Delimiter','.:'); % splits NET, STA, LOC, CHA codes
-		fprintf('%s: requesting %s.%s.%s.%s from %s to %s ...',wofun,c{1}{2},c{1}{4},c{1}{1},c{1}{3},datestr(t0 - dt0(n)),datestr(t1));
+		wolog('requesting %s.%s.%s.%s from %s to %s ...',c{1}{2},c{1}{4},c{1}{1},c{1}{3},datestr(t0 - dt0(n)),datestr(t1));
 		dd = WWS.getRawData(c{1}{2},c{1}{4},c{1}{1},c{1}{3}, ...
 			(t0 - dt0(n) - datenum(1970,1,1))*86400, ...
 			(t1 - datenum(1970,1,1))*86400);
@@ -775,7 +773,7 @@ case 'winston'
 
 	WWS.close;
 otherwise
-	error('%s: unknown data format "%s".',wofun,dataformat);
+	error('unknown data format "%s".',dataformat);
 end
 
 % loads miniseed file (all formats but winston)
