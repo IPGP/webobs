@@ -27,6 +27,7 @@ INSERT INTO "grids2domains" VALUES('PROC','SPRINGS','C');
 INSERT INTO "grids2domains" VALUES('FORM','SPRINGS','C');
 INSERT INTO "grids2domains" VALUES('VIEW','CGPSWI','D');
 INSERT INTO "grids2domains" VALUES('PROC','CGPSWI','D');
+INSERT INTO "grids2domains" VALUES('PROC','GNSS_PELEE','D');
 INSERT INTO "grids2domains" VALUES('PROC','GEOSCOPE','S');
 INSERT INTO "grids2domains" VALUES('SEFRAN','SEFRAN3','S');
 INSERT INTO "grids2domains" VALUES('PROC','HYPOINDO','S');

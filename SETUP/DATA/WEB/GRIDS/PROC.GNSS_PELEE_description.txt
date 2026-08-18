@@ -1,0 +1,4 @@
+WebObs: created by nedit  
+
+
+This is an example of GNSS proc using external source of data. Here the daily solutions are downloaded from Nevada Geodetic Laboratory using IGS20 _24 Hour Final Solutions_ ([Blewitt et al., 2018](https://eos.org/project-updates/harnessing-the-gps-data-explosion-for-interdisciplinary-science)). Original data come from the Observatoire volcanologique et sismologique de Martinique (OVSM-IPGP) at [Institut de physique du globe de Paris](http://volobsis.ipgp.fr).
