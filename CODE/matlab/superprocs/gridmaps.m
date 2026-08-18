@@ -154,7 +154,9 @@ end
 demoptions = {'Interp','Lake','LakeZmin',0,'ZCut',zcut,'Azimuth',laz, ...
 	'Contrast',lct,'LandColor',cmap,'SeaColor',sea,'Watermark',feclair, ...
 	'Saturation',csat,'latlon','shading',shading,'legend','axisequal','manual'};
-
+if isok(P,'DECIMAL_DEGREES')
+    demoptions = [demoptions,{'cartesian'}];
+end
 
 % loads all needed grid's parameters & associated nodes
 outdated = zeros(size(grids));
