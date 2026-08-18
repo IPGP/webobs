@@ -737,6 +737,7 @@ for (@{$GRID{NODESLIST}}) {
             #my $nbInter  = 0;
             #find(sub { $nbInter++ if /^$NODEName.*\.txt$/ }, $pathInter);
             $htmlcontents .= "<TD align=center><A href=\"/cgi-bin/showNODE.pl?node=$grid.$NODEName#EVENTS\">".scalar(@interventions)."</A></TD><TD align=center>";
+            my $titleProj = "";
             my $textProj = "";
             if ((-e $fileProj) && (-s $fileProj)) {
                 my @proj = readFile($fileProj);
@@ -749,19 +750,22 @@ for (@{$GRID{NODESLIST}}) {
                     my $titre = $pLigne[1];
                     shift(@proj);
                     if (defined($titre) && $titre ne "") {
-                        $textProj = "<b>$titre</b>";
+                        $titleProj = "<b>$titre</b>";
                     }
                     if ($noms ne "") {
-                        $textProj = $textProj." <I>($noms)</I>";
+                        $titleProj .= " <I>($noms)</I>";
                     }
-                    if ($textProj ne "") {
-                        $textProj = $textProj."<br>";
+                    if ($titleProj ne "") {
+                        $titleProj .= "<br>";
                     }
                 }
+                $textProj = WebObs::Wiki::wiki2html(join("\n",@proj));
                 if ($usrProject eq "on") {
-                    $htmlcontents .= $textProj.WebObs::Wiki::wiki2html(join("\n",@proj));
+                    $htmlcontents .= $textProj.$titleProj;
                 } else {
-                    $htmlcontents .= "<IMG src=\"/icons/attention.gif\" onMouseOut=\"nd()\" onMouseOver=\"overlib('".WebObs::Wiki::wiki2html(join("\n",@proj))."',CAPTION,'$NODE{ALIAS}: $textProj')\">";
+                    $textProj =~ s/'/\\'/g;
+                    $textProj =~ s/"/&quot;/g;
+                    $htmlcontents .= "<IMG src=\"/icons/attention.gif\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$textProj',CAPTION,'$NODE{ALIAS}: $titleProj')\">";
                 }
             }
             $htmlcontents .= "</TD>";

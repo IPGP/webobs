@@ -707,6 +707,8 @@ for (my $j = 0; $j <= $#rows; $j++) {
     $csvTxt .= $rem."\n";
     my $remTxt = "<TD></TD>";
     if ($rem ne "") {
+        $rem =~ s/'/\\'/g;
+        $rem =~ s/"/&quot;/g;
         $remTxt = "<TD onMouseOut=\"nd()\" onMouseOver=\"overlib('".htmlspecialchars($rem,$re)."',CAPTION,'Observations $aliasSite')\"><IMG src=\"/icons/attention.gif\" border=0></TD>";
     }
     $text .= "$remTxt</TR>\n";
