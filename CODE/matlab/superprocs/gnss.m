@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-08-10
+%   Updated: 2026-08-18
 
 WO = readcfg;
 
@@ -753,7 +753,7 @@ for r = 1:numel(P.GTABLE)
 		end
 		% former behavior: will plot all possible pairs combinations,
 		% eventually using only specific reference stations
-		if ~exist('B','var')
+		if isempty(B)
 			kn = selectnode(N,tlim,baselines_excluded,baselines_included,[targetll,baselines_excluded_target]);
 			if isfield(P,'BASELINES_REF_NODELIST') && ~isempty(P.BASELINES_REF_NODELIST)
 				kr = kn(ismemberlist({N(kn).FID},split(P.BASELINES_REF_NODELIST,',')));
@@ -874,7 +874,7 @@ for r = 1:numel(P.GTABLE)
 	if any(strcmp(P.SUMMARYLIST,summary))
 
         % component indexes (5:6 for horizontal only, 5:7 for 3-components)
-	    if strainmap_horizonly
+        if strainmap_horizonly
             ndim = '2-D';
             ib = 5:6;
         else
@@ -885,6 +885,7 @@ for r = 1:numel(P.GTABLE)
 
 		% builds a structure B containing indexes of each node pairs a-b
         B = [];
+        kn = selectnode(N,tlim,strainmap_excluded,strainmap_included,[targetll,strainmap_excluded_target]);
 		if isfield(P,'STRAINMAP_NODEPAIRS') && ~isempty(P.STRAINMAP_NODEPAIRS)
 			pairref = strtrim(split(P.STRAINMAP_NODEPAIRS,';'));
 			np = 1;
@@ -907,26 +908,30 @@ for r = 1:numel(P.GTABLE)
 		end
 		% B structure not created = no valid node pairs
 		% will build automatic node pairs from Delaunay's triangles
-		if isempty(B)
-			kn = selectnode(N,tlim,strainmap_excluded,strainmap_included,[targetll,strainmap_excluded_target]);
+		if isempty(B) && length(kn) > 1
             wolog('no pairs defined for summary STRAINMAP. Set automatic Delaunay triangles from %g nodes.\n',length(kn));
-            DT = delaunay(geo(kn,2),geo(kn,1));
-            % 1) constructs a 2-column array of all pairs (sorted)
-            ab = zeros(size(DT,1),2);
-            np = 1;
-            for i = 1:size(DT,1)
-                ab(np,:) = kn(sort(DT(i,1:2)));
-                ab(np+1,:) = kn(sort(DT(i,2:3)));
-                ab(np+2,:) = kn(sort(DT(i,[1,3])));
-                np = np + 3;
+            if length(kn) > 2
+                DT = delaunay(geo(kn,2),geo(kn,1));
+                % 1) constructs a 2-column array of all pairs (sorted)
+                ab = zeros(size(DT,1),2);
+                np = 1;
+                for i = 1:size(DT,1)
+                    ab(np,:) = kn(sort(DT(i,1:2)));
+                    ab(np+1,:) = kn(sort(DT(i,2:3)));
+                    ab(np+2,:) = kn(sort(DT(i,[1,3])));
+                    np = np + 3;
+                end
+                % 2) removes duplicates
+                [C,ia] = unique(ab,'rows');
+                for n = 1:length(C)
+                    B(n).a = ab(ia(n),1);
+                    B(n).b = ab(ia(n),2);
+                end
+                sorting = true;
+            else
+                B(1).a = kn(1); 
+                B(1).b = kn(2); 
             end
-            % 2) removes duplicates
-            [C,ia] = unique(ab,'rows');
-            for n = 1:length(C)
-                B(n).a = ab(ia(n),1);
-                B(n).b = ab(ia(n),2);
-            end
-            sorting = true;
 		end
 
         % now we have all node pairs: computing baselines
@@ -1009,33 +1014,36 @@ for r = 1:numel(P.GTABLE)
             % for export: Lat1,Lon1,Lat2,Lon2,Dist,Vel_mm/yr','Disp_mm',sprintf('Def_(%cstr)',char(181))};
             B(n).dexport = [geo(a,1:2),geo(b,1:2),B(n).length,B(n).vel,B(n).dis,B(n).def];
         end
-        fprintf('---> Baselines timeseries offset = ')
-        if strainmap_timeseries_offset > 0
-            boffset = strainmap_timeseries_offset;
-            if ~strcmpi(strainmap_timeseries_type,'displacement')
-                fprintf('%g µstr (fixed).\n',boffset);
+        boffset = strainmap_timeseries_offset;
+        absdef = 1;
+        if ~isempty(B)
+            fprintf('---> Baselines timeseries offset = ')
+            if strainmap_timeseries_offset > 0
+                if ~strcmpi(strainmap_timeseries_type,'displacement')
+                    fprintf('%g µstr (fixed).\n',boffset);
+                else
+                    fprintf('%g cm (fixed).\n',100*boffset);
+                end
             else
-                fprintf('%g cm (fixed).\n',100*boffset);
+                boffset = 2*rmean(cat(1,B.std));
+                if ~strcmpi(strainmap_timeseries_type,'displacement')
+                    fprintf('%g µstr (auto).\n',boffset)
+                else
+                    fprintf('%g cm (auto).\n',100*boffset)
+                end
             end
-        else
-            boffset = 2*rmean(cat(1,B.std));
-            if ~strcmpi(strainmap_timeseries_type,'displacement')
-                fprintf('%g µstr (auto).\n',boffset)
-            else
-                fprintf('%g cm (auto).\n',100*boffset)
+            if strainmap_timeseries_sorting
+                [~,k] = sort(-cat(1,B.lin));
+                B = B(k);
             end
+            absdef = abs(cat(1,B.def));
         end
-        if strainmap_timeseries_sorting
-            [~,k] = sort(-cat(1,B.lin));
-            B = B(k);
-        end
-        absdef = abs(cat(1,B.def));
 
 		figure
 		orient tall
 		OPT.GTITLE = varsub(strainmap_title,V);
         axes('Position',[.05,.5,.8,.43])
-        ylim = [0,-boffset];
+        ylim = boffset*[-1,1];
         for n = 1:length(B)
             k1 = find(~isnan(B(n).d),1);
             if ~isempty(k1)
@@ -1063,7 +1071,7 @@ for r = 1:numel(P.GTABLE)
                 end
                 text(tlim(2),lda,['   ',B(n).line],'Color',scolor(n),'FontSize',strainmap_timeseries_fontsize,'FontWeight','bold', ...
                     'HorizontalAlignment','left','VerticalAlignment','middle')
-                ylim = minmax([ylim,lda+boffset*[-1,1]]);
+                ylim = minmax([ylim,minmax(dd),lda+boffset*[-1,1]]);
             end
         end
         if any(isnan(ylim))
@@ -1092,7 +1100,9 @@ for r = 1:numel(P.GTABLE)
         axes('Position',[0.05,.035,.5,.45])
         clim = [-1,1]*max(absdef);
         cmap = polarmap(strainmap_cmap,0.3);
-        kn = unique(cat(1,B.a,B.b));
+        if ~isempty(B)
+            kn = unique(cat(1,B.a,B.b));
+        end
         xylim = ll2lim(minmax(geo(kn,1)),minmax(geo(kn,2)),1,1,.1);
         DEM = loaddem(WO,xylim,P);
         dem(DEM.lon,DEM.lat,DEM.z,'latlon','position','northwest',strainmap_demopt{:})
@@ -1100,8 +1110,8 @@ for r = 1:numel(P.GTABLE)
         for n = 1:length(B)
             a = B(n).a;
             b = B(n).b;
-            if isscalar(strainmap_linewidth) || isnan(B(n).def)
-                lw = strainmap_linewidth(1);
+            if isscalar(strainmap_linewidth) || isnan(B(n).def) || isscalar(absdef)
+                lw = strainmap_linewidth(end);
             else
                 lw = (abs(B(n).def)-min(absdef))*diff(strainmap_linewidth)/diff(minmax(absdef)) + strainmap_linewidth(1);
             end
@@ -1147,8 +1157,7 @@ for r = 1:numel(P.GTABLE)
         end
 
         % numeric information (max values in bold)
-        axes('Position',[0.6,.05,.4,.4])
-        [~,ix] = sort(-abs(cat(1,B.def))); % sort on max deformation
+        axes('Position',[0.6,.03,.4,.4])
         txt = {sprintf('{\\bfBaseline Kinematic %s Linear Parameters}',ndim), ...
             sprintf('from %s to %s',datestr(tvel(1)),datestr(tvel(2)))};
         text(0,1,txt,'VerticalAlignment','top','FontSize',9)
@@ -1156,6 +1165,9 @@ for r = 1:numel(P.GTABLE)
         bstab = {'',{'{\bfDist.}','(km)',''},{'{\bfVel.}','(mm/yr)',''},{'{\bfDisp.}','(mm)',''},{'{\bfDef.}',sprintf('(%cstr)',char(181)),''}};
         bscol = repmat({'none'},length(B)+1,size(bstab,2));
 
+        if ~isempty(B)
+            [~,ix] = sort(-abs(cat(1,B.def))); % sort on max deformation
+        end
         for i = 1:length(B)
             n = ix(i);
             b1 = repmat('\bf',abs(B(n).vel)==max(abs(cat(1,B.vel))));
@@ -1178,7 +1190,7 @@ for r = 1:numel(P.GTABLE)
             bscol(i+1,[1,5]) = repmat({B(n).col},1,2);
         end
 
-        if strainmap_table_maxlines > 1
+        if isinto(strainmap_table_maxlines,[2,length(B)])
             bstab = bstab(1:strainmap_table_maxlines+1,:);
             bscol = bscol(1:strainmap_table_maxlines+1,:);
             db = length(B) - strainmap_table_maxlines;
@@ -1188,7 +1200,7 @@ for r = 1:numel(P.GTABLE)
             end
         end
 
-        plottable(bstab,[.1,.3,.5,.7,.9],[.85,0],'ccccc',bscol,'FontSize',strainmap_table_fontsize)
+        plottable(bstab,[.1,.3,.5,.7,.9],[.85,.85/length(B)],'ccccc',bscol,'FontSize',strainmap_table_fontsize)
         set(gca,'YLim',[0,1])
         axis off
 
@@ -1213,14 +1225,15 @@ for r = 1:numel(P.GTABLE)
                 E.d = [B(i).d,B(i).strain];
                 mkexport(WO,sprintf('%s_%s_%s',summary,B(i).line,P.GTABLE(r).TIMESCALE),E,P,r);
             end
-            % parameters (sorted as in the table)
-            E.title = OPT.GTITLE;
-            E.infos = {sprintf('baselines: %s',strjoin(cat(1,{B(ix).line}),','))};
-            E.t = cat(1,B(ix).tlast);
-            E.header = {'Lat1_(N)','Lon1_(E)','Lat2_(N)','Lon2_(E)','Dist_(km)','Vel_mm/yr','Disp_mm',sprintf('Def_(%cstr)',char(181))};
-            E.d = cat(1,B(ix).dexport);
-            mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P,r);
-
+            if ~isempty(B)
+                % parameters (sorted as in the table)
+                E.title = OPT.GTITLE;
+                E.infos = {sprintf('baselines: %s',strjoin(cat(1,{B(ix).line}),','))};
+                E.t = cat(1,B(ix).tlast);
+                E.header = {'Lat1_(N)','Lon1_(E)','Lat2_(N)','Lon2_(E)','Dist_(km)','Vel_mm/yr','Disp_mm',sprintf('Def_(%cstr)',char(181))};
+                E.d = cat(1,B(ix).dexport);
+                mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P,r);
+            end
         end
 	end
 
