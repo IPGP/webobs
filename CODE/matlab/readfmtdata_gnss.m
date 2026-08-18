@@ -65,6 +65,12 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %		data format: yyyymmdd HHMMSS jjjjj.jjjj X Y Z Sx Sy Sz Rxy Rxz Ryz NLat Elong Height dN dE dU Sn Se Su Rne Rnu Reu Soln
 %		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
 %
+%	format 'ngl-tenv3'
+%		type: Nevada Geodetic Laboratory solutions - version 3 (2022)
+%		filename/url: P.RAWDATA (use $FID to point the right file/url)
+%		data format: site YYMMMDD yyyy.yyyy MJD week d reflon e0(m) east(m) n0(m) north(m) u0(m) up(m) ant(m) sig_e(m) sig_n(m) sig_u(m) corr_en corr_eu corr_nu latitude(deg) longitude(deg) height(m)
+%		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
+%
 %	format 'usgs-rneu'
 %		type: USGS GPS results ITRF08
 %		filename/url: P.RAWDATA (use $FID to point the right file/url)
@@ -94,9 +100,9 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %		node calibration: no .CLB file or 4 components (East, North, Up) in meters and (Orbit)
 %
 %
-%	Authors: François Beauducel and Jean-Bernard de Chabalier, WEBOBS/IPGP
+%	Authors: François Beauducel, Jean-Bernard de Chabalier, Pierre Sakic, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2025-08-28
+%	Updated: 2026-08-18
 
 wofun = sprintf('WEBOBS{%s}',mfilename);
 
@@ -472,6 +478,52 @@ case 'spotgins-ippp'
 		e = [];
 	end
 
+
+% -----------------------------------------------------------------------------
+case 'ngl-tenv3'
+    % Nevada Geodetic Laboratory ASCII format tenv3
+    % format example
+    % site YYMMMDD yyyy.yyyy __MJD week d reflon _e0(m) __east(m) ____n0(m) _north(m) u0(m) ____up(m) _ant(m) sig_e(m) sig_n(m) sig_u(m) __corr_en __corr_eu __corr_nu _latitude(deg) _longitude(deg) __height(m)
+    % BOLG 22SEP04 2022.6749 59826 2226 0 11.4 -3437 -0.850160 4929405 -0.013671 99 0.613264 1.0350 0.000945 0.000876 0.002770 -0.074947 0.136729 -0.012292 44.5002195155 -348.6432215960 99.61326
+ 
+	fdat = sprintf('%s/%s.dat',F.ptmp,N.ID);
+	wosystem(sprintf('rm -f %s',fdat),P);
+	for a = 1:length(F.raw)
+		fraw = F.raw{a};
+		cmd0 = sprintf('gawk ''NR>1 {$1=$2=""; print}'' OFS='' '' >> %s',fdat); % removes header line and the 2 first columns
+		if strncmpi('http',fraw,4)
+			s  = wosystem(sprintf('curl -s -S "%s" | %s',fraw,cmd0),P);
+			if s ~= 0
+				break;
+			end
+		else
+			s = wosystem(sprintf('cat %s | %s',fraw,cmd0),P);
+		end
+		if s ~= 0
+			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+		end
+	end
+
+	% load the file
+	if exist(fdat,'file')
+		dd = load(fdat);
+	else
+		dd = [];
+	end
+	if ~isempty(dd)
+        t = dd(:,2) + 678941.5007; % converts MJD to datenum
+		d = [dd(:,6)+dd(:,7),dd(:,8)+dd(:,9),dd(:,10)+dd(:,11),zeros(size(dd,1),1)];	% North(mm),East(mm),Up(mm) => E(m),N(m),U(m),Orbit
+		e = dd(:,13:15);
+		e(e<min_error) = min_error;
+		fprintf('%d data imported.\n',size(dd,1));
+	else
+		fprintf('no data found!\n')
+		t = [];
+		d = [];
+		e = [];
+	end
+
+
 % -----------------------------------------------------------------------------
 case 'usgs-rneu'
 	% format example
@@ -794,7 +846,7 @@ D.e = e;
 
 if N.CLB.nx ~= 4 || isempty(t)
 	D.CLB.nx = 4;
-	D.CLB.nm = {'E','N','U','Orbit'};
+	D.CLB.nm = {'Eastern','Northern','Up','Orbit'};
 	D.CLB.un = {'m','m','m',''};
 else
 	[D.d,D.CLB] = calib(D.t,D.d,N.CLB);
