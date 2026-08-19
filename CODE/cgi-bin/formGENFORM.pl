@@ -709,7 +709,7 @@ if (isok($FORM{QUALITY_CHECK})) {
     $qualOK = ($clientAuth>2 || grep(/^$USERS{$CLIENT}{UID}$/,@uid));
     print "<P><input type=\"checkbox\"".($quality ? " checked":"")
       .(!$qualOK ? " disabled=\"disabled\"":"")
-      ." name=\"quality\" value=\"1\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'help_genform_quality'}')\">"
+      ." name=\"quality\" value=\"1\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{'help_genform_quality'})."')\">"
       .(!$qualOK ? "<input name=\"quality\" type=\"hidden\" value=\"".($quality ? "1":"")."\">":"")
       ."<b>$__{'Validated record'}</b></P><BR>";
 } else {
@@ -728,10 +728,10 @@ print qq[</td>
 ];
 
 # Add mandatory site input
-print qq(<B>$__{'Site'}: </B>
-      <select name="site" size="1"
-        onMouseOut="nd()" onMouseOver="overlib('$__{'Select a node for this record'}')">
-      <option value=""></option>);
+print "<B>$__{'Site'}: </B>
+      <select name='site' size='1'
+        onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{'Select a node for this record'})."')\">
+      <option value=\"\"></option>";
 print @NODESSelList;
 for (@NODESSelList) {
     my @cle = split(/\|/,$_);
@@ -755,9 +755,9 @@ if ($starting_date) {
 }
 
 # Add mandatory operator input
-print qq(<table><tr><td style="border:0"><B>$__{'Operator(s)'}:</B> </td><td style="border:0">
-            <select name="operators" size="5" multiple="multiple"
-                onMouseOut="nd()" onmouseover="overlib('$__{'Select operator(s)'}')">);
+print "<table><tr><td style='border:0'><B>$__{'Operator(s)'}:</B> </td><td style='border:0'>
+            <select name='operators' size='5' multiple='multiple'
+                onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{'Select operator(s)'})."')\">";
 my @uid = @operators; # $client if 'new', or @operators if 'edit'
 foreach my $op (split(/[, ]/, $FORM{OPERATORS_LIST})) {
     if ($op =~ /^+/) {
@@ -817,14 +817,14 @@ foreach (@columns) {
                         print "$txt =";
                         for my $k (@list_keys) {
                             my $selected = ($prev_inputs{$field} eq "$k" ? "checked":"");
-                            print qq(&nbsp;<input name="$field" type=radio value="$k" $selected
-                            onMouseOut="nd()" onmouseover="overlib('$list{$k}{name}')"><IMG src="$list{$k}{icon}">);
+                            print "&nbsp;<input name=\"$field\" type=radio value=\"$k\" $selected
+                            onMouseOut=\"nd()\" onmouseover=\"overlib('".js($list{$k}{name})."')\"><IMG src=\"$list{$k}{icon}\">";
                         }
                         print "$dlm";
                     } else {
                         my $multi = ( $size eq "multiple" ? "multiple" : "" );
-                        print qq($txt = <select name="$field"
-                            onMouseOut="nd()" onmouseover="overlib('$hlp')" $multi><option value=""></option>);
+                        print "$txt = <select name=\"$field\"
+                            onMouseOut=\"nd()\" onmouseover=\"overlib('".js($hlp)."')\" $multi><option value=\"\"></option>";
                         for (@list_keys) {
                             my $nam = ($list{$_}{name} ? $list{$_}{name}:$list{$_}{value});
                             my $selected = ( $prev_inputs{$field} =~ /^$_$/ ? "selected" : "" );
@@ -848,8 +848,8 @@ foreach (@columns) {
                             push(@uid, $op) if (!grep(/^$op$/, @uid));
                         }
                     }
-                    print qq(<table><tr><td style="border:0">$txt: </td><td style="border:0"><select name="$field" size="$size" multiple="multiple"
-                        onMouseOut="nd()" onmouseover="overlib('$hlp')">);
+                    print "<table><tr><td style='border:0'>$txt: </td><td style='border:0'><select name=\"$field\" size=\"$size\" multiple=multiple
+                        onMouseOut=\"nd()\" onmouseover=\"overlib('".js($hlp)."')\">";
                     foreach my $u (@uid){
                         my $sel = (grep(/^$u$/, @seluid) ? "selected":"");
                         print "<option value=\"$u\" $sel>$u: ".join('',WebObs::Users::userName($u))."</option>\n";
@@ -861,14 +861,14 @@ foreach (@columns) {
                     $hlp = ($help ne "" ? $help:"$__{'Enter a value for'} $Field");
                     my $value = $prev_inputs{$field};
                     $value =~ s/"/&quot;/g;
-                    print qq($txt = <input type="text" size=$size name="$field" value="$value"
-                        onMouseOut="nd()" onmouseover="overlib('$hlp')">$dlm);
+                    print "$txt = <input type=text size=\"$size\" name=\"$field\" value=\"$value\"
+                        onMouseOut=\"nd()\" onmouseover=\"overlib('".js($hlp)."')\">$dlm";
 
                 # --- INPUT type 'checkbox'
                 } elsif ($field =~ /^input/ && $type =~ /^checkbox/) {
                     $hlp = ($help ne "" ? $help:"$__{'Click to select'} $Field");
                     my $selected = ($prev_inputs{$field} ? "checked" : "");
-                    print qq($txt <input type="checkbox" name="$field" $selected onMouseOut="nd()" onmouseover="overlib('$hlp')">$dlm);
+                    print "$txt <input type=checkbox name=\"$field\" $selected onMouseOut=\"nd()\" onmouseover=\"overlib('".js($hlp)."')\">$dlm";
 
                 # --- INPUT type 'image'
                 } elsif ($field =~ /^input/ && $type =~ /^image/) {
@@ -921,9 +921,9 @@ foreach (@columns) {
                         print $j % 2 eq 0 ? "<tr>" : "";
                         $hlp = ($help ne "" ? $help:"$__{'Enter '.$msgs[$j].' (in '.$msgu[$j].') for'} $Field");
                         (my $label = ucfirst($columns_geoloc[$j])." ($units[$j])") =~ s/_/ /g;
-                        print qq(<td class="udateRow"><label> $label =</label><input type="text" pattern="[0-9\\.\\-]*" size="$size" class="inputNum"
-                            name="$field\_$columns_geoloc[$j]" value="$gvals[$j]"
-                            onMouseOut="nd()" onmouseover="overlib('$hlp')"></td>);
+                        print "<td class=\"udateRow\"><label> $label =</label><input type=text pattern=\"[0-9\\.\\-]*\" size=\"$size\" class=\"inputNum\"
+                            name=\"$field\_$columns_geoloc[$j]\" value=\"$gvals[$j]\"
+                            onMouseOut=\"nd()\" onmouseover=\"overlib('".js($hlp)."')\"></td>";
                         print $j % 2 eq 1 ? "</tr>" : "";
                     }
                     print "</table>";
@@ -941,16 +941,16 @@ foreach (@columns) {
                 # --- INPUT type 'numeric' (default)
                 } elsif ($field =~ /^input/) {
                     $hlp = ($help ne "" ? $help:"$__{'Enter a numerical value for'} $Field");
-                    print qq($txt = <input type="text" pattern="[0-9\\.\\-]*" size=$size class=inputNum name="$field" value="$prev_inputs{$field}"
-                        onMouseOut="nd()" onmouseover="overlib('$hlp')">$dlm);
+                    print "$txt = <input type=text pattern=\"[0-9\\.\\-]*\" size=\"$size\" class=inputNum name=\"$field\" value=\"$prev_inputs{$field}\"
+                        onMouseOut=\"nd()\" onmouseover=\"overlib('".js($hlp)."')\">$dlm";
 
                 # --- OUTPUT type 'formula'
                 } elsif ($field =~ /^output/ && $type =~ /^formula/) {
                     my ($formula, $size, @x) = extract_formula($type);
                     if ($size > 0) {
                         $hlp = ($help ne "" ? $help:"$Field = $formula");
-                        print qq(<B>$name</B> = <input size=$size readOnly class=inputNumNoEdit name="$field"
-                        onMouseOut="nd()" onmouseover="overlib('$hlp')">&nbsp;$unit$dlm);
+                        print "<B>$name</B> = <input size=\"$size\" readOnly class=inputNumNoEdit name=\"$field\"
+                        onMouseOut=\"nd()\" onmouseover=\"overlib('".js($hlp)."')\">&nbsp;$unit$dlm";
                     } else {
                         print qq(<input type="hidden" name="$field">);
                     }
@@ -978,6 +978,7 @@ $dbh->disconnect();
 
 my $comsz = ($FORM{COMMENT_SIZE} > 0 ? $FORM{COMMENT_SIZE}:80);
 my $comhlp = htmlspecialchars($FORM{COMMENT_HELP});
+$sel_comment = htmlspecialchars($sel_comment);
 print qq(</TD>
   <tr>
     <td style="border:0" colspan="2">

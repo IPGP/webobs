@@ -405,20 +405,20 @@ foreach my $i (sort keys %lists) {
 foreach my $fs (@fieldsets) {
     if (isok($FORM{$fs.'_TOGGLE'})) {
         print " <INPUT type=\"checkbox\" name=\"".lc($fs)."\" value=\"1\"".($QryParm->{lc($fs)} ? " checked":"")
-            ." onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_disp_fieldset} $fs')\">&nbsp;<B>$FORM{$fs.'_NAME'}</B>";
+            ." onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{help_disp_fieldset})." $fs')\">&nbsp;<B>$FORM{$fs.'_NAME'}</B>";
     }
 }
 
 print "</TD><TD style=\"border:0;text-align:center\">";
 print "<IMG src=\"/icons/search.png\">&nbsp;<INPUT name=\"filter\" type=\"text\" size=\"15\" value=\"$re\""
-    ." onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_search_comment}')\">";
+    ." onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_search_comment})."')\">";
 if ($re ne "") {
     print "<img style=\"border:0;vertical-align:text-bottom\" src=\"/icons/cancel.gif\" onClick=eraseFilter()>";
 }
-print "<BR>";
+print "<BR>\n";
 if (isok($FORM{QUALITY_CHECK})) {
-    print "<B>$__{'Quality:'}</B> <SELECT name='quality' size='1'>"
-        ." onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_genform_quality}')\">"
+    print "<B>$__{'Quality:'}</B> <SELECT name='quality' size='1'"
+        ." onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{help_genform_quality})."')\">"
         ."<OPTION value=''>$__{'All records'}</OPTION>"
         ."<OPTION value='1'".($QryParm->{'quality'} eq "1" ? " selected":"").">$__{'Valid records'}</OPTION>"
         ."<OPTION value='0'".($QryParm->{'quality'} eq "0" ? " selected":"").">$__{'Unvalid records'}</OPTION>"
@@ -428,7 +428,7 @@ if (isok($FORM{QUALITY_CHECK})) {
 }
 if ($clientAuth > 1) {
     print "<INPUT type=\"checkbox\" name=\"trash\" value=\"1\"".($QryParm->{'trash'} ? " checked":"")
-        ." onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_show_trash}')\">&nbsp;<B>$__{'Trash'}</B>";
+        ." onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{help_show_trash})."')\">&nbsp;<B>$__{'Trash'}</B>";
 } else {
     print "<INPUT type=\"hidden\" name=\"trash\">";
 }
@@ -585,8 +585,8 @@ for (my $j = 0; $j <= $#rows; $j++) {
     } else {
         $text .= "<TD nowrap>$edate</TD>";
     }
-    $text .= "<TD nowrap align=center onMouseOut=\"nd()\" onmouseover=\"overlib('$nameNode',CAPTION,'node $site')\">$nodelink&nbsp;</TD>\n";
-    $text .= "<TD align=center onMouseOut=\"nd()\" onmouseover=\"overlib('".join('<br>',@nameOper)."')\">".join(', ',@operators)."</TD>\n";
+    $text .= "<TD nowrap align=center onMouseOut=\"nd()\" onmouseover=\"overlib('".js($nameNode)."',CAPTION,'node $site')\">$nodelink&nbsp;</TD>\n";
+    $text .= "<TD align=center onMouseOut=\"nd()\" onmouseover=\"overlib('".js(join('<br>',@nameOper))."')\">".join(', ',@operators)."</TD>\n";
     $csvTxt .= "$id".(isok($FORM{QUALITY_CHECK}) ? $dlm.$quality : "").($starting_date ? $dlm.$sdate : "").$dlm.$edate.$dlm."$aliasSite".$dlm."$nameSite".$dlm.join(', ',@namOper).$dlm;
     for (my $f = 0; $f <= $#fieldsets; $f++) {
         my $fs = $fieldsets[$f];
@@ -610,11 +610,11 @@ for (my $j = 0; $j <= $#rows; $j++) {
                     $hlp = "<I>$__{'unknown key list!'}</I>" if ($val ne "");
                     $csvTxt .= $dlm;
                 }
-                $opt = "onMouseOut=\"nd()\" onMouseOver=\"overlib('$hlp')\"";
+                $opt = "onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($hlp)."')\"";
             }
             # --- input type = formula
             if (grep(/^$field$/i, @formulas)) {
-                $opt = " class=\"tdResult\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$fullformulas{$field}',CAPTION,'$field')\"";
+                $opt = " class=\"tdResult\" onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($fullformulas{$field})."',CAPTION,'$field')\"";
             }
             if (grep(/^$Field$/, @thresh) ) {
                 my @tv = split(/[, ]/,$FORM{$Field."_THRESHOLD"});
@@ -631,13 +631,13 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 my $pathSource = "/data/$PATH_FORMDOCS/$img_id";
                 $val = "<table>";
                 foreach my $index (0..$#listeTarget) {
-                    my $olmsg = "Click to enlarge ".($index+1)." / ".scalar(@listeTarget);
+                    my $olmsg = "$__{'Click to enlarge'} ".($index+1)." / ".scalar(@listeTarget);
                     my ( $name, $path, $extension ) = fileparse ( $listeTarget[$index], '\..*' );
                     my $urn = "$pathSource/$PATH_SLIDES/$name$extension.jpg";
                     my $Turn = "$pathSource/$PATH_THUMBNAILS/$name$extension.jpg";
                     if ($index % $MAX_COLS == 0) { $val .= "<tr>"; }
                     $val .= $index+1 > $MAX_IMAGES ? qq(<td style="display:none;">) : "<td>";
-                    $val .= qq(<img height=$THUMB_DISPLAYED_HEIGHT wolbset=SLIDES index=$index wolbsrc=$urn src=$Turn onMouseOver=\"overlib('$olmsg')\"></td>);
+                    $val .= "<img height=\"$THUMB_DISPLAYED_HEIGHT\" wolbset=SLIDES index=\"$index\" wolbsrc=\"$urn\" src=\"$Turn\" onMouseOver=\"overlib('".js($olmsg)."')\"></td>";
                     if ($index % $MAX_COLS + 1 == 0) { $val .= "</tr>"; }
                 }
                 $val .= "</table>";
@@ -649,13 +649,13 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 my $shape_path = "$WEBOBS{ROOT_DATA}/$PATH_FORMDOCS/$input_id/shape.json";
                 my $status = ( -e "$shape_path" ? "yes" : "no" );
                 $val = qq(<a href="$form_url#$field\_shape">$status</a>);
-                $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('Click to edit')\"";
+                $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{'Click to edit'})."')\"";
             }
             # --- input type = checkbox
             elsif ($FORM{$Field."_TYPE"} =~ /^checkbox/) {
                 if ($val ne "") {
                     $val = $fields{$field} ? "&check;" : "";
-                    $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('checked')\"";
+                    $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{'checked'})."')\"";
                 }
                 $csvTxt .= "$fields{$field}".$dlm;
             }
@@ -675,7 +675,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 $val .= join("", @gdisp) ? "(" . join(", ", @gdisp) . ")" : "";
                 my @gdisp = map { $gvals[$_] ? ucfirst(@columns_geoloc[$_])." = $gvals[$_] $gunits[$_]". ($gvals[$_+1] ? " &#177; $gvals[$_+1] $gunits[$_+1]" : "") : "" } (0, 2, 4);
                 $opt = join("<br>", @gdisp);
-                $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('$opt')\"";
+                $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('".js($opt)."')\"";
                 my $tmp = join("$dlm", map { $gvals[$_] } (0, 2, 4, 1, 3, 5));
                 $csvTxt .= $tmp.$dlm;
             }
@@ -692,7 +692,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
                 my $date = simplify_date($uvals[0], $uvals[1]);
                 $val = $uvals[2] ? sprintf "[ %.2e - %.2e ]", $uvals[3], $uvals[2] : $date;
                 $opt = $uvals[2] ? sprintf "[ %e - %e ]", $uvals[3], $uvals[2] : $date;
-                $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('$opt')\"";
+                $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('".js($opt)."')\"";
                 $csvTxt .= $uvals[2] ? $uvals[2].$dlm.$uvals[3].$dlm : $date.$dlm;
             }
             # --- input type = users
@@ -705,7 +705,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
                     push(@unam, join('',userName($_)));
                 }
                 $val = join(', ',@uid);
-                $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('".join('<br>',@uname)."')\"";
+                $opt = " onMouseOut=\"nd()\" onmouseover=\"overlib('".js(join('<br>',@uname))."')\"";
                 $csvTxt .= "".join(", ",@unam)."".$dlm;
             }
             $text .= "<TD align=center $opt>$val</TD>\n" if (!isok($FORM{$fs.'_TOGGLE'}) || $QryParm->{lc($fs)});

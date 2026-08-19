@@ -269,7 +269,7 @@ foreach my $id (sort_clb(\%data)) {
 
     my @date = split(/-/, $line{'DATE'});
     my @heure = split(/:/, $line{'TIME'});
-    print "<TD nowrap onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB{'DATE'}{'MSGID'}}')\"><select name=\"y$i\" size=\"$fieldCLB{'DATE'}{'NbCar'}\">";
+    print "<TD nowrap onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{$fieldCLB{'DATE'}{'MSGID'}})."')\"><select name=\"y$i\" size=\"$fieldCLB{'DATE'}{'NbCar'}\">";
     for (@yearList) {
         my $sel = "";
         if ($_ eq $date[0]) { $sel = "selected"; }
@@ -288,7 +288,7 @@ foreach my $id (sort_clb(\%data)) {
         print "<option $sel value=$_>$_</option>";
     }
     print "</select></TD>\n";
-    print "<TD nowrap onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB{'TIME'}{'MSGID'}}')\"><select name=\"h$i\" size=\"$fieldCLB{'TIME'}{'NbCar'}\">";
+    print "<TD nowrap onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{$fieldCLB{'TIME'}{'MSGID'}})."')\"><select name=\"h$i\" size=\"$fieldCLB{'TIME'}{'NbCar'}\">";
     for (@hourList) {
         my $sel = "";
         if ($_ eq $heure[0]) { $sel = "selected"; }
@@ -302,7 +302,8 @@ foreach my $id (sort_clb(\%data)) {
     }
     print "</select></TD>\n";
     print "<TD nowrap><input type=checkbox name=\"s$i\" onChange=\"calc()\">
-        <input name=\"v"."$i"."_1\" readonly value=\"$line{'nv'}\" size=\"$fieldCLB{'nv'}{'NbCar'}\" style=\"font-weight:bold;border:0\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB{'nv'}{'MSGID'}}')\">";
+        <input name=\"v"."$i"."_1\" readonly value=\"$line{'nv'}\" size=\"$fieldCLB{'nv'}{'NbCar'}\" style=\"font-weight:bold;border:0\" 
+        onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{$fieldCLB{'nv'}{'MSGID'}})."')\">";
     if ($line{'nv'} > $nbc) {
         $nbc = $line{'nv'};
     }
@@ -310,7 +311,7 @@ foreach my $id (sort_clb(\%data)) {
     foreach my $k ( @params ) {
         if ($fieldCLB{$k}{'Hide'}) { $c = ' class="CLBshowhide"' } else { $c = '' }
         if (not $k ~~ ["DATE", "TIME", "nv"]) {
-            print "<TD$c onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{$fieldCLB{$k}{'MSGID'}}')\"><input name=\"v".$i."_".$ki++
+            print "<TD$c onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{$fieldCLB{$k}{'MSGID'}})."')\"><input name=\"v".$i."_".$ki++
               ."\" value=\"".($line{$k} // '')."\" size=\"$fieldCLB{$k}{'NbCar'}\"></TD>\n";
         }
     }
@@ -324,7 +325,7 @@ my $txt = "Number of channels for the node:<ul>"
 print "<TR><TD style=\"border:0\" colspan=2>
         <P><B>Fix number of channels</B> =
         <input type=\"text\" name=\"nbc\" size=2 value=\"$nbc\" onKeyUp=\"calc()\"
-        onMouseOut=\"nd()\" onMouseOver=\"overlib('$txt',CAPTION,'ATTENTION')\"></P>
+        onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($txt)."',CAPTION,'ATTENTION')\"></P>
         </TD><TD style=\"border:0\" colspan=5>&nbsp;&uarr; <B>Selected lines :</B><BR>\n
         <input type=radio name=action value=duplicate checked> <B>Duplicate</B> (add a new line)<BR>
         <input type=radio name=action value=delete>            <B>Delete</B> (remove a line)<BR>";

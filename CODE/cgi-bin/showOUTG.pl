@@ -503,7 +503,7 @@ if ($QryParm->{'ts'} eq 'map') {
                 my $reqdir = ($OUTDIR ? "&dir=$OUTDIR" : "");
                 print "<A href=\"$baseurl&ts=events&g=$target$reqdir\">",
                   "<IMG style=\"margin: 1px; background-color: beige; padding: 5px; border: 0$thumb\" src=\"$JPGurn\"",
-                  "onMouseOut=\"nd()\" onMouseOver=\"overlib('$msg',CAPTION,'$dte')\"></A>\n";
+                  "onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($msg)."',CAPTION,'$dte')\"></A>\n";
             }
         }
         if (exists $GRID{'DOWNFLOW_NAME_VENT'}) {

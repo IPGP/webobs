@@ -623,13 +623,13 @@ if ($procOUTG eq "events") {
 }
 if ($overallStatus) {
     $htmlcontents .= "<TH>$__{'Last Data'} (TZ&nbsp;$GRID{TZ})</TH>"
-                    ."<TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_sampling}')\">$__{'Sampl.'}</TH>"
-                    ."<TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_status}')\">$__{'Status'}</TH>";
+                    ."<TH onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{help_node_sampling})."')\">$__{'Sampl.'}</TH>"
+                    ."<TH onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{help_node_status})."')\">$__{'Status'}</TH>";
 }
 if ($isForm) {
     $htmlcontents .= "<TH>$__{'Raw Data'}</TH><TH>$__{'Nb Rec.'}</TH><TH>$__{'Last Record'} (TZ&nbsp;".sprintf("%+02d",$GRID{TZ}).")</TH>"
-                    ."<TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_sampling}')\">$__{'Sampl.'}</TH>"
-                    ."<TH onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_node_status}')\">$__{'Status'}</TH>";
+                    ."<TH onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{help_node_sampling})."')\">$__{'Sampl.'}</TH>"
+                    ."<TH onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{help_node_status})."')\">$__{'Status'}</TH>";
 }
 $htmlcontents .= "</TR>\n";
 
@@ -763,9 +763,7 @@ for (@{$GRID{NODESLIST}}) {
                 if ($usrProject eq "on") {
                     $htmlcontents .= $textProj.$titleProj;
                 } else {
-                    $textProj =~ s/'/\\'/g;
-                    $textProj =~ s/"/&quot;/g;
-                    $htmlcontents .= "<IMG src=\"/icons/attention.gif\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$textProj',CAPTION,'$NODE{ALIAS}: $titleProj')\">";
+                    $htmlcontents .= "<IMG src=\"/icons/attention.gif\" onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($textProj)."',CAPTION,'$NODE{ALIAS}: $titleProj')\">";
                 }
             }
             $htmlcontents .= "</TD>";
