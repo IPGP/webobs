@@ -238,7 +238,7 @@ if (grep /\Q$QryParm->{'gview'}/i , keys(%prez)) {
 # ---- Start HTML page output
 #
 print $cgi->header(-type=>'text/html',-charset=>'utf-8');
-print '<!DOCTYPE html>', "\n";
+print '<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">', "\n";
 print "<html><head><title>$GAZETTE{TITLE}</title>\n",
   "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">",
   "<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">",

@@ -223,7 +223,7 @@ $svg =~ s/<\?xml.*>[\n]*//;
 $svg =~ s/<!DOCTYPE.*[\n].*>[\n]*//;
 
 print $cgi->header(-type=>'text/html',-charset=>'utf-8');
-print '<!DOCTYPE html>', "\n";
+print '<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">', "\n";
 print <<"FIN";
 <html>
 <head>

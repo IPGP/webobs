@@ -194,7 +194,7 @@ my $yesterday = DateTime->now()->subtract( days => 1 )->strftime('%Y-%m-%d');
 if (($dateStart ne $dateEnd || $yesterday ne $dateEnd)  && !defined($send)) {
     print $cgi->header(-charset=>'utf-8');
     print <<"PART1";
-<!DOCTYPE html>
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -227,7 +227,7 @@ PART1
 
     print $cgi->header(-charset=>'utf-8');
 
-    $html = '<!DOCTYPE html>';
+    $html = '<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">';
     $html .= '<html>';
     $html .= '  <head>';
     $html .= '    <meta http-equiv="content-type" content="text/html; charset=utf-8">';
@@ -452,7 +452,7 @@ Ce bulletin quotidien est distribu&eacute; publiquement. Les informations dans c
 } else {
     print $cgi->header(-charset=>'utf-8');
     print <<"PART1";
-<!DOCTYPE html>
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">

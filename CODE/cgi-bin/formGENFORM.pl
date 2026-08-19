@@ -320,7 +320,7 @@ foreach (keys %FORM) {
 #
 print qq[Content-type: text/html
 
-<!DOCTYPE html>
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">
 <html>
 <head>
 <title>] . $FORM{NAME} . qq[</title>

@@ -40,7 +40,11 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
+<<<<<<< HEAD
 %   Updated: 2026-08-18
+=======
+%   Updated: 2026-08-17
+>>>>>>> webobs-2.8
 
 WO = readcfg;
 

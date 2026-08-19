@@ -214,7 +214,7 @@ if (-e $statusDB) {
 # ---- Start HTML page
 #
 print "Content-type: text/html\n\n";
-print '<!DOCTYPE html>', "\n";
+print '<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">', "\n";
 print "<HTML><HEAD><title>$titrePage</title>";
 print "<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">
 <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">";

@@ -237,7 +237,7 @@ if ($QryParm->{'action'} eq 'submit') {
 # ---- start html page
 # --------------------
 print $cgi->header(-type=>'text/html',-charset=>'utf-8');
-print '<!DOCTYPE html>', "\n";
+print '<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">', "\n";
 
 print <<"EOHEADER";
 <html>

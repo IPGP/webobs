@@ -49,7 +49,7 @@ my $img = ($qr eq "" ? "":"<IMG width=400px src=\"data:image/svg+xml;base64,$qr\
 my @logos = split(',',$WEBOBS{QRCODE_LOGOS});
 
 print $cgi->header(-type=>'text/html',-charset=>'utf-8');
-print "<!DOCTYPE html>","\n";
+print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">","\n";
 print <<"END";
 <HTML><HEAD><TITLE>$title</TITLE></HEAD>
 <STYLE>

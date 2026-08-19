@@ -569,7 +569,7 @@ if (!$date) {
                         my %MC = mcinfo($_,$evtloc);
                         if (($MC{id} > 0 || ($userLevel >= 2 && $trash == 1)) && $userLevel >= 1) {
 
-                            # event start and end expressed in days
+                            # event start and end expressed in pseudo decimal days [yyyy][mm][dd]
                             my $d0 = $MC{year}*10000 + $MC{month}*100 + $MC{day} + $MC{hour}/24 + $MC{minute}/1440 + $MC{second}/86400;
                             my $d1 = $d0 + $MC{duration}*$duration_s{$MC{unit}}/86400;
                             if ($d0 < $ddd + ($hh+1)/24 && $d1 >= $ddd + $hh/24) {
@@ -585,18 +585,18 @@ if (!$date) {
                                 # case A: event starts in the current hour
                                 if ($MC{hour} eq $hh) {
 
-                                  # case A1: event duration exceeds current hour
+                                    # case A1: event duration exceeds current hour
                                     if ($deb_evt + $dur_evt > $SEFRAN3{HOURLY_WIDTH}) {
                                         $dur_evt = $SEFRAN3{HOURLY_WIDTH} - $deb_evt + 2;
                                     }
 
-                                  # case B: event has started in a previous hour
+                                # case B: event has started in a previous
                                 } else {
                                     $deb_evt = 2;
                                     my $hdeb = $MC{hour};
                                     $hdeb -= 24 if ($hdeb > $hh); # solves event crossover a day
 
-                               # case B1: more than 3 hours overlap = full width
+                                    # case B1: more than 3 hours overlap = full width
                                     if ($h0 + $dh > $hh - $hdeb + 1) {
                                         $dur_evt = $SEFRAN3{HOURLY_WIDTH};
                                     } else {
@@ -929,7 +929,7 @@ if ($date) {
             } else {
                 my $dm = 0;
                 $dm = -60 if ($MC{hour} == $Hc - 1);
-                $dm = 60 if ($MC{hour} == $Hc + 1);
+                $dm = 60 if ($MC{hour} == ($Hc + 1)%24);
                 $deb_evt = 1 + $SEFRAN3{VALUE_PPI} + int($largeur_image*($MC{minute} + 1 + $dm + $MC{second}/60));
             }
             my $dur_evt = 1 + int(0.5 + $largeur_image*$MC{duration}*$duration_s{$MC{unit}}/60);
