@@ -342,6 +342,12 @@ sub date_duration {
     my @dd = @_;
     $dd[0] = $dd[1] if ($dd[0] eq "");
     $dd[2] = $dd[3] if ($dd[2] eq "");
+    # for hm datetime format, forces seconds to 00
+    if (scalar(@dd) > 4 && $dd[4] eq "hm") {
+        for (@dd[0..3]) {
+            substr($_, 17, 2, '00') if length($_) >= 19;
+        }
+    }
     my $dur_min = (str2time($dd[2]) - str2time($dd[1]))/86400;
     my $dur_max = (str2time($dd[3]) - str2time($dd[0]))/86400;
     if (scalar(@dd) > 4 && $dd[4] ne "ymd") {
@@ -354,7 +360,7 @@ sub date_duration {
 sub day2dhms {
     my $d = shift;
     my $f = shift;
-    my $s = sprintf("%d:%02d:%02d",int($d),int(24*($d - int($d))),int(60*($d*24 - int($d*24))));
+    my $s = sprintf("%+d:%02d:%02d",int($d),int(24*($d - int($d))),int(60*($d*24 - int($d*24))));
     $s .= sprintf(":%02.0f",60*($d*1440 - int($d*1440))) if ($f eq "hms");
     return $s;
 }
