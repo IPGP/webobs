@@ -143,6 +143,19 @@ foreach (sort keys %FORM) {
     }
 }
 
+# make a hash of explicit formulas (HTML)
+my %fullformulas;
+foreach (@formulas) {
+    my ($formula, $size, @x) = extract_formula($FORM{$_."_TYPE"});
+    my $name = $FORM{$_."_NAME"};
+    my $unit = ($FORM{$_."_UNIT"} ne "" ? " (".$FORM{$_."_UNIT"}.")" : "");
+    foreach (@x) {
+        my $v = ($_ =~ /(IN|OUT)PUT[0-9]{2,3}/ ? $FORM{$_."_NAME"} : $_);
+        $formula =~ s/$_/<b>$v<\/b>/g;
+    }
+    $fullformulas{lc($_)} = "<B>$name</B>$unit = $formula";
+}
+
 # ---- specific FORMS inits ----------------------------------
 my @html;
 my @csv;
@@ -601,7 +614,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
             }
             # --- input type = formula
             if (grep(/^$field$/i, @formulas)) {
-                $opt = " class=\"tdResult\" onMouseOut=\"nd()\" onMouseOver=\"overlib('<B>$field</B>:')\"";
+                $opt = " class=\"tdResult\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$fullformulas{$field}',CAPTION,'$field')\"";
             }
             if (grep(/^$Field$/, @thresh) ) {
                 my @tv = split(/[, ]/,$FORM{$Field."_THRESHOLD"});
@@ -780,15 +793,9 @@ $listoflist .= "</UL>\n</div></div>";
 my $listofformula = "<BR><BR><div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#formulaID');\">&nbsp;&nbsp;";
 $listofformula .= "$__{'Formulas'}\n";
 $listofformula .= "</div><div id=\"formulaID\"><UL>";
-foreach (@formulas) {
-    my ($formula, $size, @x) = extract_formula($FORM{$_."_TYPE"});
-    my $name = $FORM{$_."_NAME"};
-    my $unit = ($FORM{$_."_UNIT"} ne "" ? " (".$FORM{$_."_UNIT"}.")" : "");
-    foreach (@x) {
-        my $v = ($_ =~ /(IN|OUT)PUT[0-9]{2,3}/ ? $FORM{$_."_NAME"} : $_);
-        $formula =~ s/$_/<b>$v<\/b>/g;
-    }
-    $listofformula .= "<LI><B>$name</B>$unit = $formula</LI>\n";
+foreach my $f (@formulas) {
+    $f = lc($f);
+    $listofformula .= "<LI><I>$f:</I> $fullformulas{$f}</LI>\n";
 }
 $listofformula .= "</UL>\n</div></div>";
 
