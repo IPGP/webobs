@@ -738,20 +738,27 @@ for (@NODESSelList) {
     my $sel = ($cle[0] eq $site ? "selected":($action eq "edit" ? "disabled":""));
     print qq(<option $sel value="$cle[0]">$cle[1]</option>);
 }
-print qq(</select><BR>);
+print qq(</select><BR>\n);
 
 print qq(<input type="hidden" name="duration">);
 if ($starting_date) {
     datetime_input(\%FORM, "sdate", \@sdate_vals, "Start Date");
     datetime_input(\%FORM, "edate", \@edate_vals, "End Date");
     if ($FORM{BANG}) {
-        print qq(<B>$__{'Duration'} =</B> <input size=20 readOnly class=inputNoEdit name="durstr"><BR>);
+        print qq(<B>$__{'Duration'} =</B> <input size=20 readOnly class=inputNoEdit name="durstr"><BR>\n);
     } else {
-        print qq(<input type="hidden" name="durstr">);
+        print qq(<input type="hidden" name="durstr">\n);
     }
 } else {
     datetime_input(\%FORM, "edate", \@edate_vals);
-    print qq(<input type="hidden" name="durstr">);
+    my @d0 = datetime_maxmin2array(@sdate_vals);
+    print qq(<input type="hidden" name="sdate_year" value="$d0[0]">\n);
+    print qq(<input type="hidden" name="sdate_month" value="$d0[1]">\n);
+    print qq(<input type="hidden" name="sdate_day" value="$d0[2]">\n);
+    print qq(<input type="hidden" name="sdate_hr" value="$d0[3]">\n);
+    print qq(<input type="hidden" name="sdate_mn" value="$d0[4]">\n);
+    print qq(<input type="hidden" name="sdate_sec" value="$d0[5]">\n);
+    print qq(<input type="hidden" name="durstr">\n);
 }
 
 # Add mandatory operator input

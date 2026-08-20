@@ -1644,6 +1644,12 @@ msgstr "et"
 msgid "in orphan nodes"
 msgstr "associés à des nodes orphelins"
 
+msgid "Date/time format:"
+msgstr "Format date/heure :"
+
+msgid "start/end interval"
+msgstr "intervalle début/fin"
+
 msgid "Access to form data"
 msgstr "Accéder au données du form"
 

@@ -521,12 +521,14 @@ for (my $j = 0; $j <= $#rows; $j++) {
     $edate = $edate_vals[2] ? sprintf "[ %.2e - %.2e ]", $edate_vals[3], $edate_vals[2] : $edate;
 
     if ($starting_date) {
-        my $stmt = qq(SELECT $colnames FROM $table_udate WHERE id = $sdate);
-        my @sdate_vals = $dbh->selectrow_array($stmt);
-        $sdate = simplify_date($sdate_vals[0], $sdate_vals[1]);
-        $sdate = $sdate_vals[2] ? sprintf "[ %.2e - %.2e ]", $sdate_vals[3], $sdate_vals[2] : $sdate;
-        @dur = date_duration($sdate_vals[1], $sdate_vals[0], $edate_vals[1], $edate_vals[0], $datetime_format);
-        $dur_max = $dur[1] if ($dur[1] > $dur_max); 
+        if ($sdate ne "") {
+            my $stmt = qq(SELECT $colnames FROM $table_udate WHERE id = $sdate);
+            my @sdate_vals = $dbh->selectrow_array($stmt);
+            $sdate = simplify_date($sdate_vals[0], $sdate_vals[1]);
+            $sdate = $sdate_vals[2] ? sprintf "[ %.2e - %.2e ]", $sdate_vals[3], $sdate_vals[2] : $sdate;
+            @dur = date_duration($sdate_vals[1], $sdate_vals[0], $edate_vals[1], $edate_vals[0], $datetime_format);
+            $dur_max = $dur[1] if ($dur[1] > $dur_max); 
+        }
     }
     $dbh->disconnect();
 

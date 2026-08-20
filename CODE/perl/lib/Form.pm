@@ -61,7 +61,7 @@ set_message(\&webobs_cgi_msg);
 require Exporter;
 our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
 @ISA = qw(Exporter);
-@EXPORT = qw(datetime2array datetime2maxmin simplify_date date_duration
+@EXPORT = qw(datetime_maxmin2array datetime2maxmin simplify_date date_duration
   extract_formula extract_list extract_type extract_text count_inputs count_columns datetime_input
   connectDbForms);
 
@@ -155,8 +155,8 @@ sub dump {
 
 # ---- GENFORM sub
 
-# from (date_max,date_min) interval, returns an array of (year,month,day,hour,minute)
-sub datetime2array {
+# from (date_max,date_min) interval, returns an array of (year,month,day,hour,minute,second)
+sub datetime_maxmin2array {
     my $date = shift;
     my $date_min = shift;
     my @d  = split(/[-: ]/,$date);
@@ -207,22 +207,12 @@ sub datetime_input {
     my %datetime_length = ("ymd" => 3, "hm" => 5, "hms" => 6); # Array size mapping for Date/Time inputs
     my ($size, $default) = extract_type($type);
     my $len = exists $datetime_length{lc($size)} ? $datetime_length{lc($size)} : 3;
-    my @datetime = (datetime2array(@uvals[0..1]))[0 .. $len - 1];
+    my @datetime = datetime_maxmin2array(@uvals[0..1]);
     if (scalar(@datetime) < $len) { $datetime[$len - 1] = ""; } # for a new record
 
-    if (@datetime) {
-        if ( scalar(@datetime) == 3 ) {
-            ($sel_y2, $sel_m2, $sel_d2) = @datetime;
-        } elsif ( scalar(@datetime) == 5 ) {
-            ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2) = @datetime;
-        } elsif ( scalar(@datetime) == 6 ) {
-            ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2, $sel_sec2) = @datetime;
-        }
-    } else {
-        die("No array to process");
-    }
+    ($sel_y2, $sel_m2, $sel_d2, $sel_hr2, $sel_mn2, $sel_sec2) = @datetime;
 
-    my $ovl = "onMouseOut=\"nd()\" onMouseOver=\"overlib('"."$__{'Date/time must be in'} ".sprintf("GMT%+03d", $FORM{TZ})."')\">";
+    my $ovl = "onMouseOut=\"nd()\" onMouseOver=\"overlib('"."$__{'Date/time must be in'} ".sprintf("GMT%+03d", $FORM{TZ})."')\"";
 
     my %names = ("year" => "year", "month" => "month", "day" => "day", "hr" => "hr", "mn" => "mn", "sec" => "sec");
     if ( $field ) {
@@ -248,37 +238,37 @@ sub datetime_input {
 
     print qq(<b>$__{$title}: </b><select name=$names{year} size="1" $ovl>);
     date_time_option(\@yearList, $sel_y2);
-    print qq(</select>);
+    print qq(</select>\n);
 
     print qq(<select name=$names{month} size="1" $ovl>);
     date_time_option(\@monthList, $sel_m2);
-    print qq(</select>);
+    print qq(</select>\n);
 
     print qq( <select name=$names{day} size="1" $ovl>);
     date_time_option(\@dayList, $sel_d2);
-    print "</select>";
+    print "</select>\n";
 
-    if ( scalar(@datetime) > 3 ) {
+    if ( $len > 3 ) {
         print qq(&nbsp;&nbsp;<b>$__{'Time'}: </b><select name=$names{hr} size="1" $ovl>);
         date_time_option(\@hourList, $sel_hr2);
-        print qq(</select>);
+        print qq(</select>\n);
 
         print qq(<select name=$names{mn} size="1" $ovl>);
         date_time_option(\@minuteList, $sel_mn2);
-        print qq(</select>);
+        print qq(</select>\n);
     } else {
-        print qq(<input type="hidden" name="$names{hr}">);
-        print qq(<input type="hidden" name="$names{mn}">);
+        print qq(<input type="hidden" name="$names{hr}" value="$sel_hr2">);
+        print qq(<input type="hidden" name="$names{mn}" value="$sel_mn2">);
     }
 
-    if ( scalar(@datetime) == 6 ) {
+    if ( $len == 6 ) {
         print qq(<select name=$names{sec} size="1" $ovl>);
         date_time_option(\@secondList, $sel_sec2);
-        print qq(</select>);
+        print qq(</select>\n);
     } else {
-        print qq(<input type="hidden" name="$names{sec}">);
+        print qq(<input type="hidden" name="$names{sec}" value="$sel_sec2">);
     }
-    print qq(<br>);
+    print qq(<br>\n);
 
     if ($type eq "udate" and isok($FORM{UDATE})) {
         yce_input($type, $field, \@uvals);

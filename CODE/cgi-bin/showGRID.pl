@@ -402,6 +402,9 @@ if ($isForm) {
     @row = $sth->fetchrow_array();
     my $orphanNodes = join('',@row);
     $sth->finish();
+    
+    my %datetime_fmt = ("ymd" => "", "hm" => "HH:MM", "hms" => "HH:MM:SS");
+    my $fmt = $GRID{DATETIME_FORMAT} // "ymd";
 
     $urnData = "/cgi-bin/showGENFORM.pl?form=$GRIDName";
     $htmlcontents .= "<LI>$__{'Form parameters:'}<UL>\n";
@@ -412,6 +415,7 @@ if ($isForm) {
                     ."</LI>\n";
     $htmlcontents .= "<LI>$__{'Layout:'} <B>".grep(/^COLUMN.._LIST/,keys(%GRID))."</B> $__{'columns'},"
       ." <B>".grep(/^FIELDSET.._NAME/,keys(%GRID))."</B> $__{'fieldsets'}</LI>\n";
+    $htmlcontents .= "<LI>$__{'Date/time format:'} <B>yyyy-mm-dd $datetime_fmt{$fmt}</B>".(isok($GRID{STARTING_DATE}) ? ", $__{'start/end interval'}":"")."</LI>\n";
     $htmlcontents .= "<LI>$__{'First year of data:'} <B>$GRID{BANG}</B></LI>\n";
     $htmlcontents .= "<LI>$__{'Time zone for all records:'} <B>UTC".sprintf("%+03d",$GRID{TZ})."</B></LI>\n";
     $htmlcontents .= "<LI>$__{'Total number of records:'} <B>$nbData</B> ($__{'including'} <B>$nbTrash</B> $__{'in trash'} $__{'and'} <B>$orphanNodes</B> $__{'in orphan nodes'})</LI>\n";
@@ -847,7 +851,7 @@ for (@{$GRID{NODESLIST}}) {
             $sth = $dbh->prepare($stmt);
             $rv = $sth->execute() or die $DBI::errstr;
             @row = $sth->fetchrow_array();
-            my ($ly,$lm,$ld,$lhr,$lmn) = datetime2array($row[-2], $row[-1]);
+            my ($ly,$lm,$ld,$lhr,$lmn) = datetime_maxmin2array($row[-2], $row[-1]);
             my $lastRec = "$ly".($lm ? "-$lm":"").($ld ? "-$ld":"").($lhr ? " $lhr":"").($lmn ? ":$lmn":"");
             $sth->finish();
             my $lastdelay = $NODE{"$GRIDType.$GRIDName.LAST_DELAY"};
