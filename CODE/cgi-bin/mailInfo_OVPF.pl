@@ -477,6 +477,9 @@ PART1
                   - Signaux GNSS lointains: t&eacute;moin de l'influence de sources de pression profondes &agrave; l'aplomb du volcan.<br/>
         	  - GNSS : Global Navigation Satellite System, syst&egrave;me global de positionnement par satelite.
 	 </p>";
+    $html .= "<p>
+                <strong>Les informations de ce document ne peuvent &ecirc;tre utilis&eacute;es sans y faire explicitement r&eacute;f&eacute;rence.</strong>
+         </p>";
     $html .= "    </div>";
     $html .= "  </div>";
     $html .= "  </body>";
