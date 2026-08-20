@@ -385,6 +385,9 @@ Ce r&eacute;seau de surveillance, financ&eacute; par l'&Eacute;tat (Minist&egrav
 
 Ce bulletin quotidien est distribu&eacute; publiquement. Les informations dans ce bulletin sont &agrave; usage d'information, de p&eacute;dagogie et de surveillance. Elles ne peuvent pas &ecirc;tre utilis&eacute;es &agrave; des fins de publications de recherche sans y faire r&eacute;f&eacute;rence explicitement et sans autorisation du comit&eacute; du REVOSIMA. Les donn&eacute;es sismiques sont distribu&eacute;es par l'IPGP (Centre de donn&eacute;es : <a href=http://datacenter.ipgp.fr/>http://datacenter.ipgp.fr</a> et <a href=http://volobsis.ipgp.fr/data.php>http://volobsis.ipgp.fr/data.php</a>) et par les Services Nationaux d'Observations du CNRS-INSU (<a href=http://seismology.resif.fr/>http://seismology.resif.fr/</a>). Les donn&eacute;es des stations GNSS sont distribu&eacute;es par l'Institut National de l'Information G&eacute;ographique et Foresti&egrave;re (IGN : <a href=http://mayotte.gnss.fr/donnees>http://mayotte.gnss.fr/donnees</a>). Les donn&eacute;es acquises lors des campagnes oc&eacute;anographiques seront distribu&eacute;es par l'IFREMER, les autres donn&eacute;es g&eacute;ologiques et g&eacute;ochimiques seront diffus&eacute;es par le REVOSIMA et ses partenaires.
                     </p>
+                    <p>
+                      <strong>Les informations de ce document ne peuvent &ecirc;tre utilis&eacute;es sans y faire explicitement r&eacute;f&eacute;rence.</strong>
+                    </p>
                   </div>
                   ";
     $html .= "    </div>";
