@@ -13,12 +13,12 @@ WebObs is presently fully functional and used in a dozen observatories (see the 
 ## Environment
 WebObs server can run on most Linux systems. It has been succesfully installed/tested on Linux Debian 12, Ubuntu 22.04 LTS and older versions. Presently, the Matlab runtime is not compatible with newer versions due to libncurse5 dependency.
 
-We also provide a ready-to-use Docker image and docker-compose setup to deploy WebObs without complex manual installation, using the latest release. Ideal for observatories, research institutions, and geoscientists who want a portable, reproducible WebObs environment. This alternative to the following install procedure is available at [github.com/IPGP/webobs-docker](https://github.com/IPGP/webobs-docker)!
+We also provide a ready-to-use Docker image and docker-compose setup to deploy WebObs without complex manual installation, using the latest release. Ideal for observatories, research institutions, and geoscientists who want a portable, reproducible WebObs environment. This alternative to the following install procedure is available at [github.com/IPGP/webobs-docker](https://github.com/IPGP/webobs-docker).
 
 <a name="latest"></a>
 ## Download the latest release
 
-- [WebObs-2.8.3b.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.8.3b/WebObs-2.8.3b.tar.gz) (109 Mb) updated August 20, 2026
+- [WebObs-2.8.3b.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.8.3b/WebObs-2.8.3b.tar.gz) (104 Mb) updated August 20, 2026
 - [Release notes](https://github.com/IPGP/webobs/blob/v2.8.3b/release-notes.md) (see also the [What's new?](#whatsnew) section below)
 - [User manual](https://github.com/IPGP/webobs/releases/download/v2.8.3b/WebObs_Manual.pdf) (in progress)
 - And, for a first install:
