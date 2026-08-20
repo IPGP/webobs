@@ -41,6 +41,9 @@ TZ|0
 # if YES, use start and end date for each record
 STARTING_DATE|NO
 
+# date/time format: 'ymd' (yyyy-mm-dd), 'hm' (yyyy-mm-dd HH:MM, default), or 'hms' (yyyy-mm-dd HH:MM:SS)
+DATETIME_FORMAT|hm
+
 # may contain any +GID and/or UID list (comma separated)
 OPERATORS_LIST|+DUTY
 
