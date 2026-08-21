@@ -18,7 +18,7 @@ We also provide a ready-to-use Docker image and docker-compose setup to deploy W
 <a name="latest"></a>
 ## Download the latest release
 
-- [WebObs-2.8.3b.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.8.3b/WebObs-2.8.3b.tar.gz) (104 Mb) updated August 20, 2026
+- [WebObs-2.8.3b.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.8.3b/WebObs-2.8.3b.tar.gz) (104 Mb) updated August 21, 2026
 - [Release notes](https://github.com/IPGP/webobs/blob/v2.8.3b/release-notes.md) (see also the [What's new?](#whatsnew) section below)
 - [User manual](https://github.com/IPGP/webobs/releases/download/v2.8.3b/WebObs_Manual.pdf) (in progress)
 - And, for a first install:
