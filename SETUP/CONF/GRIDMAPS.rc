@@ -6,6 +6,10 @@ NAME|Networks
 PAPERSIZE_INCHES|10
 # density (in pixels per inch) for PostScript to PNG convertion
 DPI|100
+# thumbnails height (pixels)
+THUMBNAIL_HEIGHT|112
+
+
 # basemap DEM rendering options (see CODE/matlab/dem.m documentation)
 LINEWIDTH|1.5
 LANDCOLORMAP|landcolor

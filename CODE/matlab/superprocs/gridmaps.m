@@ -40,7 +40,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2026-08-07
+%   Updated: 2026-08-21
 
 
 WO = readcfg;
@@ -123,6 +123,7 @@ minkm = field2num(P,'MIN_SIZE_KM',2);
 maxxy = field2num(P,'MAX_XYRATIO',2);
 border = field2num(P,'BORDER_ADD',.1);
 papersize = field2num(P,'PAPERSIZE_INCHES',10,'notempty');
+thumbnailheight = field2num(P,'THUMBNAIL_HEIGHT',112);
 
 dpi = field2num(P,'DPI',100);
 %lw = field2num(P,'LINEWIDTH',.1);
@@ -472,12 +473,13 @@ for g = 1:length(grids)
 						'FontSize',14,'HorizontalAlignment','left')
 				end
 
-				% prints the map (PostScript and PNG)
-				wolog('updating %s/%s.{eps,png} ... ',pimg,fimg);
+				% prints the map (PostScript, PNG and JPG)
+				wolog('updating %s/%s.{eps,png,jpg} ... ',pimg,fimg);
 
 				ftmp = sprintf('%s/%s',ptmp,fimg);
 				print(gcf,'-depsc','-loose','-painters',sprintf('%s.eps',ftmp));
-				wosystem(sprintf('%s %s -density %dx%d %s.eps %s.png',WO.PRGM_CONVERT,convertopt,dpi,dpi,ftmp,ftmp));
+				wosystem(sprintf('%s %s.eps %s -density %dx%d %s.png',WO.PRGM_CONVERT,ftmp,convertopt,dpi,dpi,ftmp));
+				wosystem(sprintf('%s %s.png -scale x%g %s.jpg',WO.PRGM_CONVERT,ftmp,thumbnailheight,ftmp));
 
 				IM = imfinfo(sprintf('%s.png',ftmp));
 				ims = [IM.Width IM.Height];

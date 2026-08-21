@@ -246,6 +246,7 @@ printdesc('Purpose','DESCRIPTION',$descGridType,$descGridName,$descLegacy,0,$edi
 # ---- list subsetType grids, grouped by domains
 #
 print "<div id=\"noscrolldiv\">";
+my @grids;
 my $d = my $p = my $v = 0;
 if (@$domains) {
 
@@ -284,22 +285,29 @@ if (@$domains) {
             @procs = grep(WebObs::Users::clientHasRead(type=>"authprocs", name=>$_), @{$domainProcs{$dc}});
         }
         my $np = scalar(@procs);
+        push(@grids,map { "PROC.".$_."|firebrick" } @procs);
+
         my @forms;
         if ($wantForms) {
             @forms = grep(WebObs::Users::clientHasRead(type=>"authforms", name=>$_), @{$domainForms{$dc}});
         }
         my $nf = scalar(@forms);
+        push(@grids,map { "FORM.".$_."|darkorange" } @forms);
+
         my @views;
         if ($wantViews) {
             @views = grep(WebObs::Users::clientHasRead(type=>"authviews", name=>$_), @{$domainViews{$dc}});
         }
         my $nv = scalar(@views);
+        push(@grids,map { "VIEW.".$_."|darkgreen" } @views);
+
         my @sefrans;
         if ($wantSefrans) {
             @sefrans = grep(WebObs::Users::clientHasRead(type=>"authprocs", name=>$_),
                 @{$domainSefrans{$dc}});
         }
         my $ns = scalar(@sefrans);
+        push(@grids,map { "SEFRAN.".$_."|purple" } @sefrans);
 
         my $domrows = $np+$nv+$nf+$ns;
         my $olopt = ",FGCOLOR,'white'";
@@ -453,6 +461,10 @@ if (@$domains) {
     print "<h3>** No domain defined or matching '$subsetDomain' **</h3>";
 }
 print "</div>\n";
+
+# ---- Location (gridmaps thumbnails)
+#
+printdesc('Location',\@grids,$descGridType,$descGridName,"",1,0);
 
 # ---- Protocole (aka 'Informations' of subsetType)
 #
