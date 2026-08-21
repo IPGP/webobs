@@ -599,7 +599,7 @@ if ($QryParm->{'ts'} eq 'map') {
 } else {
 
     # i.e "only display requested g= in query-string"
-    # if none requested in query-string, show thumbnails of all available graphs
+    # if none requested in query-string, show thumbnails of all available graphs (Overview)
     if ($QryParm->{'g'} eq "") {
 
         for my $g (@glist) {
@@ -607,6 +607,7 @@ if ($QryParm->{'ts'} eq 'map') {
             $urn =~ s/\.png$/\.jpg/;
             (my $short = $g) =~ s/^$OUTD\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
             $short =~ s/^$/SUMMARY/;
+            $urn = "/icons/VFLOW.jpg" if ($short eq "VFLOW");
             print "<A href=\"$baseurl&ts=$tslist[$tsSelected]&g=$short\"><IMG style=\"margin-bottom: 2px; background-color: beige; padding: 2px\" src=\"$urn\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$short',CAPTION,'$tslist[$tsSelected]')\"></A> ";
         }
 
