@@ -38,7 +38,7 @@ INSERT INTO JOBS VALUES('cleanreq','Y','cleanreq','find \$WEBOBS{ROOT_OUTR}/ -mi
 INSERT INTO JOBS VALUES('cleantmp','Y','cleantmp','find \$WEBOBS{PATH_TMP_WEBOBS} -mtime +2 -exec rm -rf {} \; || true','','',86400,1,'cleantmp',0);
 INSERT INTO JOBS VALUES('locastat','Y','locastat','\$WEBOBS{JOB_MCC} locastat','','',3600,0.8,'locastat',0);
 INSERT INTO JOBS VALUES('gridmaps','Y','gridmaps','\$WEBOBS{JOB_MCC} gridmaps','','',3600,0.8,'gridmaps',0);
-INSERT INTO JOBS VALUES('gnsspelee','Y','gnsspelee','\$WEBOBS{JOB_MCC} gnss','','',86400,0.8,'gnsspelee',0);
+INSERT INTO JOBS VALUES('gnsspelee','Y','gnsspelee','\$WEBOBS{JOB_MCC} gnss','GNSS_PELEE','',86400,0.8,'gnsspelee',0);
 INSERT INTO JOBS VALUES('sefran','N','sefran3','\$WEBOBS{JOB_MCC} sefran3','','',600,0.8,'sefran3',0);
 INSERT INTO JOBS VALUES('geoscope','Y','geoscope','\$WEBOBS{JOB_MCC} genplot','GEOSCOPE','',3600,0.8,'geoscope',0);
 INSERT INTO JOBS VALUES('hypoindo','Y','hypoindo','\$WEBOBS{JOB_MCC} hypomap','HYPOINDO','"01y"',3600,0.8,'hypoindo',0);
