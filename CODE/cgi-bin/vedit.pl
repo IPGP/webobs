@@ -601,7 +601,7 @@ if ($object =~ /^.*\..*\..*$/) {
                 my (@chpCLB) = split(/\|/,$_);
                 $chan{$chpCLB[2]} = "$chpCLB[2]: $chpCLB[3] ($chpCLB[6] $chpCLB[19])";
             }
-            print "<SELECT name=\"channel\" size=\"1\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_nodeevent_channel}')\" id=\"channel\">";
+            print "<SELECT name=\"channel\" size=\"1\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_nodeevent_channel})."')\" id=\"channel\">";
             for (("",sort(keys(%chan)))) {
                 print "<option".($_ eq $channel ? " selected":"")." value=\"$_\">".($_ eq "" ? "":$chan{$_})."</option>\n";
             }
@@ -623,7 +623,7 @@ if ($object =~ /^.*\..*\..*$/) {
 }
 print "</TD>\n<TD style=\"text-align: left; vertical-align: top; border: none;\">";
 print "<B>$__{'Author(s)'}: </B><BR><SELECT id=\"oper\" name=\"oper\" size=\"10\" multiple style=\"vertical-align:text-top\"
-      onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Select names of people involved (hold CTRL key for multiple selections)'}')\">\n";
+      onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{'Select names of people involved (hold CTRL key for multiple selections)'})."')\">\n";
 
 # makes a list of active (and inactive) users
 my %alogins;
@@ -650,7 +650,7 @@ for my $ulogin (@logins) {
 print "</SELECT>\n";
 print "</TD>\n<TD style=\"text-align: left; vertical-align: top; border: none;\">";
 print "<B>$__{'Remote Operator(s)'}: </B><BR><SELECT id=\"roper\" name=\"roper\" size=\"10\" multiple style=\"vertical-align:text-top\"
-      onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Select names of people involved remotely (hold CTRL key for multiple selections)'}')\">\n";
+      onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{'Select names of people involved remotely (hold CTRL key for multiple selections)'})."')\">\n";
 for my $ulogin (@logins) {
     my $uid = $USERS{$ulogin}{UID};
     my $sel = ((grep {$_ eq $uid} @roper) ? 'selected':'');
@@ -660,7 +660,7 @@ print "</SELECT></TR>\n";
 print "<TR><TD style=\"vertical-align: top; border: none;\" colspan=3>";
 print "<P><TEXTAREA id=\"markItUp\" class=\"markItUp\" rows=\"11\" cols=\"80\" name=\"contents\" dataformatas=\"plaintext\">$contents</TEXTAREA></P>";
 print "<P><B>$__{Notify} (email)</B><input type=\"checkbox\"".(isok($NODES{EVENTNODE_NOTIFY_DEFAULT}) ? " checked":"")." name=\"notify\" value=\"OK\""
-  ." onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Send an e-mail to inform Webobs users'}')\">";
+  ." onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{'Send an e-mail to inform Webobs users'})."')\">";
 
 # moves event to another node
 if (!($action =~ /new/i) && $object =~ /^.*\..*\..*$/ && !$isProject) {

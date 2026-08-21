@@ -22,9 +22,9 @@ function [D,P] = readfmtdata(WO,P,N)
 %	List of formats selectable by users must be set in CODE/etc/rawformats.conf
 %
 %
-%	Authors: François Beauducel, Jean-Marie Saurel, WEBOBS/IPGP
+%	Authors: François Beauducel, Jean-Marie Saurel, Pierre Sakic, WEBOBS/IPGP
 %	Created: 2013-12-29, in Guadeloupe, French West Indies
-%	Updated: 2026-08-17
+%	Updated: 2026-08-18
 
 debug = isok(P,'DEBUG');
 
@@ -72,7 +72,7 @@ for n = 1:length(N)
     case {'miniseed','seedlink','arclink','combined','fdsnws-dataselect'}
         D(n) = readfmtdata_miniseed(WO,P,N(n),F);
 
-    case {'globkval','gipsy','gipsyx','gipsy-tdp','usgs-rneu','ies-neu','ogc-neu','ingv-gps','sbe37-ascii','spotgins-enu','spotgins-ippp','gamit-pos','pbogps-pos','rtklib'}
+    case {'globkval','gipsy','gipsyx','gipsy-tdp','usgs-rneu','ies-neu','ogc-neu','ingv-gps','sbe37-ascii','spotgins-enu','spotgins-ippp','gamit-pos','pbogps-pos','ngl-tenv3','rtklib'}
         D(n) = readfmtdata_gnss(WO,P,N(n),F);
 
     case {'hyp71sum2k','fdsnws-event','scevtlog-xml'}

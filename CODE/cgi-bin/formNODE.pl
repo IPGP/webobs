@@ -921,7 +921,7 @@ print "<FORM id=\"theform\" name=\"form\" method=\"post\" action=\"\">\n";
 my $nodevalidity;
 if (clientHasAdm(type=>"authmisc",name=>"NODES")) {
     $nodevalidity = "<P><input type=\"checkbox\"".(($usrValid == 1 || $newnode)?" checked":"")
-      ." name=\"valide\" value=\"NA\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'help_creationstation_valid'}')\">"
+      ." name=\"valide\" value=\"NA\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{'help_creationstation_valid'})."')\">"
       ."<b>$__{'Valid Node'}</b></P>";
 } else {
     $nodevalidity = "<INPUT type=\"hidden\" name=\"valide\" value=\"NA\">";
@@ -962,15 +962,15 @@ print "<BR>";
 
 # --- Nom complet/TITLE
 print "<LABEL style=\"width:80px\" for=\"fullName\">$__{'Name'}:</LABEL>";
-print "<INPUT size=\"40\" value=\"$usrName\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_name}')\" name=\"fullName\" id=\"fullName\"><BR>";
+print "<INPUT size=\"40\" value=\"$usrName\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_creationstation_name})."')\" name=\"fullName\" id=\"fullName\"><BR>";
 
 # --- ALIAS
 print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Alias'}:</LABEL>";
-print "<INPUT size=\"15\" onMouseOut=\"nd()\" value=\"$usrAlias\" onmouseover=\"overlib('$__{help_creationstation_alias}')\" size=\"8\" name=\"alias\" id=\"alias\">&nbsp;&nbsp;<BR>";
+print "<INPUT size=\"15\" onMouseOut=\"nd()\" value=\"$usrAlias\" onmouseover=\"overlib('".js($__{help_creationstation_alias})."')\" size=\"8\" name=\"alias\" id=\"alias\">&nbsp;&nbsp;<BR>";
 
 # --- TYPE
 print "<LABEL style=\"width:80px\" for=\"type\">$__{'Type'}:</LABEL>";
-print "<INPUT size=\"15\" onMouseOut=\"nd()\" value=\"$usrType\" onmouseover=\"overlib('$__{help_creationstation_type}')\" size=\"8\" name=\"type\" id=\"type\">&nbsp;&nbsp;<BR>";
+print "<INPUT size=\"15\" onMouseOut=\"nd()\" value=\"$usrType\" onmouseover=\"overlib('".js($__{help_creationstation_type})."')\" size=\"8\" name=\"type\" id=\"type\">&nbsp;&nbsp;<BR>";
 print "</FIELDSET>";
 
 print "<FIELDSET><LEGEND>$__{'Lifetime and Events Time Zone'}</LEGEND>";
@@ -1005,7 +1005,7 @@ print "<TD style=\"border:0\">";
 
 # --- ALIAS
 print "<LABEL style=\"width:100px\" for=\"tz\">$__{'Time zone (h)'}:</LABEL>";
-print "<INPUT size=\"5\" onMouseOut=\"nd()\" value=\"$usrTZ\" onmouseover=\"overlib('$__{help_creationstation_tz}')\" size=\"8\" name=\"tz\" id=\"tz\">";
+print "<INPUT size=\"5\" onMouseOut=\"nd()\" value=\"$usrTZ\" onmouseover=\"overlib('".js($__{help_creationstation_tz})."')\" size=\"8\" name=\"tz\" id=\"tz\">";
 print "</TD>";
 print "</TR>";
 print "</TABLE>\n";
@@ -1013,15 +1013,15 @@ print "</FIELDSET>";
 
 # --- Features
 print "<FIELDSET><LEGEND>$__{'Features'}</LEGEND>";
-print "<INPUT size=\"60\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_spec}')\" name=\"features\" value=\"".join(',',@feat)."\">"
-  ."&nbsp;<IMG src=\"/icons/refresh.png\" style='vertical-align:middle;cursor:pointer' onClick=\"refresh_form();\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'help_creationstation_featrefresh'}')\"><BR><BR>";
+print "<INPUT size=\"60\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_creationstation_spec})."')\" name=\"features\" value=\"".join(',',@feat)."\">"
+  ."&nbsp;<IMG src=\"/icons/refresh.png\" style='vertical-align:middle;cursor:pointer' onClick=\"refresh_form();\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{'help_creationstation_featrefresh'})."')\"><BR><BR>";
 for (@feat) {
     print "<LABEL style=\"width:120px\" for=\"feature_$_\">$_:</LABEL>";
     my $pat = qr/^$NODEName\|$_\|/;
     my @fnlist = grep(/$pat/,@n2n);
     my $fn = join(',',@fnlist);
     $fn =~ s/$NODEName\|$_\|//g;
-    print "<INPUT size=\"30\" onMouseOut=\"nd()\" value=\"$fn\" name=\"$_\" onmouseover=\"overlib('$__{help_creationstation_n2n}')\"><BR>";
+    print "<INPUT size=\"30\" onMouseOut=\"nd()\" value=\"$fn\" name=\"$_\" onmouseover=\"overlib('".js($__{help_creationstation_n2n})."')\"><BR>";
 }
 
 print "</FIELDSET>";
@@ -1077,14 +1077,14 @@ print "<FIELDSET><LEGEND>$__{'External Metadata'}</LEGEND>";
 my $m3g_url_edit = $WEBOBS{'M3G_URL'}."/".$usrGnss9char;
 print "<TABLE width='100%'><TR><TD style='border:0'>";
 print "<label for=\"gnss_9char\">$__{'GNSS 9-char code'}:</label>";
-print "<input size=\"10\" value=\"$usrGnss9char\" onChange=\"console.log($m3g_url_edit)\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_formnode_gnss_9char}')\" id=\"gnss_9char\" name=\"gnss_9char\">";
+print "<input size=\"10\" value=\"$usrGnss9char\" onChange=\"console.log($m3g_url_edit)\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_formnode_gnss_9char})."')\" id=\"gnss_9char\" name=\"gnss_9char\">";
 print "<BR>\n";
 print "<label for=\"m3g_check\">$__{'Show links to M3G'}:</label>";
 print "<input size=\"16\" type=\"checkbox\" id=\"m3g_check\" name=\"m3g_check\" value=\"NA\""
-    ." onmouseover=\"overlib('$__{help_formnode_m3g_check}')\"".($m3g_check ? " checked>":"").">";
+    ." onmouseover=\"overlib('".js($__{help_formnode_m3g_check})."')\"".($m3g_check ? " checked>":"").">";
 print "</TD><TD style='border:0'>";
 # --- Edit GeodesyML on M3G
-print "<a href=$m3g_url_edit target=\"_blank\" id=\"m3g_link\" onClick=\"return check_9char_code()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_formnode_edit_m3g}')\">$__{'Edit sitelog on M3G'}</a>";
+print "<a href=$m3g_url_edit target=\"_blank\" id=\"m3g_link\" onClick=\"return check_9char_code()\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_formnode_edit_m3g})."')\">$__{'Edit sitelog on M3G'}</a>";
 print "</TD></TR></TABLE>\n";
 
 # --- show THEIA fields ?
@@ -1095,7 +1095,7 @@ if ($theia_selected) {
 
     # --- PRODUCER
     print "<LABEL style=\"width:80px\" for=\"producer\">$__{'Producer'}:</LABEL>";
-    print "<INPUT size=\"15\" onMouseOut=\"nd()\" value=\"$usrProducer\" onmouseover=\"overlib('$__{help_creationstation_producer}')\" size=\"8\" name=\"producer\" id=\"producer\">&nbsp;&nbsp;<BR>";
+    print "<INPUT size=\"15\" onMouseOut=\"nd()\" value=\"$usrProducer\" onmouseover=\"overlib('".js($__{help_creationstation_producer})."')\" size=\"8\" name=\"producer\" id=\"producer\">&nbsp;&nbsp;<BR>";
 
     # --- CREATOR
     print "<BUTTON style=\"text-align:center\" onclick=\"addCreator(); return false;\">$__{'Add a creator'} </BUTTON>";
@@ -1104,7 +1104,7 @@ if ($theia_selected) {
     print "<INPUT type='hidden' name=\"creators\" value=''>";
     print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Creator'}:</LABEL><BR><BR>";
     print "<DIV id=\"creator\">";
-    print "<SELECT onMouseOut=\"nd()\" value=\"$usrRole[0]\" onmouseover=\"overlib('$__{help_creationstation_creator}')\" name=\"role\" id=\"creator\" size=\"1\">";
+    print "<SELECT onMouseOut=\"nd()\" value=\"$usrRole[0]\" onmouseover=\"overlib('".js($__{help_creationstation_creator})."')\" name=\"role\" id=\"creator\" size=\"1\">";
     for (@creators) {
         if ($_ eq $usrRole[0]){
             print "<OPTION value=\"$_\" selected>$_</option>\n";
@@ -1113,15 +1113,15 @@ if ($theia_selected) {
         }
     }
     print "</SELECT>&nbsp;&nbsp";
-    print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName[0]\" placeholder=\"first name\" onmouseoverd=\"overlib('$__{help_creation_firstName}')\" name=\"firstName\" id=\"firstName_0\">&nbsp;&nbsp;";
-    print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName[0]\" placeholder=\"last name\" onmouseoverd=\"overlib('$__{help_creation_lastName}')\" name=\"lastName\" id=\"lastName_0\">&nbsp;&nbsp;";
-    print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail[0]\" placeholder=\"email\" onmouseoverd=\"overlib('$__{help_creation_email}')\" name=\"email\" id=\"email_0\">&nbsp;&nbsp;<BR></DIV>";
+    print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName[0]\" placeholder=\"first name\" onmouseoverd=\"overlib('".js($__{help_creation_firstName})."')\" name=\"firstName\" id=\"firstName_0\">&nbsp;&nbsp;";
+    print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName[0]\" placeholder=\"last name\" onmouseoverd=\"overlib('".js($__{help_creation_lastName})."')\" name=\"lastName\" id=\"lastName_0\">&nbsp;&nbsp;";
+    print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail[0]\" placeholder=\"email\" onmouseoverd=\"overlib('".js($__{help_creation_email})."')\" name=\"email\" id=\"email_0\">&nbsp;&nbsp;<BR></DIV>";
     print "<DIV id='creator_add'>";
     for (my $i = 1; $i <= $#usrRole; $i++) {
         my $cnt = $i+1;
         print "<DIV id=new_creator$cnt>";
         print "<SCRIPT>var form = \$('#theform')[0];form.count_creator.value = parseInt(form.count_creator.value);</SCRIPT>";
-        print "<SELECT onMouseOut=\"nd()\" value=\"$usrRole[$i]\" onmouseover=\"overlib('$__{help_creationstation_creator}')\" name=\"role\" id=\"creator\" size=\"1\">";
+        print "<SELECT onMouseOut=\"nd()\" value=\"$usrRole[$i]\" onmouseover=\"overlib('".js($__{help_creationstation_creator})."')\" name=\"role\" id=\"creator\" size=\"1\">";
         for (@creators) {
             if ($_ eq $usrRole[$i]){
                 print "<OPTION value=\"$_\" selected>$_</option>\n";
@@ -1130,16 +1130,16 @@ if ($theia_selected) {
             }
         }
         print "</SELECT>&nbsp;&nbsp";
-        print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName[$i]\" placeholder=\"first name\" onmouseoverd=\"overlib('$__{help_creation_firstName}')\" name=\"firstName\" id=\"firstName_$i\">&nbsp;&nbsp;";
-        print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName[$i]\" placeholder=\"last name\" onmouseoverd=\"overlib('$__{help_creation_lastName}')\" name=\"lastName\" id=\"lastName_$i\">&nbsp;&nbsp;";
-        print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail[$i]\" placeholder=\"email\" onmouseoverd=\"overlib('$__{help_creation_email}')\" name=\"email\" id=\"email_$i\">&nbsp;&nbsp;<BR>";
+        print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrFirstName[$i]\" placeholder=\"first name\" onmouseoverd=\"overlib('".js($__{help_creation_firstName})."')\" name=\"firstName\" id=\"firstName_$i\">&nbsp;&nbsp;";
+        print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrLastName[$i]\" placeholder=\"last name\" onmouseoverd=\"overlib('".js($__{help_creation_lastName})."')\" name=\"lastName\" id=\"lastName_$i\">&nbsp;&nbsp;";
+        print "<INPUT size=\"8\" onMouseOut=\"nd()\" value=\"$usrEmail[$i]\" placeholder=\"email\" onmouseoverd=\"overlib('".js($__{help_creation_email})."')\" name=\"email\" id=\"email_$i\">&nbsp;&nbsp;<BR>";
         print "</DIV>";
     }
     print "</DIV><BR>";
 
     # --- INSPIRE THEME
     print "<LABEL style=\"width:80px\" for=\"alias\">$__{'INSPIRE theme'}:</LABEL>";
-    print "<SELECT onMouseOut=\"nd()\" value=\"$usrTheme\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" name=\"theme\" id=\"theme\" size=\"1\">";
+    print "<SELECT onMouseOut=\"nd()\" value=\"$usrTheme\" onmouseover=\"overlib('".js($__{help_creationstation_subject})."')\" name=\"theme\" id=\"theme\" size=\"1\">";
     for (@themes) {
         if ($_ eq $usrTheme) {
             print "<OPTION value=\"$_\" selected>$_</option>\n";
@@ -1153,7 +1153,7 @@ if ($theia_selected) {
     print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Topic categories'}:</LABEL>";
 
     #print "<INPUT type=\"hidden\" name=\"topics\">";
-    print "<SELECT multiple onMouseOut=\"nd()\" value=\"@usrTopic\" onmouseover=\"overlib('$__{help_creationstation_subject}')\" name=\"topics\">";
+    print "<SELECT multiple onMouseOut=\"nd()\" value=\"@usrTopic\" onmouseover=\"overlib('".js($__{help_creationstation_subject})."')\" name=\"topics\">";
     for (@topics) {
         if ($_ ~~ @usrTopic) {
             print "<OPTION value=\"$_\" selected>$_</option>\n";
@@ -1165,7 +1165,7 @@ if ($theia_selected) {
 
     # --- Lineage
     print "<LABEL style=\"width:80px\" for=\"alias\">$__{'Lineage'}:</LABEL>";
-    print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrLineage\" onmouseover=\"overlib('$__{help_creationstation_lineage}')\" size=\"8\" name=\"lineage\" id=\"lineage\">&nbsp;&nbsp;<BR>";
+    print "<INPUT size=\"40\" onMouseOut=\"nd()\" value=\"$usrLineage\" onmouseover=\"overlib('".js($__{help_creationstation_lineage})."')\" size=\"8\" name=\"lineage\" id=\"lineage\">&nbsp;&nbsp;<BR>";
     print "</DIV>";
     print "</FIELDSET>";
 } # fin THEIA
@@ -1184,23 +1184,23 @@ print "<TD style=\"border:0;text-align:left\">";
 print "<DIV id='map' style=\"position: relative ;width: 347px; height: 347px\"></DIV>";
 print "</TD>";
 print "<TD style=\"border:0;text-align:left;rows:6;\">";
-print "<label>$__{'Auto-location'} :</label><button id=\"auto-loc\" style=\"position:relative;\" onmouseover=\"overlib('$__{beware_approximate_position}')\">$__{'Locate me!'}</button>&nbsp;<BR>";
+print "<label>$__{'Auto-location'} :</label><button id=\"auto-loc\" style=\"position:relative;\" onmouseover=\"overlib('".js($__{beware_approximate_position})."')\">$__{'Locate me!'}</button>&nbsp;<BR>";
 print "<label for=\"latwgs84\">$__{'Latitude'}  WGS84:</label>";
-print "<input size=\"8\" class=inputNum value=\"$usrLat\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84\" name=\"latwgs84\" oninput=\"onInputWrite()\"><B>&#176;&nbsp;</B>";
-print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84min\" name=\"latwgs84min\"><B>'&nbsp;</B>";
-print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lat}')\" id=\"latwgs84sec\" name=\"latwgs84sec\"><B>\"&nbsp;</B>";
+print "<input size=\"8\" class=inputNum value=\"$usrLat\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_creationstation_lat})."')\" id=\"latwgs84\" name=\"latwgs84\" oninput=\"onInputWrite()\"><B>&#176;&nbsp;</B>";
+print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_creationstation_lat})."')\" id=\"latwgs84min\" name=\"latwgs84min\"><B>'&nbsp;</B>";
+print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_creationstation_lat})."')\" id=\"latwgs84sec\" name=\"latwgs84sec\"><B>\"&nbsp;</B>";
 print "<select name=\"latwgs84n\" size=\"1\">";
 for ("N","S") { print "<option".($usrLatN eq $_ ? " selected":"")." value=$_>$_</option>\n"; }
 print "</select><BR>\n";
 print "<label for=\"lonwgs84\">$__{'Longitude'}  WGS84:</label>";
-print "<input size=\"8\" class=inputNum value=\"$usrLon\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84\" name=\"lonwgs84\" oninput=\"onInputWrite()\"><B>&#176;&nbsp;</B>";
-print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84min\" name=\"lonwgs84min\"><B>'&nbsp;</B>";
-print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_lon}')\" id=\"lonwgs84sec\" name=\"lonwgs84sec\"><B>\"&nbsp;</B>";
+print "<input size=\"8\" class=inputNum value=\"$usrLon\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_creationstation_lon})."')\" id=\"lonwgs84\" name=\"lonwgs84\" oninput=\"onInputWrite()\"><B>&#176;&nbsp;</B>";
+print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_creationstation_lon})."')\" id=\"lonwgs84min\" name=\"lonwgs84min\"><B>'&nbsp;</B>";
+print "<input size=\"6\" class=inputNum value=\"\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_creationstation_lon})."')\" id=\"lonwgs84sec\" name=\"lonwgs84sec\"><B>\"&nbsp;</B>";
 print "<select name=\"lonwgs84e\" size=\"1\">";
 for ("E","W") { print "<option".($usrLonE eq $_ ? " selected":"")." value=$_>$_</option>\n"; }
 print "</select><BR>\n";
 print "<label for=\"altitude\">$__{'Elevation'}  (m):</label>";
-print "<input size=\"8\" class=inputNum value=\"$usrAlt\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_alt}')\" id=\"altitude\" name=\"altitude\"><BR>\n";
+print "<input size=\"8\" class=inputNum value=\"$usrAlt\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_creationstation_alt})."')\" id=\"altitude\" name=\"altitude\"><BR>\n";
 
 # --- positioning date
 print "<label for=\"datePos\">Date:</label> <select name=\"pyear\" size=\"1\">";
@@ -1215,7 +1215,7 @@ print "</select><BR>";
 
 # --- Positioning type (unknown, map, GPS or auto)
 print "<label for=\"typePos\">Type: </label> "
-  ."<select name=\"typePos\" size=\"1\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_pos_type}')\">";
+  ."<select name=\"typePos\" size=\"1\" onChange=\"latlonChange()\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_creationstation_pos_type})."')\">";
 for (sort(keys(%typePos))) { print "<option".(($_ eq $usrTypePos) ? " selected ":"")." value=$_>$typePos{$_}</option>\n"; }
 print "</select><BR>";
 print "<DIV id=\"rawKML\" style=\"display:none\"><LABEL for=\"rawKML\">Raw KML: </LABEL>"
@@ -1238,7 +1238,7 @@ print "<INPUT type=\"hidden\" name=\"outWKT\" value=\"\"\n>";
 print "<INPUT type=\"hidden\" name=\"geojson\" value=\"\"\n>";
 print "<INPUT type=\"hidden\" name=\"saveAuth\" value=\"0\">";
 print "<label for=\"shpfile\">$__{'Shapefile'} (.zip): </label> "
-  ."<INPUT type='file' id='shpfile' onchange='selectShape()' value=\"\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_shapefile}')\"><BR>";
+  ."<INPUT type='file' id='shpfile' onchange='selectShape()' value=\"\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_creationstation_shapefile})."')\"><BR>";
 print "</TD>";
 print <<FIN;
 <script>
@@ -1293,7 +1293,7 @@ print "<FIELDSET><legend>$__{'Transmission'}</LEGEND>";
 print "<TABLE><TR>";
 print "<TD style=\"border:0;text-align:left\">";
 print "<LABEL for=\"typeTrans\">Type: </LABEL>";
-print "<SELECT onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_creationstation_tele_type}')\" id=\"typeTrans\" name=\"typeTrans\" size=\"1\" onChange=\"maj_transmission()\">";
+print "<SELECT onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{help_creationstation_tele_type})."')\" id=\"typeTrans\" name=\"typeTrans\" size=\"1\" onChange=\"maj_transmission()\">";
 for (sort(keys(%typeTele))) {
     my $sel = "";
     if ( $_ eq "$usrTrans" ) { $sel = "selected" }
@@ -1305,7 +1305,7 @@ print "<TD style=\"border:0\">";
 
 # Transmission path (acquisition + repeater list)
 print "<DIV id=\"pathTrans\" style=\"display:none\"><LABEL for=\"pathTrans\">$__{'Repeaters Path'}: </LABEL>";
-print "<INPUT onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{help_creationstation_tele_acq}')\" name=\"pathTrans\" size=\"40\" value=\"".join(',',@usrTele)."\"><br/></DIV>";
+print "<INPUT onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{help_creationstation_tele_acq})."')\" name=\"pathTrans\" size=\"40\" value=\"".join(',',@usrTele)."\"><br/></DIV>";
 print "</TD>";
 print "</TR></TABLE>";
 print "</FIELDSET>";
@@ -1318,7 +1318,7 @@ if (uc($GRIDType) eq "PROC") {
     print "<B>$GRID{NAME}</B> (".(defined($GRID{NODESLIST}) ? scalar(@{$GRID{NODESLIST}}):"0")." nodes)<INPUT hidden id=\"proc\" name=\"proc\" value=\"\" style=\"background-color:transparent;border:none\"><BR><BR>\n";
 
     # --- RAWFORMAT list
-    print "<LABEL for=\"RawFormat\">$__{'Raw format:'}</label> <select onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_rawformat}')\" name=\"rawformat\" size=\"1\" onChange=\"maj_rawformat()\">";
+    print "<LABEL for=\"RawFormat\">$__{'Raw format:'}</label> <select onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_creationstation_rawformat})."')\" name=\"rawformat\" size=\"1\" onChange=\"maj_rawformat()\">";
     my %rawfmt;
     my @fmtfid;
     for (keys(%rawFormats)) {
@@ -1334,11 +1334,11 @@ if (uc($GRIDType) eq "PROC") {
     print "</SELECT><BR>\n";
 
     # --- RAWDATA
-    print "<LABEL for=\"rawdata\">$__{'Raw data source:'}</label> <input size=\"60\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_rawdata}')\" type=\"text\" id=\"rawdata\" name=\"rawdata\" value=\"$usrRAWDATA\"/><br/>";
+    print "<LABEL for=\"rawdata\">$__{'Raw data source:'}</label> <input size=\"60\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_creationstation_rawdata})."')\" type=\"text\" id=\"rawdata\" name=\"rawdata\" value=\"$usrRAWDATA\"/><br/>";
 
     # --- FDSN Network Code
     print "<LABEL for=\"fdsn\">$__{'Network code:'}</LABEL>";
-    print "<SELECT name=\"fdsn\" id=\"fdsn\" size=\"1\" onMouseOut=\"nd()\" value=\"$usrFDSN\" onMouseOver=\"overlib('$__{help_creationstation_fdsn}')\">";
+    print "<SELECT name=\"fdsn\" id=\"fdsn\" size=\"1\" onMouseOut=\"nd()\" value=\"$usrFDSN\" onMouseOver=\"overlib('".js($__{help_creationstation_fdsn})."')\">";
     for ("",sort(keys(%FDSN))) {
         print "<OPTION".((trim($_) eq trim($usrFDSN)) ? " selected ":"")." value=$_>".($_ ne "" ? "$_: ":"")."$FDSN{$_}</option>\n";
     }
@@ -1347,7 +1347,7 @@ if (uc($GRIDType) eq "PROC") {
 
     # --- DESCRIPTION
     print "<LABEL for=\"description\">$__{'Description:'}</LABEL>";
-    print "<TEXTAREA rows=\"4\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_description}')\""
+    print "<TEXTAREA rows=\"4\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_creationstation_description})."')\""
           ." cols=\"40\" name=\"description\" id=\"description\">$usrDesc</TEXTAREA><BR><BR>\n";
 
     # --- CHANNEL_LIST
@@ -1366,7 +1366,7 @@ if (uc($GRIDType) eq "PROC") {
         foreach (@nv) {
             $chan{$_} = "$carCLB{$_}{'nm'} ($carCLB{$_}{'un'}) - $carCLB{$_}{'cd'} $carCLB{$_}{'lc'}";
         }
-        print "<SELECT name=\"chanlist\" multiple size=\"5\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_chanlist}')\" id=\"chanlist\">";
+        print "<SELECT name=\"chanlist\" multiple size=\"5\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_creationstation_chanlist})."')\" id=\"chanlist\">";
         for (sort{ $a <=> $b } (keys(%chan))) {
             print "<option".($_ ~~ @select || !defined($usrCHAN) ? " selected":"")." value=\"$_\">"."$_: $chan{$_}</option>\n";
         }
@@ -1379,7 +1379,7 @@ if (uc($GRIDType) eq "PROC") {
     # --- DATA (FID)
     print "<TR><TD style=\"border:0\">";
     print "<LABEL for=\"data\">FID:</LABEL>";
-    print "<INPUT size=\"15\" value=\"$usrDataFile\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_fid}')\" name=\"fid\" id=\"data\"><BR>\n";
+    print "<INPUT size=\"15\" value=\"$usrDataFile\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_creationstation_fid})."')\" name=\"fid\" id=\"data\"><BR>\n";
 
    # --- DATA (FID_x)
    # first displays any user defined FID_x (that are NOT in the rawformats list)
@@ -1389,7 +1389,7 @@ if (uc($GRIDType) eq "PROC") {
         $short =~ s/^$GRIDType\.$GRIDName\.//g;
         if (!grep(/^$short$/,@fmtfid)) {
             my $long = "$GRIDType.$GRIDName.$short";
-            print "<label for=\"$short\">$short:</label><input size=\"15\" value=\"$NODE{$long}\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_fid}')\" name=\"$long\" id=\"data\"><BR>\n";
+            print "<label for=\"$short\">$short:</label><input size=\"15\" value=\"$NODE{$long}\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_creationstation_fid})."')\" name=\"$long\" id=\"data\"><BR>\n";
         }
     }
 
@@ -1405,9 +1405,9 @@ if (uc($GRIDType) eq "PROC") {
         }
     }
     print "</DIV></TD>\n<TD style=\"border:0;text-align:right\">";
-    print "<label for=\"utcd\">$__{'Time zone (h)'}: </label> <input size=\"9\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_proc_tz}')\" type=\"text\" id=\"utcd\" name=\"utcd\" value=\"$usrUTC\"/><br/>";
-    print "<label for=\"acqr\">$__{'Acq. period (days)'}: </label> <input size=\"9\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_proc_acqrate}')\"type=\"text\" id=\"acqr\" name=\"acqr\" value=\"$usrACQ\"/><br/>";
-    print "<label for=\"ldly\">$__{'Acq. delay (days)'}: </label> <input size=\"9\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_proc_acqdelay}')\"type=\"text\" id=\"ldly\" name=\"ldly\" value=\"$usrDLY\"/><br/>";
+    print "<label for=\"utcd\">$__{'Time zone (h)'}: </label> <input size=\"9\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_creationstation_proc_tz})."')\" type=\"text\" id=\"utcd\" name=\"utcd\" value=\"$usrUTC\"/><br/>";
+    print "<label for=\"acqr\">$__{'Acq. period (days)'}: </label> <input size=\"9\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_creationstation_proc_acqrate})."')\"type=\"text\" id=\"acqr\" name=\"acqr\" value=\"$usrACQ\"/><br/>";
+    print "<label for=\"ldly\">$__{'Acq. delay (days)'}: </label> <input size=\"9\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_creationstation_proc_acqdelay})."')\"type=\"text\" id=\"ldly\" name=\"ldly\" value=\"$usrDLY\"/><br/>";
     print "</TD></TR></TABLE></FIELDSET><BR>\n";
 }
 
@@ -1430,8 +1430,8 @@ if (uc($GRIDType) eq "FORM") {
     print "<B>$GRID{NAME}</B> (".(defined($GRID{NODESLIST}) ? scalar(@{$GRID{NODESLIST}}):"0")." nodes)<INPUT hidden id=\"form\" name=\"form\" value=\"\" style=\"background-color:transparent;border:none\"/><BR><BR>\n";
     print "<label for=\"utcd\">$__{'Time zone (h)'}: </label> <input size='5' readonly type='text' id=\"utcd\" name=\"utcd\" value=\"$GRID{TZ}\" style=\"background-color:transparent;border:none\"/><br><br>\n";
     print "</TD>\n<TD style=\"border:0;text-align:right\">";
-    print "<label for=\"acqr\">$__{'Acq. period (days)'}: </label> <input size='9' onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_proc_acqrate}')\"type=\"text\" id=\"acqr\" name=\"acqr\" value=\"$usrACQ\"/><br>\n";
-    print "<label for=\"ldly\">$__{'Acq. delay (days)'}: </label> <input size='9' onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_creationstation_proc_acqdelay}')\"type=\"text\" id=\"ldly\" name=\"ldly\" value=\"$usrDLY\"/><br>\n";
+    print "<label for=\"acqr\">$__{'Acq. period (days)'}: </label> <input size='9' onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_creationstation_proc_acqrate})."')\"type=\"text\" id=\"acqr\" name=\"acqr\" value=\"$usrACQ\"/><br>\n";
+    print "<label for=\"ldly\">$__{'Acq. delay (days)'}: </label> <input size='9' onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_creationstation_proc_acqdelay})."')\"type=\"text\" id=\"ldly\" name=\"ldly\" value=\"$usrDLY\"/><br>\n";
     print "</TD></TR></TABLE></FIELDSET>\n";
 }
 

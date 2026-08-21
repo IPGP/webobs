@@ -242,8 +242,8 @@ print "\n<H1>$pagetitle</H1>\n";
 print "<FORM name=\"theform\" id=\"theform\" action=\"$me\" method=\"get\">";
 print "<TABLE width=\"100%\" style=\"border:1 solid darkgray\"><TR>";
 print "<TH style=\"text-align:right; border: none;\">";
-print "<B>$__{'Search for:'} </B><INPUT  size=\"20\" name=\"str\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_vsearch_str}')\" id=\"str\" value=\"$str\">&nbsp;&nbsp;";
-print "<B>$__{'in:'} </B><SELECT size=\"1\" name=\"in\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_vsearch_in}')\" id=\"in\"> ";
+print "<B>$__{'Search for:'} </B><INPUT  size=\"20\" name=\"str\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_vsearch_str})."')\" id=\"str\" value=\"$str\">&nbsp;&nbsp;";
+print "<B>$__{'in:'} </B><SELECT size=\"1\" name=\"in\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_vsearch_in})."')\" id=\"in\"> ";
 foreach (sort(keys(%catdisplay))) {
     my ($n,$k) = split(/\|/,$_);
     print "<OPTION value=\"$k\"".($k eq $in ? " selected":"").">$catdisplay{$_}</OPTION>";
@@ -254,8 +254,8 @@ foreach ("AND","OR") {
     print "<OPTION value=\"$_\"".($_ eq $lop ? " selected":"").">$__{$_}</OPTION>";
 }
 print "</SELECT>&nbsp;&nbsp;\n";
-print "<INPUT  size=\"20\" name=\"str2\" id=\"str2\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_vsearch_str}')\" value=\"$str2\">&nbsp;&nbsp;";
-print "<B>$__{'in:'} </B><SELECT size=\"1\" name=\"in2\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_vsearch_in}')\" id=\"in2\"> ";
+print "<INPUT  size=\"20\" name=\"str2\" id=\"str2\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_vsearch_str})."')\" value=\"$str2\">&nbsp;&nbsp;";
+print "<B>$__{'in:'} </B><SELECT size=\"1\" name=\"in2\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_vsearch_in})."')\" id=\"in2\"> ";
 foreach (sort(keys(%catdisplay))) {
     my ($n,$k) = split(/\|/,$_);
     print "<OPTION value=\"$k\"".($k eq $in2 ? " selected":"").">$catdisplay{$_}</OPTION>";
@@ -267,8 +267,8 @@ foreach (keys(%sortlist)) {
     print "<OPTION value=\"$_\"".($_ eq $sort ? " selected":"").">$sortlist{$_}</OPTION>";
 }
 print "</SELECT><BR>\n";
-print "$__{'Show:'} <INPUT type=\"checkbox\" name=\"showg\"".($showg ? " checked":"")." onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_vsearch_showg}')\"> $__{'grids'}";
-print "&nbsp;&nbsp;<INPUT type=\"checkbox\" name=\"shown\"".($shown ? " checked":"")." onMouseOut=\"nd()\" onmouseover=\"overlib('$__{help_vsearch_shown}')\"> $__{'node\'s name'}";
+print "$__{'Show:'} <INPUT type=\"checkbox\" name=\"showg\"".($showg ? " checked":"")." onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_vsearch_showg})."')\"> $__{'grids'}";
+print "&nbsp;&nbsp;<INPUT type=\"checkbox\" name=\"shown\"".($shown ? " checked":"")." onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_vsearch_shown})."')\"> $__{'node\'s name'}";
 print "</TH>\n";
 print "<TH style=\"border: none;\">";
 print "<B>$__{'max diplayed:'} </B><SELECT size=\"1\" name=\"max\" id=\"max\"> ";

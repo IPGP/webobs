@@ -24,7 +24,7 @@ our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
 
 require Exporter;
 @ISA        = qw(Exporter);
-@EXPORT     = qw(cherche_langue aff_langues);
+@EXPORT     = qw(cherche_langue aff_langues js);
 @EXPORT_OK  = qw();
 $VERSION    = "1.00";
 
@@ -65,6 +65,17 @@ sub aff_langues () {
     print '<pre style="background-color: #eee; text-align: left;">'.Dumper('Fichier : '.__FILE__,'Ligne : '.__LINE__,'$langue_utilisee',$langue_utilisee).'</pre>';
 }
 
+# called by any use inside a JS command
+sub js {
+    my $s = shift;
+    $s =~ s/\\/\\\\/g;
+    $s =~ s/'/\\'/g;
+    $s =~ s/"/&quot;/g;
+    $s =~ s/\r/\\r/g;
+    $s =~ s/\n/\\n/g;
+    return $s;
+}
+
 binmode STDOUT, ':raw'; # Needed to make it work in UTF-8 locales in Perl-5.8.
 1;
 
@@ -79,7 +90,7 @@ __END__
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2014 - Institut de Physique du Globe Paris
+WebObs - 2012-2026 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -13,12 +13,14 @@ WebObs is presently fully functional and used in a dozen observatories (see the 
 ## Environment
 WebObs server can run on most Linux systems. It has been succesfully installed/tested on Linux Debian 12, Ubuntu 22.04 LTS and older versions. Presently, the Matlab runtime is not compatible with newer versions due to libncurse5 dependency.
 
+We also provide a ready-to-use Docker image and docker-compose setup to deploy WebObs without complex manual installation, using the latest release. Ideal for observatories, research institutions, and geoscientists who want a portable, reproducible WebObs environment. This alternative to the following install procedure is available at [github.com/IPGP/webobs-docker](https://github.com/IPGP/webobs-docker).
+
 <a name="latest"></a>
 ## Download the latest release
 
-- [WebObs-2.8.3a.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.8.3a/WebObs-2.8.3a.tar.gz) (104 Mb) updated August 17, 2026
-- [Release notes](https://github.com/IPGP/webobs/blob/v2.8.3a/release-notes.md) (see also the [What's new?](#whatsnew) section below)
-- [User manual](https://github.com/IPGP/webobs/releases/download/v2.8.3a/WebObs_Manual.pdf) (in progress)
+- [WebObs-2.8.3b.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.8.3b/WebObs-2.8.3b.tar.gz) (104 Mb) updated August 21, 2026
+- [Release notes](https://github.com/IPGP/webobs/blob/v2.8.3b/release-notes.md) (see also the [What's new?](#whatsnew) section below)
+- [User manual](https://github.com/IPGP/webobs/releases/download/v2.8.3b/WebObs_Manual.pdf) (in progress)
 - And, for a first install:
   - Mandatory (license free): **Matlab runtime** for [Linux 64bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip) (386 Mb) or [Linux 32bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnx86_installer.zip) (389 Mb)
   - Recommanded: **ETOPO1** (see [below](#srtm1) for download and install)
@@ -191,11 +193,11 @@ Your WebObs installation is now linked to the GitHub repository.
 
 ### What's new in the 2.8?
 - new look (style sheet)!
-- check the consistency of registered WebObs users and Apache logins during update (imrpoves access security);
+- check the consistency of registered WebObs users and Apache logins during update (improves access security);
 - generic form for manual database management is now operational with automatic migration of former forms;
 - first version of Python library with demonstration proc (genplot) and integration of Downflowgo tool;
 - geojson shapefiles can be associated to nodes and grids;
-- new summary plot STRAINMAP an other improvements for gnss procs;
+- new summary plots STRAINMAP and VFLOW an many other improvements for gnss procs;
 - rsam procs now deal with multiple data channels (e.g., different frequency bands for SSAM)
 - configurable headers fo proc data exports;
 - improvements and new features in MC3/SEFRAN3;

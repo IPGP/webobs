@@ -473,9 +473,9 @@ if (!$date) {
     if ($header) {
         print "<TR><TD align=left style=\"border:0\"><H1>$titrePage".($userLevel == 4 ? " <A href=\"/cgi-bin/formGRID.pl?grid=SEFRAN.$s3\"><IMG src=\"/icons/modif.png\"></A>":"")."</H1>",
           "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> [ ",
-          "<A href=\"#\" onClick=\"showmctags();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'showmctags_help'}')\">",
+          "<A href=\"#\" onClick=\"showmctags();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{'showmctags_help'})."')\">",
           "<IMG src=\"/icons/mctag.png\" border=1 style=\"vertical-align:middle\"></A> | ";
-        print "<A href=\"#\" onClick=\"showsgram();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'showsgram_help'}')\">",
+        print "<A href=\"#\" onClick=\"showsgram();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{'showsgram_help'})."')\">",
           "<IMG src=\"/icons/sgram.png\" border=1 style=\"vertical-align:middle\"></A> | " if ($sgramOK);
         print "<A href=\"#status\">$__{'Status'}</A> | " if ($status);
         print  "<A href=\"#maps\">$__{'Maps'}</A>",
@@ -603,7 +603,7 @@ if (!$date) {
                                         $dur_evt = $SEFRAN3{HOURLY_WIDTH}*($h0 + $dh - ($hh-$hdeb)) + 1;
                                     }
                                 }
-                                print "<DIV class=\"mctag\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$MC{info}',CAPTION,'$MC{firstarrival}',BGCOLOR,'$types{$MC{type}}{Color}',FGCOLOR,'#EEEEEE',WIDTH,250)\" onClick=\"window.open('$prog$MC{edit}')\"",
+                                print "<DIV class=\"mctag\" onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($MC{info})."',CAPTION,'$MC{firstarrival}',BGCOLOR,'$types{$MC{type}}{Color}',FGCOLOR,'#EEEEEE',WIDTH,250)\" onClick=\"window.open('$prog$MC{edit}')\"",
                                   " style=\"background-color:$types{$MC{type}}{Color};width:$dur_evt;height:$SEFRAN3{HOURLY_HEIGHT};left:$deb_evt;cursor:pointer\">",
                                   "</DIV>\n";
                             }
@@ -837,17 +837,17 @@ if ($date) {
     print "<div class=\"keysbox\"  onMouseOver=\"showkeys();\" onMouseOut=\"hidekeys();\">";
     print "<span class=\"keytitle\">Controls</span>";
     print "<div class=\"keys\">";
-    print "<span class=\"mcbouton\" onClick=\"zoom_in();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Increase speed'} (&times;2)')\"><SPAN class=\"keycap\">+</SPAN></span>\n";
-    print "<span class=\"mcbouton\" onClick=\"zoom_1();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Base speed'} (1:1)')\"><SPAN class=\"keycap\">=</SPAN></span>\n";
-    print "<span class=\"mcbouton\" onClick=\"zoom_out();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Decrease speed'} (&divide;2)')\"><SPAN class=\"keycap\">&minus;</SPAN></span>\n";
-    print "<span class=\"mcbouton\" onClick=\"shrinkmctags();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'showmctags_help'}')\"><SPAN class=\"keycap\"><IMG src=\"/icons/mctag.png\" style=\"vertical-align:middle\"></SPAN></span>\n";
+    print "<span class=\"mcbouton\" onClick=\"zoom_in();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{'Increase speed'})." (&times;2)')\"><SPAN class=\"keycap\">+</SPAN></span>\n";
+    print "<span class=\"mcbouton\" onClick=\"zoom_1();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{'Base speed'})." (1:1)')\"><SPAN class=\"keycap\">=</SPAN></span>\n";
+    print "<span class=\"mcbouton\" onClick=\"zoom_out();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{'Decrease speed'})." (&divide;2)')\"><SPAN class=\"keycap\">&minus;</SPAN></span>\n";
+    print "<span class=\"mcbouton\" onClick=\"shrinkmctags();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{'showmctags_help'})."')\"><SPAN class=\"keycap\"><IMG src=\"/icons/mctag.png\" style=\"vertical-align:middle\"></SPAN></span>\n";
     print "<span class=\"mcbouton\" onClick=\"location.href='$prog&date=$date_prec$idarg'\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$dprec')\"><SPAN class=\"keycap\">&larr;</SPAN></span>\n";
     print "<span class=\"mcbouton\" onClick=\"location.href='$prog&date=$date_suiv$idarg'\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$dsuiv')\"><SPAN class=\"keycap\">&rarr;</SPAN></span>\n";
-    print "<span class=\"mcbouton\" onClick=\"quit();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Quit this event without saving changes'}')\"><SPAN class=\"keycap\"><IMG src=\"/icons/cancel.png\" style=\"vertical-align:middle\"></SPAN></span>\n";
+    print "<span class=\"mcbouton\" onClick=\"quit();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{'Quit this event without saving changes'})."')\"><SPAN class=\"keycap\"><IMG src=\"/icons/cancel.png\" style=\"vertical-align:middle\"></SPAN></span>\n";
     if ($sgramOK) {
-        print "<BR><DIV class=\"slidecontainer\"><A href=\"#\" onClick=\"showsgram();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'showsgram_help'}')\">",
+        print "<BR><DIV class=\"slidecontainer\"><A href=\"#\" onClick=\"showsgram();return false\" onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{'showsgram_help'})."')\">",
           "<IMG src=\"/icons/sgram.png\" border=1 style=\"vertical-align:middle\"></A> ",
-          "<INPUT type=\"range\" min=\"0\" max=\"10\" value=\"0\" class=\"slider\" name=\"sgramslider\" id=\"sgramslider\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Adjust Spectrogram opacity'}')\"></div>\n",
+          "<INPUT type=\"range\" min=\"0\" max=\"10\" value=\"0\" class=\"slider\" name=\"sgramslider\" id=\"sgramslider\" onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{'Adjust Spectrogram opacity'})."')\"></div>\n",
           "<INPUT type=hidden name=\"sgram\" id=\"sgramopacity\" value=\"$SEFRAN3{SGRAM_OPACITY}\">";
     }
     print "</div>";
@@ -884,7 +884,7 @@ if ($date) {
             my $mseed = "$mseedreq&t1=$Y,$m,$d,$H,$M,0&ds=60";
 
             print "<map name=\"$png\"><area href=\"$mseed\" onMouseOut=\"nd()\" ",
-              "onMouseOver=\"overlib('$__{'Click to see miniseed file'}<br>$timestamp', WIDTH, 200)\"",
+              "onMouseOver=\"overlib('".js($__{'Click to see miniseed file'})."<br>$timestamp', WIDTH, 200)\"",
               " shape=rect coords=\"0,0,$largeur_image,$hauteur_label_haut\" alt=\"miniSEED $png\">",
               "<area onMouseOut=\"nd()\" ";
             if ($dep) {
@@ -934,7 +934,7 @@ if ($date) {
             }
             my $dur_evt = 1 + int(0.5 + $largeur_image*$MC{duration}*$duration_s{$MC{unit}}/60);
             if ($MC{id} != $id) {
-                print "<DIV class=\"mctag\" style=\"background-color:$types{$MC{type}}{Color};width:$dur_evt;height:$hauteur_image;left:$deb_evt;cursor:pointer\" onMouseOut=\"nd()\" onMouseOver=\"overlib('$MC{info}',CAPTION,'$MC{firstarrival}',BGCOLOR,'$types{$MC{type}}{Color}',WIDTH,250)\"",
+                print "<DIV class=\"mctag\" style=\"background-color:$types{$MC{type}}{Color};width:$dur_evt;height:$hauteur_image;left:$deb_evt;cursor:pointer\" onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($MC{info})."',CAPTION,'$MC{firstarrival}',BGCOLOR,'$types{$MC{type}}{Color}',WIDTH,250)\"",
                   " onClick=\"window.open('$prog$MC{edit}')\"></DIV>\n";
             } else {
                 my $dlstripes = "background: repeating-linear-gradient(120deg, white, white 7px, $types{$MC{type}}{Color} 7px, $types{$MC{type}}{Color} 14px);";
@@ -994,10 +994,10 @@ if ($date) {
                 print "<TD style=\"border:0\">",
                   "<A href=\"#\"><IMG onClick=\"supprime(1);\" onMouseOut=\"nd()\" src=\"/icons/"
                   .($id < 0 ? "restore.png":"trash.png")."\""
-                  ." onMouseOver=\"overlib('".($id < 0 ? $__{'Restore this event'}:$__{'Hide/trash this event'})."')\"></A>";
+                  ." onMouseOver=\"overlib('".($id < 0 ? js($__{'Restore this event'}):js($__{'Hide/trash this event'}))."')\"></A>";
                 if ($userLevel == 4) {
                     print "&nbsp;<A href=\"#\"><IMG onClick=\"supprime(2);\" src=\"/icons/no.png\""
-                    ." onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Delete this event (cannot be cancelled)'}')\"></A>";
+                    ." onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{'Delete this event (cannot be cancelled)'})."')\"></A>";
                 }
                 print "</TD>";
             }
@@ -1014,7 +1014,7 @@ if ($date) {
         }
 
         # list of operators
-        print "<P>$__{'Operator'}: <SELECT onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'your name'}')\" name=\"nomOperateur\" size=\"1\">";
+        print "<P>$__{'Operator'}: <SELECT onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{'your name'})."')\" name=\"nomOperateur\" size=\"1\">";
         if ($userLevel < 4) {
             print "<OPTION value=\"$USERS{$CLIENT}{UID}\" selected>$USERS{$CLIENT}{FULLNAME}</OPTION>\n";
         } else {
@@ -1032,7 +1032,7 @@ if ($date) {
 
         # list of stations
         print "<P>$__{'Station of first arrival'}: <SELECT name=\"stationEvenement\" size=\"1\"",
-          " onMouseOut=\"nd()\" onMouseOver=\"overlib('$__{'Select station or click on first phase of signal'}')\">",
+          " onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{'Select station or click on first phase of signal'})."')\">",
           "<OPTION value=\"\">---</OPTION>";
         for ($i = 0; $i <= $#streams; $i++) {
             print "<OPTION value=\"$streams[$i]\"".($streams[$i] eq $station ? " selected":"").">$alias[$i]</OPTION>\n";
@@ -1066,8 +1066,8 @@ if ($date) {
 
         # S-P
         print "<P>S&minus;P (<I>$__{'Seconds'}</I>): <input size=\"5\" value=\"$s_moins_p_evt\" name=\"smoinsp\">",
-          "<span id=\"dist\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Distance according to indicated S-P'}')\"></span>",
-          "<span id=\"mag\" onMouseOut=\"nd()\" onmouseover=\"overlib('$__{'Magnitude according to indicated duration and distance'}')\"></span>",
+          "<span id=\"dist\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{'Distance according to indicated S-P'})."')\"></span>",
+          "<span id=\"mag\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{'Magnitude according to indicated duration and distance'})."')\"></span>",
           "<span id=\"tele\"></span></P>";
 
         # amplitude and saturation
@@ -1190,8 +1190,7 @@ sub mcinfo
     $MC{firstarrival} = "$MC{date} $MC{time} UT";
     $MC{duration} //= 10;
 
-    my $comment = htmlspecialchars(l2u($MC{comment}));
-    $comment =~ s/'/\\'/g; # this is needed by overlib()
+    my $comment = l2u($MC{comment});
 
     ($MC{year},$MC{month},$MC{day}) = split(/-/,$MC{date});
     ($MC{hour},$MC{minute},$MC{second}) = split(/:/,$MC{time});
