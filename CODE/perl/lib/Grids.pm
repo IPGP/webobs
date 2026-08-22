@@ -294,12 +294,20 @@ sub readGrid {
     my ($gt,$gn) = split(/\./,$f);
     my $z = "PATH_${gt}S";
     %tmp = readCfg("$WEBOBS{$z}/$gn/$gn.conf");
-    opendir(DIR, "$WEBOBS{PATH_GRIDS2NODES}");
-    my @l = grep {/^$f\./ && -l $WEBOBS{PATH_GRIDS2NODES}."/".$_} readdir(DIR);
-    foreach (@l) {s/^$f\.//g};
-    @l =  sort {$a cmp $b} @l ;
-    $tmp{'NODESLIST'} = \@l;
-    closedir(DIR);
+    # gets the list of associated nodes
+    if ($gt ne 'SEFRAN') {
+        opendir(DIR, "$WEBOBS{PATH_GRIDS2NODES}");
+        my @l = grep {/^$f\./ && -l $WEBOBS{PATH_GRIDS2NODES}."/".$_} readdir(DIR);
+        closedir(DIR);
+        foreach (@l) {s/^$f\.//g};
+        @l =  sort {$a cmp $b} @l ;
+        $tmp{'NODESLIST'} = \@l;
+    } else {
+        my @cha = readCfgFile("$WEBOBS{$z}/$gn/channels.conf");
+        my @stream = map { (split /\s+/)[1] } @cha;
+        $tmp{'NODESLIST'} = \@stream;
+    }
+    # gets the domain
     my @qx = qx(sqlite3 $WEBOBS{SQL_DOMAINS} "select DCODE from $WEBOBS{SQL_TABLE_GRIDS} where TYPE = '$gt' and NAME = '$gn'");
     chomp(@qx);
     $tmp{'DOMAIN'} = $qx[0];

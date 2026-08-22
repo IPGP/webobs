@@ -79,11 +79,11 @@ print "Content-type: text/html; charset=utf-8
 <DIV ID=\"helpBox\"></DIV>";
 
 print "<h1>$pagetitle</h1>";
-print "<P class=\"subMenu\"><b>&raquo;&raquo;</b> [ $__{'Request Forms:'} "
+print "<P class=\"subMenu\"><b>&raquo;&raquo;</b> [ $__{'Request forms:'} "
   ."<a href=\"/cgi-bin/formREQ.pl\"><b>Procs</b></a> | "
   ."<a href=\"/cgi-bin/formGRIDMAPS.pl\"><b>Gridmaps</b></a> | "
-  ."Users: "
-  .($QryParm->{'usr'} eq "all" ? "<a href=\"$myself\"><b>$CLIENT</b></a> | all":"$CLIENT | <a href=\"$myself?usr=all\"><b>all</b></a>")." | "
+  ."$__{'Users:'} "
+  .($QryParm->{'usr'} eq "all" ? "<a href=\"$myself\"><b>$CLIENT</b></a> | all":"$CLIENT | <a href=\"$myself?usr=all\"><b>$__{'all'}</b></a>")." | "
   ."<IMG src='/icons/refresh.png' style='vertical-align:middle;cursor:pointer' title='Refresh' onClick='document.location.reload(false)'>"
   ." ]</P>";
 

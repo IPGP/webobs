@@ -1741,6 +1741,12 @@ msgstr "Résultats de requêtes"
 msgid "Request forms:"
 msgstr "Formulaires de requêtes :"
 
+msgid "Users:"
+msgstr "Utilisateurs :"
+
+msgid "all"
+msgstr "tous"
+
 msgid "Date & Time"
 msgstr "Date & Heure"
 
@@ -1761,6 +1767,23 @@ msgstr "Job"
 
 msgid "Archive"
 msgstr "Archive"
+
+# --- formGRIDMAP.pl
+
+msgid "GRIDMAPS Request"
+msgstr "Requête de GRIDMAPS"
+
+msgid "Available GRIDS"
+msgstr "GRIDS disponibles"
+
+msgid "Date span (active NODES)"
+msgstr "Intervalle de temps (nodes actifs)"
+
+msgid "Plots inactive NODES:"
+msgstr "Afficher les nodes inactifs :"
+
+msgid "Basemap parameters"
+msgstr "Paramètres du fond de carte"
 
 # --- formGRID.pl
 

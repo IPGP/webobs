@@ -117,7 +117,7 @@ my @procavailable;
 my @proclist;
 my %P;
 
-# content edition is allowed only if the user has edit authorization for ALL grids (views, forms and procs)
+# content edition is allowed only if the user has edit authorization for ALL procs
 my $editOK = ( WebObs::Users::clientHasEdit(type=>"authprocs",name=>"*") ? 1:0 );
 
 # ---- Things to populate select dropdown fields
@@ -315,7 +315,6 @@ print "<h1>$pagetitle</h1>";
 print "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> [ <a href=\"/cgi-bin/showREQ.pl\">$__{'Results'}</a> ]</P>";
 
 # ---- Objectives (aka 'Purpose', 'description' of subsetType)
-#
 printdesc('Description','DESCRIPTION','GRIDS','PROCREQUEST','',0,$editOK);
 
 print "<form id=\"theform\" name=\"form\" action=\"\">";

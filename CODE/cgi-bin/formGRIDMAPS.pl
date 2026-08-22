@@ -70,6 +70,7 @@ use WebObs::Config;
 use WebObs::Users;
 use WebObs::Grids;
 use WebObs::Utils;
+use WebObs::Wiki;
 use WebObs::i18n;
 
 # ---- misc inits
@@ -89,6 +90,11 @@ my @yearList = reverse($WEBOBS{BIG_BANG}..$year+1);
 my @monthList = ('01'..'12');
 my @dayList = ('01'..'31');
 
+# content edition is allowed only if the user has edit authorization for ALL grids (views, forms and procs)
+my $editOK = ( WebObs::Users::clientHasEdit(type=>"authprocs",name=>"*") 
+            && WebObs::Users::clientHasEdit(type=>"authviews",name=>"*")
+            && WebObs::Users::clientHasEdit(type=>"authforms",name=>"*") ? 1:0 );
+
 # ---- dates
 #      default to full previous month
 my @tm = gmtime(time);
@@ -100,12 +106,14 @@ my ($usrYearS,$usrMonthS,$usrDayS) = split(/-/,strftime("%Y-%m-%d",@tm));
 map (push(@gridavailable,"VIEW.".basename($_,".conf")), qx(ls $WEBOBS{PATH_VIEWS}/*/*.conf ));
 map (push(@gridavailable,"PROC.".basename($_,".conf")), qx(ls $WEBOBS{PATH_PROCS}/*/*.conf ));
 map (push(@gridavailable,"FORM.".basename($_,".conf")), qx(ls $WEBOBS{PATH_FORMS}/*/*.conf ));
+map (push(@gridavailable,"SEFRAN.".basename($_,".conf")), qx(ls $WEBOBS{PATH_SEFRANS}/*/*.conf | grep -v "channels"));
 chomp(@gridavailable);
 if (scalar(@gridavailable)==0) { die "$__{'No GRID eligible for requests submission.'}" }
 foreach (@gridavailable) {
     push(@gridlist,$_) if ($_ =~ /^VIEW/ && WebObs::Users::clientHasRead(type=>"authviews",name=>"$_"));
     push(@gridlist,$_) if ($_ =~ /^PROC/ && WebObs::Users::clientHasRead(type=>"authprocs",name=>"$_"));
     push(@gridlist,$_) if ($_ =~ /^FORM/ && WebObs::Users::clientHasRead(type=>"authforms",name=>"$_"));
+    push(@gridlist,$_) if ($_ =~ /^SEFRAN/ && WebObs::Users::clientHasRead(type=>"authprocs",name=>"$_"));
 }
 if (scalar(@gridlist)==0) { die "$__{'No GRID eligible for this user. Please ask an administrator.'}" }
 
@@ -116,7 +124,7 @@ my %GRIDMAPS = readCfg($WEBOBS{GRIDMAPS});
 # ---- passed all checkings above ...
 # ---- build/process the form HTML page
 #
-my $pagetitle = "$__{'Gridmaps Request'} (under development)";
+my $pagetitle = "$__{'GRIDMAPS Request'} (under development)";
 
 print "Content-type: text/html; charset=utf-8
 
@@ -172,8 +180,10 @@ function postIt()
 <div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>
 <DIV ID=\"helpBox\"></DIV>";
 
-print "<h2>$pagetitle</h2>";
-print "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> [ <a href=\"/cgi-bin/showREQ.pl\">Results</a> ]</P>";
+print "<h1>$pagetitle</h1>";
+print "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> [ <a href=\"/cgi-bin/showREQ.pl\">$__{'Results'}</a> ]</P>";
+# ---- Objectives (aka 'Purpose', 'description' of subsetType)
+printdesc('Description','DESCRIPTION','GRIDS','GRIDMAPSREQUEST','',0,$editOK);
 
 print "<form id=\"theform\" name=\"formulaire\" action=\"\">";
 
@@ -199,7 +209,7 @@ print "</TD>\n";                                             # end left column
 
 print "<TD style=\"border:0;vertical-align:top\" nowrap>";   # right column
 
-print "<fieldset><legend>$__{'Date span (NODES validity)'}</legend>";
+print "<fieldset><legend>$__{'Date span (active NODES)'}</legend>";
 
 #    DATE1|  DATE2|
 print "<TABLE>";
@@ -227,7 +237,7 @@ print "</select>";
 print "</select>";
 print "</div></TD>";
 print "<TD style=\"border:0\">";
-print "<label for=\"inactive\">Plots inactive nodes:</label><INPUT type=\"checkbox\" name=\"inactive\" id=\"inactive\" value=\"0\">\n";
+print "<label for=\"inactive\">$__{'Plots inactive NODES:'}</label><INPUT type=\"checkbox\" name=\"inactive\" id=\"inactive\" value=\"0\">\n";
 print "</TD>";
 print "</TR>";
 print "</TABLE>\n";
