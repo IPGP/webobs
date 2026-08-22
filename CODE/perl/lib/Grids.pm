@@ -870,26 +870,24 @@ sub printdesc {
     my $go2top = "";
 
     my $title = $_[0];
-    my $suffix = (ref($_[1]) eq 'ARRAY' ? "GRIDMAPS":$_[1]);
+    my $suffix = $_[1];
     my $type = $_[2];
     my $name = $_[3];
     if ($_[5] > 0) {
         $go2top = "&nbsp;&nbsp;<A href=\"#MYTOP\"><img src=\"/icons/go2top.png\"></A>";
     }
     my $editOK = $_[6]; 
-    if ($suffix ne 'GRIDMAPS') {
-        $suffix = $GRIDS{$suffix."_SUFFIX"};
-        my $fileDesc = "$WEBOBS{PATH_GRIDS_DOCS}/$type.$name$suffix";
-        if ($_[4] ne '' &&  ! -e $fileDesc) {
-            my $legacyfileDesc = "$WEBOBS{PATH_GRIDS_DOCS}/$_[4]$suffix";
-            if (-e $legacyfileDesc) {
-                copy($legacyfileDesc, $fileDesc);
-            }
+    $suffix = $GRIDS{$suffix."_SUFFIX"};
+    my $fileDesc = "$WEBOBS{PATH_GRIDS_DOCS}/$type.$name$suffix";
+    if ($_[4] ne '' &&  ! -e $fileDesc) {
+        my $legacyfileDesc = "$WEBOBS{PATH_GRIDS_DOCS}/$_[4]$suffix";
+        if (-e $legacyfileDesc) {
+            copy($legacyfileDesc, $fileDesc);
         }
+    }
 
-        if (-e $fileDesc) {
-            @desc = readFile($fileDesc);
-        }
+    if (-e $fileDesc) {
+        @desc = readFile($fileDesc);
     }
 
     my $htmlcontents = "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#${suffix}ID');\">&nbsp;&nbsp;";
@@ -897,19 +895,6 @@ sub printdesc {
     if ($editOK) { $htmlcontents .= "&nbsp;&nbsp;<A href=\"$editCGI\?file=$suffix\&grid=$type.$name\"><img src=\"/icons/modif.png\"></A>" }
     $htmlcontents .= "$go2top</div><div id=\"${suffix}ID\">";
     if ($#desc >= 0) { $htmlcontents .= "<P>".WebObs::Wiki::wiki2html(join("",@desc))."</P>\n" }
-    if ($suffix eq 'GRIDMAPS') {
-        $htmlcontents .= "<P>";
-        my $olopt = ",FGCOLOR,'white'";
-        foreach (@{$_[1]}) {
-            my ($g,$c) = split(/\|/,$_);
-            my $fimg = "$g/maps/".$g."_map.jpg";
-            if (-e "$WEBOBS{ROOT_OUTG}/$fimg") {
-                my $ovl = "onMouseOut=\"nd()\" onMouseOver=\"overlib('',CAPTION,'$g',BGCOLOR,'$c'$olopt)\"";
-                $htmlcontents .= "<A href=\"/cgi-bin/showGRID.pl?grid=$g#MAPS\" $ovl><IMG src=\"/OUTG/$fimg\"></A>";
-            }
-        }
-        $htmlcontents .= "</P>\n";
-    }
     $htmlcontents .= "</div></div>\n";
 
     print $htmlcontents;

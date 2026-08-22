@@ -343,6 +343,7 @@ if (@$domains) {
                             print "<A HREF=\"/cgi-bin/mc3.pl?mc=$G{$vs}{MC3_NAME}\" title=\"$MC3{TITLE}\"><IMG border=\"0\" alt=\"$G{$vs}{MC3_NAME}\" SRC=\"/icons/form.png\"></A>";
                         }
                         print "</TD>";
+                        for (@grids) { if (/^SEFRAN.$vs/) { s/$/|$G{$vs}{NAME}/; last; } }
                     }
                     print "</TR>\n";
                 }
@@ -382,6 +383,7 @@ if (@$domains) {
                             print "<A HREF=\"$G{$vp}{URNDATA}\"><IMG border=\"0\" alt=\"\" SRC=\"/icons/data.png\"></A>";
                         }
                         print "</TD>";
+                        for (@grids) { if (/^PROC.$vp/) { s/$/|$G{$vp}{NAME}/; last; } }
                     }
                     print "</TR>\n";
                 }
@@ -417,6 +419,7 @@ if (@$domains) {
                         print "<TD style=\"text-align:center\">";
                         print "<A HREF=\"/cgi-bin/showGENFORM.pl?form=$vf\"><IMG border=\"0\" alt=\"$vf\" SRC=\"/icons/form.png\"></A>";
                         print "</TD>";
+                        for (@grids) { if (/^FORM.$vf/) { s/$/|$G{$vf}{NAME}/; last; } }
                     }
                     print "</TR>\n";
                 }
@@ -450,6 +453,7 @@ if (@$domains) {
                         if ($wantProcs) {
                             print "<TD></TD>";
                         }
+                        for (@grids) { if (/^VIEW.$vn/) { s/$/|$G{$vn}{NAME}/; last; } }
                     }
                     print "</TR>\n";
                 }
@@ -464,7 +468,17 @@ print "</div>\n";
 
 # ---- Location (gridmaps thumbnails)
 #
-printdesc('Location',\@grids,$descGridType,$descGridName,"",1,0);
+print "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#LocationID');\">&nbsp;&nbsp;";
+print "$__{Location}&nbsp;&nbsp;<A href=\"#MYTOP\"><img src=\"/icons/go2top.png\"></A></div><div id=\"LocationID\"><P>";
+foreach (@grids) {
+    my ($g,$c,$n) = split(/\|/,$_);
+    my $fimg = "$g/maps/".$g."_map.jpg";
+    if (-e "$WEBOBS{ROOT_OUTG}/$fimg") {
+        my $ovl = "onMouseOut=\"nd()\" onMouseOver=\"overlib('$n',CAPTION,'$g',BGCOLOR,'$c',FGCOLOR,'white')\"";
+        print "<A href=\"/cgi-bin/showGRID.pl?grid=$g#MAPS\" $ovl><IMG src=\"/OUTG/$fimg\"></A>";
+    }
+}
+print "</P>\n</div></div>\n";
 
 # ---- Protocole (aka 'Informations' of subsetType)
 #
