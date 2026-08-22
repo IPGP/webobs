@@ -325,7 +325,7 @@ print "<TD style=\"border:0;vertical-align:top;\" nowrap>";   # left column
 
 # ---- Display list of PROCS that are eligible for requests
 print "<fieldset><legend>$__{'Available PROCS'}</legend>";
-print "<div style=\"overflow-y: scroll;height: 400px\">";
+print "<div style=\"overflow-y: scroll\">";
 my $olopt = ",FGCOLOR,'white'";
 for my $p (@proclist) {
     %P = readProc($p,'novsub','escape','addcomment'); # reads the proc conf without modifying content (no variable substitution, keep escaped char) and additional comments from the template

@@ -473,9 +473,10 @@ print "$__{Location}&nbsp;&nbsp;<A href=\"#MYTOP\"><img src=\"/icons/go2top.png\
 foreach (@grids) {
     my ($g,$c,$n) = split(/\|/,$_);
     my $fimg = "$g/maps/".$g."_map.jpg";
+    my ($gt,$gn) = split(/\./,$g);
     if (-e "$WEBOBS{ROOT_OUTG}/$fimg") {
         my $ovl = "onMouseOut=\"nd()\" onMouseOver=\"overlib('$n',CAPTION,'$g',BGCOLOR,'$c',FGCOLOR,'white')\"";
-        print "<A href=\"/cgi-bin/showGRID.pl?grid=$g#MAPS\" $ovl><IMG src=\"/OUTG/$fimg\"></A>";
+        print "<A href=\"/cgi-bin/".($gt eq 'SEFRAN' ? "sefran3.pl?s3=$gn#maps":"showGRID.pl?grid=$g#MAPS")."\" $ovl><IMG src=\"/OUTG/$fimg\"></A>";
     }
 }
 print "</P>\n</div></div>\n";

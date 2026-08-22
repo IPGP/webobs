@@ -193,7 +193,7 @@ print "<TD style=\"border:0;vertical-align:top;\" nowrap>";   # left column
 
 # ---- Display list of grids that are eligible for requests
 print "<fieldset><legend>$__{'Available GRIDS'}</legend>";
-print "<div style=\"overflow-y: scroll;height: 400px\">";
+print "<div style=\"overflow-y: scroll\">";
 my %gridtypeflag;
 for my $g (@gridlist) {
     my ($gt,$gn) = split(/\./,$g);
