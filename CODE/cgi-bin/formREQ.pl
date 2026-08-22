@@ -331,7 +331,7 @@ for my $p (@proclist) {
     %P = readProc($p,'novsub','escape','addcomment'); # reads the proc conf without modifying content (no variable substitution, keep escaped char) and additional comments from the template
     my $nn = scalar(@{$P{$p}{NODESLIST}});
     my $nm = ($P{$p}{NODE_NAME} ne "" ? $P{$p}{NODE_NAME}:"node");
-    my $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('".$P{$p}{DESCRIPTION}."',CAPTION,'PROC.$p',BGCOLOR, 'firebrick'$olopt)\")\"";
+    my $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('".$P{$p}{DESCRIPTION}."',CAPTION,'PROC.$p',BGCOLOR,'$gridColor{PROC}'$olopt)\")\"";
     print "<INPUT type=\"checkbox\" name=\"p_$p\" onclick=\"selProc('$p')\" value=\"0\" $ovl> <B>$P{$p}{NAME}</B> (<B>$nn</B> $nm".($nn>1?"s":"").")<BR>\n";
     print pkeys($p,\%P);
 }

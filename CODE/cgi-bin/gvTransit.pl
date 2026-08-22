@@ -120,9 +120,9 @@ my $cluster_isof   = {style=>'filled', fillcolor=>'#AA8888',  color=>'#AA8888'};
 my $cluster_2isof  = {style=>'filled', fillcolor=>'#DDDDDD',  color=>'#AA8888'};
 my $cluster_has    = {style=>'filled', fillcolor=>'#AAAA88',  color=>'#AAAA88'};
 my $cluster_2has   = {style=>'filled', fillcolor=>'#DDDDDD',  color=>'#AAAA88'};
-my $cluster_procs  = {style=>'filled', fillcolor=>'#C16E76',  color=>'firebrick'};
-my $cluster_views  = {style=>'filled', fillcolor=>'#559855',  color=>'darkgreen'};
-my $cluster_forms  = {style=>'filled', fillcolor=>'#FFB255',  color=>'darkorange'};
+my $cluster_procs  = {style=>'filled', fillcolor=>'#C16E76',  color=>$gridColor{PROC}};
+my $cluster_views  = {style=>'filled', fillcolor=>'#559855',  color=>$gridColor{VIEW}};
+my $cluster_forms  = {style=>'filled', fillcolor=>'#FFB255',  color=>$gridColor{FORM}};
 
 my $legend  = "<table border=\"0\" style=\"border-collapse: separate; padding: 0 5px\">";
 $legend .= "<tr><td style=\"background-color:$cluster_node->{'fillcolor'}\">$GRIDType.$GRIDName nodes</td>";

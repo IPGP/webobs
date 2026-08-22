@@ -35,13 +35,18 @@ use Locale::TextDomain('webobs');
 use POSIX qw(strftime);
 
 #our(@ISA, @EXPORT, @EXPORT_OK, $VERSION, %OWNRS, %DOMAINS, %DISCP, %GRIDS, %NODES);
-our(@ISA, @EXPORT, @EXPORT_OK, $VERSION, %OWNRS, %DOMAINS, %GRIDS, %NODES, %node2node);
+our(@ISA, @EXPORT, @EXPORT_OK, $VERSION, %OWNRS, %DOMAINS, %GRIDS, %NODES, %node2node, %gridColor);
 require Exporter;
 @ISA        = qw(Exporter);
-@EXPORT     = qw(%OWNRS %DOMAINS %NODES %GRIDS %node2node readDomain readGrid readSefran readProc readForm readView readNode listNodeGrids listGridNodes parentEvents getNodeString normNode readCLB printdesc);
+@EXPORT     = qw(%OWNRS %DOMAINS %NODES %GRIDS %node2node %gridColor readDomain readGrid readSefran readProc readForm readView readNode listNodeGrids listGridNodes parentEvents getNodeString normNode readCLB printdesc);
 $VERSION    = "1.00";
 
 %DOMAINS = readDomain();
+
+%gridColor = ( VIEW => 'darkgreen',
+                  PROC => 'firebrick',
+                  FORM => 'darkorange',
+                SEFRAN => 'purple');
 
 if (-e $WEBOBS{FILE_OWNERS}) {
     %OWNRS = readCfg($WEBOBS{FILE_OWNERS});

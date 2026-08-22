@@ -194,13 +194,20 @@ print "<TD style=\"border:0;vertical-align:top;\" nowrap>";   # left column
 # ---- Display list of grids that are eligible for requests
 print "<fieldset><legend>$__{'Available GRIDS'}</legend>";
 print "<div style=\"overflow-y: scroll;height: 400px\">";
+my %gridtypeflag;
 for my $g (@gridlist) {
     my ($gt,$gn) = split(/\./,$g);
+    if (! defined($gridtypeflag{$gt})) {
+        print "<P style=\"font-size:10pt;color:$gridColor{$gt};border-bottom: 1px solid $gridColor{$gt};margin-bottom: 5px\"><B><I>$gt</I></B></P>\n";
+        $gridtypeflag{$gt} = 1;
+    }
     %G = readGrid($g);
+    my $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('".$G{$g}{DESCRIPTION}."',CAPTION,'$g',BGCOLOR, '$gridColor{$gt}',FGCOLOR,'white')\")\"";
     my $nn = scalar(@{$G{$g}{NODESLIST}});
     (my $gg = $g) =~ s/\./_/g;
     if ($nn > 0) {
-        print "<INPUT type=\"checkbox\" name=\"g_$g\" title=\"$g\" onclick=\"selGrid('$gg')\" value=\"0\"> <B>{$g}:</B> $G{$g}{NAME} (<B>$nn</B> node".($nn>1?"s":"").")<BR>\n";
+        print "<INPUT type=\"checkbox\" name=\"g_$g\" title=\"$g\" onclick=\"selGrid('$gg')\" value=\"0\"$ovl>",
+              " <B>$G{$g}{NAME}</B> (<B>$nn</B> $G{$g}{NODE_NAME}".($nn>1?"s":"").")<BR>\n";
         print pkeys($g,\%G);
     }
 }

@@ -285,21 +285,21 @@ if (@$domains) {
             @procs = grep(WebObs::Users::clientHasRead(type=>"authprocs", name=>$_), @{$domainProcs{$dc}});
         }
         my $np = scalar(@procs);
-        push(@grids,map { "PROC.".$_."|firebrick" } @procs);
+        push(@grids,map { "PROC.".$_."|$gridColor{PROC}" } @procs);
 
         my @forms;
         if ($wantForms) {
             @forms = grep(WebObs::Users::clientHasRead(type=>"authforms", name=>$_), @{$domainForms{$dc}});
         }
         my $nf = scalar(@forms);
-        push(@grids,map { "FORM.".$_."|darkorange" } @forms);
+        push(@grids,map { "FORM.".$_."|$gridColor{FORM}" } @forms);
 
         my @views;
         if ($wantViews) {
             @views = grep(WebObs::Users::clientHasRead(type=>"authviews", name=>$_), @{$domainViews{$dc}});
         }
         my $nv = scalar(@views);
-        push(@grids,map { "VIEW.".$_."|darkgreen" } @views);
+        push(@grids,map { "VIEW.".$_."|$gridColor{VIEW}" } @views);
 
         my @sefrans;
         if ($wantSefrans) {
@@ -321,7 +321,7 @@ if (@$domains) {
                         print "<TR>" if ($vs ne $sefrans[0]);
                         print "<TD style=\"text-align: center\"><SPAN class=\"gridtype-sefran\">SEFRAN</SPAN></TD>" if ($subsetType ne "");
                         my $desc = $G{$vs}{DESCRIPTION} // "";
-                        $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('$desc',CAPTION,'SEFRAN.$vs',BGCOLOR, 'purple'$olopt)\"";
+                        $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('$desc',CAPTION,'SEFRAN.$vs',BGCOLOR, '$gridColor{SEFRAN}'$olopt)\"";
                         print "<TD $ovl>";
                         if (WebObs::Users::clientHasAdm(type=>"authprocs",name=>$G{$vs}{MC3_NAME})) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=SEFRAN.$vs\" title=\"$__{'Edit Sefran'}\" ><img src='/icons/modif.png'></a>" }
                         print     "&nbsp;&nbsp;<a style=\"font-weight: bold\" href=\"/cgi-bin/sefran3.pl?s3=$vs&header=1\">$G{$vs}{NAME}</a>";
@@ -355,7 +355,7 @@ if (@$domains) {
                         print "<TR>" if ($vp ne $procs[0]);
                         print "<TD style=\"text-align: center\"><SPAN class=\"gridtype-proc\">PROC</SPAN></TD>" if ($subsetType ne "");
                         my $desc = $G{$vp}{DESCRIPTION} // "";
-                        $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('$desc',CAPTION,'PROC.$vp',BGCOLOR, 'firebrick'$olopt)\")\"";
+                        $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('$desc',CAPTION,'PROC.$vp',BGCOLOR, '$gridColor{PROC}'$olopt)\")\"";
                         print "<TD $ovl><a href='#popupY' title=\"$__{'Find text in Proc'}\" onclick='srchopenPopup(\"+PROC.$vp\");return false'><img class='ic' src='/icons/search.png'></a>";
                         print     "<a href='/cgi-bin/gvTransit.pl?grid=PROC.$vp')><img src=\"/icons/tmap.png\"></a>";
                         if (WebObs::Users::clientHasAdm(type=>"authprocs",name=>$vp)) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=PROC.$vp\" title=\"$__{'Edit Proc'}\" ><img src='/icons/modif.png'></a>" }
@@ -395,7 +395,7 @@ if (@$domains) {
                         print "<TR>" if ($vf ne $forms[0]);
                         print "<TD style=\"text-align: center\"><SPAN class=\"gridtype-form\">FORM</SPAN></TD>" if ($subsetType ne "");
                         my $desc = $G{$vf}{DESCRIPTION} // "";
-                        $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('$desc',CAPTION,'FORM.$vf',BGCOLOR, 'darkorange'$olopt)\")\"";
+                        $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('$desc',CAPTION,'FORM.$vf',BGCOLOR, '$gridColor{FORM}'$olopt)\")\"";
                         print "<TD $ovl><a href='#popupY' title=\"$__{'Find text in Form'}\" onclick='srchopenPopup(\"+FORM.$vf\");return false'><img class='ic' src='/icons/search.png'></a>";
                         print     "<a href='/cgi-bin/gvTransit.pl?grid=FORM.$vf')><img src=\"/icons/tmap.png\"></a>";
                         if (WebObs::Users::clientHasAdm(type=>"authforms",name=>$vf)) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=FORM.$vf\" title=\"$__{'Edit Form'}\" ><img src='/icons/modif.png'></a>" }
@@ -431,7 +431,7 @@ if (@$domains) {
                         print "<TR>" if ($np > 0 || $vn ne $views[0]);
                         print "<TD style=\"text-align: center\"><SPAN class=\"gridtype-view\">VIEW</SPAN></TD>";
                         my $desc = $G{$vn}{DESCRIPTION} // "";
-                        $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('$desc',CAPTION,'VIEW.$vn',BGCOLOR, 'darkgreen'$olopt)\")\"";
+                        $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('$desc',CAPTION,'VIEW.$vn',BGCOLOR, '$gridColor{VIEW}'$olopt)\")\"";
                         print "<TD $ovl><a href='#popupY' title=\"$__{'Find text in View'}\" onclick='srchopenPopup(\"+VIEW.$vn\");return false'><img class='ic' src='/icons/search.png'></a>";
                         print     "<a href='/cgi-bin/gvTransit.pl?grid=VIEW.$vn')><img src=\"/icons/tmap.png\"></a>";
                         if (WebObs::Users::clientHasAdm(type=>"authviews",name=>$vn)) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=VIEW.$vn\" title=\"$__{'Edit View'}\" ><img src='/icons/modif.png'></a>" }
