@@ -347,7 +347,15 @@ print " | <img src=\"/icons/refresh.png\" style=\"vertical-align:middle;cursor:p
 # build @glist = the list of available .png graphs for timescale $tslist[$tsSelected]
 # $glistHtml is the corresponding string of html hrefs to these graphs
 # with each nodenames replaced with their alias if it is defined
-my (@glist) = sort glob "$OUTD/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.png";
+# keeps only the filenames starting with a valid SUMMARY name or associated node ID
+my @glist;
+for ( sort glob "$OUTD/$WEBOBS{PATH_OUTG_GRAPHS}/*_$tslist[$tsSelected]*.png" ) {
+    my $iname = $_;
+    $iname =~ s|$OUTD/$WEBOBS{PATH_OUTG_GRAPHS}/||;
+    if ( (grep { $iname =~ /^\Q$_/ } @SummaryList) || (grep { uc($iname) =~ /^\Q$_/ } keys(%DefinedNodes)) ) {
+        push(@glist,$_);
+    }
+}
 
 # specific for VFLOW summary graph (JS, no .png)
 unshift(@glist, "VFLOW") if (grep(/^VFLOW$/, @SummaryList));
