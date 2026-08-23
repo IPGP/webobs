@@ -24,23 +24,23 @@ function gridmaps(grids,outd,varargin)
 %   GRIDMAPS uses variables defined in CONF/GRIDMAPS.rc and the following
 %   variables from the grid's configuration:
 %   	NODE_NAME|
-%	NODE_MARKER|
-%	NODE_RGB|
-%	NODE_SIZE|
-%	NODE_FONTSIZE|
-%	NODE_SUBMAP_ALIAS|
-%	MAP1_XYLIM|
-%	MAP2_XYLIM|
-%	...
-%	DEM_SRTM1|
-%	DEM_FILE|
-%	DEM_TYPE|
-%	DEM_COPYRIGHT|
+%	    NODE_MARKER|
+%	    NODE_RGB|
+%	    NODE_SIZE|
+%	    NODE_FONTSIZE|
+%	    NODE_SUBMAP_ALIAS|
+%	    MAP1_XYLIM|
+%	    MAP2_XYLIM|
+%	    ...
+%	    DEM_SRTM1|
+%	    DEM_FILE|
+%	    DEM_TYPE|
+%	    DEM_COPYRIGHT|
 %
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2026-08-21
+%   Updated: 2026-08-22
 
 
 WO = readcfg;
@@ -63,7 +63,10 @@ if nargin > 1 && exist([outd '/REQUEST.rc'],'file')
 		grids = [grids;strcat('PROC.',fieldnames(P.PROC))];
 	end
 	if isfield(P,'FORM')
-		grids = [grids;strcat('FORM.',fieldnames(P.PROC))];
+		grids = [grids;strcat('FORM.',fieldnames(P.FORM))];
+	end
+	if isfield(P,'SEFRAN')
+		grids = [grids;strcat('SEFRAN.',fieldnames(P.SEFRAN))];
 	end
 	merge = 1;
 	request = 1;
