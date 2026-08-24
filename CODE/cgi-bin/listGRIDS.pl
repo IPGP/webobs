@@ -59,13 +59,18 @@ my %GRID;
 my %G;
 my $GRIDName = my $GRIDType = my $RESOURCE = "";
 
+# ======== the main list of grid types
+my @GT = ('SEFRAN','PROC','FORM','VIEW');
+my @GT_lc = map { lc($_) } @GT;
+my @GT_uc1 = map { ucfirst($_) } @GT_lc;
+
 my $subsetDomain = checkParam(scalar($cgi->param('domain')), qr/^[a-zA-Z0-9_-]*$/, "domain")  // "";
 my $subsetType = checkParam(scalar($cgi->param('type')), qr/^[a-zA-Z0-9_-]*$/, "type") // "all";
 $subsetType = 'all' if ( $subsetType ne 'proc' && $subsetType ne 'form' && $subsetType ne 'view' && $subsetType ne 'sefran');
-my $wantViews   = ($subsetType eq 'all' || $subsetType eq 'view')   ? 1 : 0;
-my $wantProcs   = ($subsetType eq 'all' || $subsetType eq 'proc')   ? 1 : 0;
-my $wantForms   = ($subsetType eq 'all' || $subsetType eq 'form')   ? 1 : 0;
-my $wantSefrans = ($subsetType eq 'all' || $subsetType eq 'sefran') ? 1 : 0;
+my %wantGrids;
+foreach (@GT) {
+    $wantGrids{"$_"} = ($subsetType eq 'all' || uc($subsetType) eq "$_") ? 1 : 0;
+}
 
 my $showType = (defined($GRIDS{SHOW_TYPE}) && ($GRIDS{SHOW_TYPE} eq 'N')) ? 0 : 1;
 my $showOwnr = (defined($GRIDS{SHOW_OWNER}) && ($GRIDS{SHOW_OWNER} eq 'N')) ? 0 : 1;
@@ -107,7 +112,7 @@ sub getDomains {
 sub getDomainGrids {
 
     # Return the list of names of grids from the grids2domains table
-    # for the provided type ('PROC', 'FORM' or 'VIEW') and domain code.
+    # for the provided type ('SEFRAN', 'PROC', 'FORM', or 'VIEW') and domain code.
     # Returns a reference to a list of grid names.
     my $dbh = shift;
     my $type = shift;
@@ -118,49 +123,13 @@ sub getDomainGrids {
         $type, $domain_code);
 }
 
-sub getDomainProcs {
-
-    # Return the list of procs for a domain using getDomainGrids
-    my $dbh = shift;
-    my $domain_code = shift;
-    return getDomainGrids($dbh, 'PROC', $domain_code);
-}
-
-sub getDomainForms {
-
-    # Return the list of forms for a domain using getDomainGrids
-    my $dbh = shift;
-    my $domain_code = shift;
-    return getDomainGrids($dbh, 'FORM', $domain_code);
-}
-
-sub getDomainViews {
-
-    # Return the list of views for a domain using getDomainGrids
-    my $dbh = shift;
-    my $domain_code = shift;
-    return getDomainGrids($dbh, 'VIEW', $domain_code);
-}
-
-sub getDomainSefrans {
-
-    # Return the list of sefrans for a domain using getDomainGrids
-    my $dbh = shift;
-    my $domain_code = shift;
-    return getDomainGrids($dbh, 'SEFRAN', $domain_code);
-}
-
 if ($subsetDomain ne '') {
     $descGridType = 'DOMAIN';
     $descGridName = $subsetDomain;
 } else {
     $descGridType = 'GRIDS';
-    switch ($subsetType) {
-        case 'all' { $descGridName = 'ALL'; }
-        case 'view' { $descGridName = 'VIEWS'; $descLegacy = 'VIEW.VIEWS'; }
-        case 'proc' { $descGridName = 'PROCS'; $descLegacy = 'PROC.PROCS'; };
-        case 'form' { $descGridName = 'FORMS'; $descLegacy = 'FORM.FORMS'; };
-    }
+    if ($subsetType eq 'all') { $descGridName = 'ALL'; }
+    else { $descGridName = uc($subsetType)."S"; $descLegacy = uc($subsetType).".$descGridName"; }
 }
 
 # creation of new view, proc or form is allowed only if the user has admin authorization for ALL grids (views and/or procs and/or forms)
@@ -182,10 +151,10 @@ my %domainViews   = map(($_->[0] => []), @$domains);
 my %domainSefrans = map(($_->[0] => []), @$domains);
 for my $d (@$domains) {
     my ($code, $name) = @$d;
-    push @{$domainProcs{$code}},   @{getDomainProcs($dbh, $code)}   if $wantProcs;
-    push @{$domainForms{$code}},   @{getDomainForms($dbh, $code)}   if $wantForms;
-    push @{$domainViews{$code}},   @{getDomainViews($dbh, $code)}   if $wantViews;
-    push @{$domainSefrans{$code}}, @{getDomainSefrans($dbh, $code)} if $wantSefrans;
+    push @{$domainProcs{$code}},   @{getDomainGrids($dbh, 'PROC', $code)}   if $wantGrids{PROC};
+    push @{$domainForms{$code}},   @{getDomainGrids($dbh, 'FORM', $code)}   if $wantGrids{FORM};
+    push @{$domainViews{$code}},   @{getDomainGrids($dbh, 'VIEW', $code)}   if $wantGrids{VIEW};
+    push @{$domainSefrans{$code}}, @{getDomainGrids($dbh, 'SEFRAN', $code)} if $wantGrids{SEFRAN};
 }
 $dbh->disconnect();
 
@@ -209,33 +178,38 @@ print "<!-- overLIB (c) Erik Bosrup -->
 # ---- Title is = selected type (aka subsetType)
 #
 print "<A NAME=\"MYTOP\"></A>";
+if ($cgi->param('debug') ne '') {
+    print "<H2>Debug</H2>";
+    print "<P>subsetType = $subsetType</P>";
+    print "<P>";
+    for (keys(%wantGrids)) { print "\%wantGrids{$_} = $wantGrids{$_}, "; }
+    print "</P>";
+}
 print "<H1 style=\"margin-bottom:6px\">";
 print "$DOMAINS{$subsetDomain}{NAME} " if ($subsetDomain ne "");
-print "$GRIDS{SHOW_GRIDS_TITLE}\n" if ($subsetType eq 'all');
-print "Views" if ($subsetType eq 'view');
-print "Procs" if ($subsetType eq 'proc');
-print "Forms" if ($subsetType eq 'form');
-print "Sefrans" if ($subsetType eq 'sefran');
+if ($subsetType eq 'all') {
+    print "$GRIDS{SHOW_GRIDS_TITLE}\n";
+} else {
+    print ucfirst($subsetType)."s";
+}
 print "</H1>\n";
 
 # ---- Subtitle menu to other domains/grids displays
 #
 print "<P>»» [ <A href=\"/cgi-bin/vsearch.pl\"><IMG src=\"/icons/rsearch.png\" border=0 title=\"Search node's events\"></A> All";
 print " ".($subsetType ne 'all' || $subsetDomain ne '' ? "<A href=\"$me\">Grids</A>":"<B>Grids</B>");
-print " | ".($subsetType ne 'proc' || $subsetDomain ne '' ? "<A href=\"$me?type=proc\">Procs</A>":"<B>Procs</B>");
-print " | ".($subsetType ne 'form' || $subsetDomain ne '' ? "<A href=\"$me?type=form\">Forms</A>":"<B>Forms</B>");
-print " | ".($subsetType ne 'view' || $subsetDomain ne '' ? "<A href=\"$me?type=view\">Views</A>":"<B>Views</B>");
-print " | ".($subsetType ne 'sefran' || $subsetDomain ne '' ? "<A href=\"$me?type=sefran\">Sefrans</A>":"<B>Sefrans</B>");
+foreach (@GT) {
+    print " | ".(uc($subsetType) ne $_ || $subsetDomain ne '' ? "<A href=\"$me?type=".lc($_)."\">".ucfirst(lc($_))."s</A>":"<B>".ucfirst(lc($_))."s</B>");
+}
 if ($subsetDomain eq '') {
     print " - Domains: ";
     print join(" | ", map("<A href=\"$me?domain=$_->[0]&type=$subsetType\">$_->[1]</A>", @$domains));
 } else {
     print " - $DOMAINS{$subsetDomain}{NAME}";
     print " ".($subsetType ne 'all' ? "<A href=\"$me?domain=$subsetDomain\">Grids</A>":"<B>Grids</B>");
-    print " | ".($subsetType ne 'proc' ? "<A href=\"$me?domain=$subsetDomain&type=proc\">Procs</A>":"<B>Procs</B>");
-    print " | ".($subsetType ne 'form' ? "<A href=\"$me?domain=$subsetDomain&type=form\">Forms</A>":"<B>Forms</B>");
-    print " | ".($subsetType ne 'view' ? "<A href=\"$me?domain=$subsetDomain&type=view\">Views</A>":"<B>Views</B>");
-    print " | ".($subsetType ne 'sefran' ? "<A href=\"$me?domain=$subsetDomain&type=sefran\">Sefrans</A>":"<B>Sefrans</B>");
+    foreach (@GT) {
+        print " | ".(uc($subsetType) ne $_ || $subsetDomain ne '' ? "<A href=\"$me?type=".lc($_)."&domain=$subsetDomain\">".ucfirst(lc($_))."s</A>":"<B>".ucfirst(lc($_))."s</B>");
+    }
 }
 print " ]</P>";
 
@@ -275,42 +249,39 @@ if (@$domains) {
     $htmlcontents .= "<TH style=\"text-align: left\">$__{'Type'}</TH>" if ($showType);
     $htmlcontents .= "<TH style=\"text-align: left\">$__{'Owner'}</TH>" if ($showOwnr);
     $htmlcontents .= "<TH>$__{'Graphs'}</TH>";
-    $htmlcontents .= "<TH>$__{'Raw Data'}</TH>" if ($wantProcs || $wantSefrans || $wantForms);
+    $htmlcontents .= "<TH>$__{'Raw Data'}</TH>" if ($wantGrids{PROC} || $wantGrids{SEFRAN} || $wantGrids{FORM});
     print "$htmlcontents</TR>\n";
     for my $d (@$domains) {
         my ($dc, $dn) = @$d;
+        #for (@GT) {
+        #    if ($wantGrids{$_}) {
+        #        @procs = grep(WebObs::Users::clientHasRead(type=>"auth".lc($_)."s", name=>$_), @{$domainProcs{$dc}});
+        #    }
         my @procs;
-        my $ovl;
-        if ($wantProcs) {
+        if ($wantGrids{PROC}) {
             @procs = grep(WebObs::Users::clientHasRead(type=>"authprocs", name=>$_), @{$domainProcs{$dc}});
         }
-        my $np = scalar(@procs);
         push(@grids,map { "PROC.".$_."|$gridColor{PROC}" } @procs);
 
         my @forms;
-        if ($wantForms) {
+        if ($wantGrids{FORM}) {
             @forms = grep(WebObs::Users::clientHasRead(type=>"authforms", name=>$_), @{$domainForms{$dc}});
         }
-        my $nf = scalar(@forms);
         push(@grids,map { "FORM.".$_."|$gridColor{FORM}" } @forms);
 
         my @views;
-        if ($wantViews) {
+        if ($wantGrids{VIEW}) {
             @views = grep(WebObs::Users::clientHasRead(type=>"authviews", name=>$_), @{$domainViews{$dc}});
         }
-        my $nv = scalar(@views);
         push(@grids,map { "VIEW.".$_."|$gridColor{VIEW}" } @views);
 
         my @sefrans;
-        if ($wantSefrans) {
-            @sefrans = grep(WebObs::Users::clientHasRead(type=>"authprocs", name=>$_),
-                @{$domainSefrans{$dc}});
+        if ($wantGrids{SEFRAN}) {
+            @sefrans = grep(WebObs::Users::clientHasRead(type=>"authprocs", name=>$_), @{$domainSefrans{$dc}});
         }
-        my $ns = scalar(@sefrans);
         push(@grids,map { "SEFRAN.".$_."|purple" } @sefrans);
 
-        my $domrows = $np+$nv+$nf+$ns;
-        my $olopt = ",FGCOLOR,'white'";
+        my $domrows = @sefrans + @procs + @forms + @views;
         if ( $domrows > 0 ) {
             print "<TR>";
             print "<TD rowspan=\"$domrows\" style=\"vertical-align: center\"><h2 class=\"h2gn\"><A href=\"$me?domain=$dc&type=$subsetType\">$dn</A></h2>" if ($subsetDomain eq "");
@@ -357,19 +328,19 @@ print "</BODY>\n</HTML>\n";
 # htmltrgrid('GRIDTYPE',\@ARRAY) returns an HTML string "<TR>...</TR>"
 
 sub htmltrgrid {
-    my $gt = $_[0];
-    my @g = @{$_[1]};
+    my $gt = $_[0]; # grid type
+    my @g = @{$_[1]}; # grid names array
 
     my $html = "";
     my %G;
     for my $gn (@g) {
-        my $search = "";
-        my $transit = "";
-        my $edit = "";
-        my $show = "";
-        my $nn;
-        my $visu = "&nbsp;";
-        my $data = "&nbsp;";
+        my $search = "";   # icon/link to grid search tool
+        my $transit = "";  # icon/link to transit viewer
+        my $edit = "";     # icon/link to grid edit (with admin auth)
+        my $show = "";     # icon/link to grid show
+        my $nn;            # number of node with name
+        my $visu = "";
+        my $data = "";
         switch ($gt) {
             # ---
             case 'SEFRAN' {
@@ -421,10 +392,10 @@ sub htmltrgrid {
             }
             # --- some common things for PROC/FORM/VIEW (switch fall-through)
             case /PROC|FORM|VIEW/ {
-                $search = "<A href='#popupY' title=\"$__{'Find text in $gt'}\" onclick='srchopenPopup(\"+$gt.$gn\");return false'><IMG class='ic' src='/icons/search.png'></A>";
+                $search = "<A href='#popupY' title=\"$__{'Find text in'} $gt\" onclick='srchopenPopup(\"+$gt.$gn\");return false'><IMG class='ic' src='/icons/search.png'></A>";
                 $transit = "<A href=\"/cgi-bin/gvTransit.pl?grid=PROC.$gn\")><IMG src=\"/icons/tmap.png\"></A>";
                 if (WebObs::Users::clientHasAdm(type=>"auth".lc($gt)."s",name=>$gn)) {
-                    $edit = "&nbsp;<A href=\"/cgi-bin/formGRID.pl?grid=$gt.$gn\" title=\"$__{'Edit $gt'}\" ><img src='/icons/modif.png'></A>";
+                    $edit = "&nbsp;<A href=\"/cgi-bin/formGRID.pl?grid=$gt.$gn\" title=\"$__{'Edit'} $gt\" ><img src='/icons/modif.png'></A>";
                 }
                 $show = "/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$gt.$gn";
                 $nn = @{$G{$gn}{NODESLIST}}."&nbsp;".(defined($G{$gn}{NODE_NAME}) ? $G{$gn}{NODE_NAME}:"node")
