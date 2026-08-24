@@ -23,14 +23,13 @@ function DOUT = waters(varargin)
 %
 %	Authors: F. Beauducel + G. Hammouya + J.C. Komorowski + C. Dessert + O. Crispi, OVSG-IPGP
 %	Created: 2001-12-21, in Guadeloupe (French West Indies)
-%	Updated: 2026-01-19
+%	Updated: 2026-08-24
 
 WO = readcfg;
-wofun = sprintf('WEBOBS{%s}',mfilename);
 
 % --- checks input arguments
 if nargin < 1
-	error('%s: must define PROC name.',wofun);
+	error('must define PROC name.');
 end
 
 procmsg = any2str(mfilename,varargin{:});
@@ -128,7 +127,8 @@ for n = 1:length(N)
 end
 
 % ==== Main summary graph
-if any(strcmpi(P.SUMMARYLIST,'SUMMARY')) && ~isempty(summary_channels)
+summary = 'SUMMARY';
+if any(strcmp(P.SUMMARYLIST,summary)) && ~isempty(summary_channels)
 	for r = 1:length(P.GTABLE)
 
 		V.timescale = timescales(P.GTABLE(r).TIMESCALE);
@@ -209,7 +209,7 @@ if any(strcmpi(P.SUMMARYLIST,'SUMMARY')) && ~isempty(summary_channels)
 
 		tlabel(tlim,P.TZ)
 
-		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P,OPT)
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 	end
 end
 close

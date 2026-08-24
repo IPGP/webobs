@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-08-18
+%   Updated: 2026-08-24
 
 WO = readcfg;
 
@@ -528,7 +528,7 @@ for r = 1:numel(P.GTABLE)
             sprintf('  E {\\bf%+g} %s\n  N {\\bf%+g} %s\n  U {\\bf%+g} %s',velref(1),P.trendunit,velref(2),P.trendunit,velref(3),P.trendunit)};
         OPT.IMAP = [];
 		OPT.FIXEDPP = false;
-		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P,OPT)
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 	end
 

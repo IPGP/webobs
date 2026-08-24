@@ -27,7 +27,7 @@ function DOUT=afm(varargin)
 %
 %	Authors: F. Beauducel + V. Clouard + J.M. Saurel / WEBOBS, IPGP
 %	Created: 2014-01-03
-%	Updated: 2026-02-03
+%	Updated: 2026-08-24
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -237,7 +237,8 @@ end
 % ====================================================================================================
 % Graphs for all the proc nodes
 
-if isfield(P,'SUMMARYLIST')
+summary = 'SUMMARY';
+if any(strcmp(P.SUMMARYLIST,summary))
 	stitre = P.NAME;
 	etats = rmean(cat(1,N.STATUS));
 	acquis = rmean(cat(1,N.ACQUIS));
@@ -299,7 +300,7 @@ if isfield(P,'SUMMARYLIST')
 
 		tlabel(xlim,P.TZ)
 
-		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P,OPT)
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 	end
 end

@@ -34,7 +34,7 @@ function DOUT=genplot(varargin)
 %
 %	Authors: F. Beauducel, J.-M. Saurel / WEBOBS, IPGP
 %	Created: 2014-07-13
-%	Updated: 2026-04-28
+%	Updated: 2026-08-24
 
 WO = readcfg;
 
@@ -192,7 +192,8 @@ end
 % ====================================================================================================
 % Graphs for all the proc nodes
 
-if any(strcmpi(P.SUMMARYLIST,'SUMMARY'))
+summary = 'SUMMARY';
+if any(strcmpi(P.SUMMARYLIST,summary))
 	G = cat(1,D.G);
 
 	GS = graphstr(field2str(P,'SUMMARY_CHANNELS',sprintf('%d,',1:nxm),'notempty'));
@@ -270,7 +271,7 @@ if any(strcmpi(P.SUMMARYLIST,'SUMMARY'))
 		if isok(P,'PLOT_GRID')
 			grid on
 		end
-		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P,OPT)
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 	end
 end

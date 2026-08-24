@@ -55,14 +55,13 @@ function DOUT=sara(varargin)
 %
 %	Authors: Tan Chiou Ting, Benoit Taisne, Francois Beauducel / EOS / IPGP / WEBOBS
 %	Created: 2017-09-14
-%	Updated: 2026-02-03
+%	Updated: 2026-08-24
 
 WO = readcfg;
-wofun = sprintf('WEBOBS{%s}',mfilename);
 
 % --- checks input arguments
 if nargin < 1
-	error('%s: must define PROC name.',wofun);
+	error('must define PROC name.');
 end
 
 proc = varargin{1};
@@ -209,7 +208,8 @@ end
 % ====================================================================================================
 % Graphs for all the proc nodes
 
-if isfield(P,'SUMMARYLIST')
+summary = 'SUMMARY';
+if any(strcmp(P.SUMMARYLIST,summary))
 	G = cat(1,D.G);
 	C = cat(1,D.CLB);
 
@@ -309,7 +309,7 @@ if isfield(P,'SUMMARYLIST')
 		tlabel(xlim,P.TZ)
 		plotevent(P.EVENTS_FILE)
 
-		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P,OPT)
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
 	end
 

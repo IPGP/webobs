@@ -23,14 +23,13 @@ function DOUT = volcgas(varargin)
 %
 %	Authors: F. Beauducel + G. Hammouya + C. Dessert + A. Bosson, OVSG-IPGP
 %	Created: 2003-04-14, in Guadeloupe (French West Indies)
-%	Updated: 2025-04-02
+%	Updated: 2025-08-24
 
 WO = readcfg;
-wofun = sprintf('WEBOBS{%s}',mfilename);
 
 % --- checks input arguments
 if nargin < 1
-	error('%s: must define PROC name.',wofun);
+	error('must define PROC name.');
 end
 
 proc = varargin{1};
@@ -156,7 +155,8 @@ for n = 1:length(N)
 end
 
 % ==== Main summary graph
-if isfield(P,'SUMMARYLIST')
+summary = 'SUMMARY';
+if any(strcmp(P.SUMMARYLIST,summary))
 	for r = 1:length(P.GTABLE)
 
 		stitre = P.NAME;
@@ -233,7 +233,7 @@ if isfield(P,'SUMMARYLIST')
 %		end
 %		axis off, hold off
 
-		mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('TYPES',T))
+		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P.GTABLE(r),struct('TYPES',T))
 	end
 end
 close

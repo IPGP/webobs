@@ -28,7 +28,7 @@ function DOUT=extenso(varargin)
 %
 %   Authors: F. Beauducel + J.C. Komorowski / WEBOBS, IPGP
 %   Created: 2001-10-23
-%   Updated: 2026-08-11
+%   Updated: 2026-08-24
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -361,7 +361,7 @@ for r = 1:length(P.GTABLE)
 
         tlabel(tlim,P.TZ,'FontSize',8)
 
-        mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P,OPT)
+        mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
         close
     end
 

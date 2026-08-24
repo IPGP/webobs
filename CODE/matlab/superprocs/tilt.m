@@ -37,14 +37,13 @@ function DOUT=tilt(varargin)
 %   Authors: F. Beauducel, A. Peltier, P. Boissier, Ph. Kowalski, Ph. Catherine, C. Brunet,
 %            V. Ferrazini, Moussa Mogne Ali, Shafik Bafakih / WEBOBS, IPGP-OVPF-OVK
 %   Created: 2015-08-24 in Yogyakarta, Indonesia
-%   Updated: 2026-03-03
+%   Updated: 2026-08-24
 
 WO = readcfg;
-wofun = sprintf('WEBOBS{%s}',mfilename);
 
 % --- checks input arguments
 if nargin < 1
-	error('%s: must define PROC name.',wofun);
+	error('must define PROC name.');
 end
 
 proc = varargin{1};
@@ -307,88 +306,92 @@ for r = 1:length(P.GTABLE)
 	tre = nan(length(N),2); % trends error (�rad/day)
 
 
-	% --- Time series graph converted to orthogonal NS-EW components
-	figure, clf, orient tall
+    summary = 'SUMMARY';
+    if any(strcmp(P.SUMMARYLIST,summary))
+ 
+        % --- SUMMARY graph: time series of all nodes converted to orthogonal NS-EW components
+        figure, clf, orient tall
 
-	for ii = 1:3
-		if ii < 3
-			i = ii + 3;
-		else
-			i = ixyt(ii);
-		end
-		subplot(6,1,(ii-1)*2+(1:2)), extaxes(gca,[.07,0])
-		hold on
-		aliases = [];
-		ncolors = [];
-		rel = '';
-		for n = 1:length(N)
+        for ii = 1:3
+            if ii < 3
+                i = ii + 3;
+            else
+                i = ixyt(ii);
+            end
+            subplot(6,1,(ii-1)*2+(1:2)), extaxes(gca,[.07,0])
+            hold on
+            aliases = [];
+            ncolors = [];
+            rel = '';
+            for n = 1:length(N)
 
-			k = D(n).G(r).k;
-			if ~isempty(k)
-				k1 = k(find(~isnan(D(n).d(k,i)),1));
-				if ii < 3 && ~isempty(k1)
-					[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i) - D(n).d(k1,i),P.GTABLE(r).DECIMATE,P);
-					rel = 'Relative ';
-				else
-					[tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i),P.GTABLE(r).DECIMATE,P);
-				end
-				if isok(P,'CONTINUOUS_PLOT')
-					samp = 0;
-				else
-					%samp = D(n).CLB.sf(i);
-					samp = N(n).ACQ_RATE;
-				end
-				timeplot(tk,dk,samp,summary_linestyle,'Color',scolor(n),'LineWidth',P.GTABLE(r).LINEWIDTH,'MarkerSize',P.GTABLE(r).MARKERSIZE)
-				% computes daily trends (in �rad/day)
-				kk = find(~isnan(dk));
-				if ii < 3 && length(kk) > 2
-					b = polyfit(tk(kk)-tk(1),dk(kk),1);
-					tr(n,ii) = b(1);
-					tre(n,ii) = std(dk(kk) - polyval(b,tk(kk)-tk(1)))/diff(tlim);
-					% all errors are adjusted with sampling completeness factor
-					acq = 1;
-					if N(n).ACQ_RATE > 0
-						acq = length(kk)*N(n).ACQ_RATE/abs(diff(tlim));
-						tre(n,ii) = tre(n,ii)/sqrt(acq);
-					end
-					if debug
-						fprintf('%s: tr = %g, tre = %g (acq = %g)\n',N(n).ALIAS,tr(n,ii),tre(n,ii),roundsd(acq,3));
-					end
-				end
-				%tki = linspace(tk(1),tk(end));
-				%dki = interp1(tk,dk,tki,'cubic');
-				%plot(tki,dki,'-','Color',scolor(n),'LineWidth',.1)
-				aliases = cat(2,aliases,{N(n).ALIAS});
-				ncolors = cat(2,ncolors,n);
-			end
-		end
-		hold off
-		set(gca,'XLim',tlim,'FontSize',fontsize)
-		box on
-		datetick2('x',P.GTABLE(r).DATESTR)
-		switch ii
-			case 1
-				ylabel(sprintf('%sTilt X (%crad)',rel,char(181)))
-			case 2
-				ylabel(sprintf('%sTilt Y (%crad)',rel,char(181)))
-			case 3
-				ylabel(sprintf('%s%s (%s)',rel,D(n).CLB.nm{i},D(n).CLB.un{i}))
-		end
+                k = D(n).G(r).k;
+                if ~isempty(k)
+                    k1 = k(find(~isnan(D(n).d(k,i)),1));
+                    if ii < 3 && ~isempty(k1)
+                        [tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i) - D(n).d(k1,i),P.GTABLE(r).DECIMATE,P);
+                        rel = 'Relative ';
+                    else
+                        [tk,dk] = treatsignal(D(n).t(k),D(n).d(k,i),P.GTABLE(r).DECIMATE,P);
+                    end
+                    if isok(P,'CONTINUOUS_PLOT')
+                        samp = 0;
+                    else
+                        %samp = D(n).CLB.sf(i);
+                        samp = N(n).ACQ_RATE;
+                    end
+                    timeplot(tk,dk,samp,summary_linestyle,'Color',scolor(n),'LineWidth',P.GTABLE(r).LINEWIDTH,'MarkerSize',P.GTABLE(r).MARKERSIZE)
+                    % computes daily trends (in �rad/day)
+                    kk = find(~isnan(dk));
+                    if ii < 3 && length(kk) > 2
+                        b = polyfit(tk(kk)-tk(1),dk(kk),1);
+                        tr(n,ii) = b(1);
+                        tre(n,ii) = std(dk(kk) - polyval(b,tk(kk)-tk(1)))/diff(tlim);
+                        % all errors are adjusted with sampling completeness factor
+                        acq = 1;
+                        if N(n).ACQ_RATE > 0
+                            acq = length(kk)*N(n).ACQ_RATE/abs(diff(tlim));
+                            tre(n,ii) = tre(n,ii)/sqrt(acq);
+                        end
+                        if debug
+                            fprintf('%s: tr = %g, tre = %g (acq = %g)\n',N(n).ALIAS,tr(n,ii),tre(n,ii),roundsd(acq,3));
+                        end
+                    end
+                    %tki = linspace(tk(1),tk(end));
+                    %dki = interp1(tk,dk,tki,'cubic');
+                    %plot(tki,dki,'-','Color',scolor(n),'LineWidth',.1)
+                    aliases = cat(2,aliases,{N(n).ALIAS});
+                    ncolors = cat(2,ncolors,n);
+                end
+            end
+            hold off
+            set(gca,'XLim',tlim,'FontSize',fontsize)
+            box on
+            datetick2('x',P.GTABLE(r).DATESTR)
+            switch ii
+                case 1
+                    ylabel(sprintf('%sTilt X (%crad)',rel,char(181)))
+                case 2
+                    ylabel(sprintf('%sTilt Y (%crad)',rel,char(181)))
+                case 3
+                    ylabel(sprintf('%s%s (%s)',rel,D(n).CLB.nm{i},D(n).CLB.un{i}))
+            end
 
-		% legend: station aliases
-		ylim = get(gca,'YLim');
-		nl = length(aliases);
-		for n = 1:nl
-			text(tlim(1)+n*diff(tlim)/(nl+1),ylim(2),aliases(n),'Color',scolor(ncolors(n)), ...
-				'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',6,'FontWeight','bold')
-		end
-		set(gca,'YLim',ylim);
-	end
+            % legend: station aliases
+            ylim = get(gca,'YLim');
+            nl = length(aliases);
+            for n = 1:nl
+                text(tlim(1)+n*diff(tlim)/(nl+1),ylim(2),aliases(n),'Color',scolor(ncolors(n)), ...
+                    'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',6,'FontWeight','bold')
+            end
+            set(gca,'YLim',ylim);
+        end
 
-	tlabel(tlim,P.TZ,'FontSize',8)
+        tlabel(tlim,P.TZ,'FontSize',8)
 
-	mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P,OPT)
-	close
+        mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
+        close
+    end
 
 	% --- Motion map
 	summary = 'MOTION';

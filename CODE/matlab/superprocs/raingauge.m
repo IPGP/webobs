@@ -23,19 +23,15 @@ function DOUT=raingauge(varargin)
 %
 %	Authors: Alexis Bosson, WEBOBS/IPGP
 %	Created: 2016-08-05, in Guadeloupe
-%	Updated: 2026-02-03
+%	Updated: 2026-08-24
 
 WO = readcfg;
-% Log prefix : function name
-wofun = sprintf('WEBOBS{%s}',mfilename);
 
 % A first input argument is mandatory : the PROC's name
 if nargin < 1
-	error('%s: must define PROC name.',wofun);
+	error('must define PROC name.');
 end
 
-% Proc name
-proc = varargin{1};
 % Start log
 procmsg = any2str(mfilename,varargin{:});
 timelog(procmsg,1);
@@ -181,115 +177,118 @@ end
 % ==============================================================================
 % Summary graph with all nodes displayed in subplots
 
-% Title : PROC's name
-stitre = P.NAME;
+summary = 'SUMMARY';
+if any(strcmp(P.SUMMARYLIST,summary))
+    % Title : PROC's name
+    stitre = P.NAME;
 
-% Concatenate all the matrices of data to make statistics
-G = cat(1,D.G);
+    % Concatenate all the matrices of data to make statistics
+    G = cat(1,D.G);
 
-% For each time scale
-for r = 1:length(P.GTABLE)
-	% Date/time limits of the processed time scale
-	tlim = [P.GTABLE(r).DATE1,P.GTABLE(r).DATE2];
-	% If a limit is NaN
-	if any(isnan(tlim))
-		% Limits are defined as min max of all data limits
-		tlim = minmax(cat(1,D.tfirstlast));
-	end
-	% Title : PROC's name and timescale
-	OPT.GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
-	% Status line : TODO
-	OPT.GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
-	% Additional information : empty before processing data
-	OPT.INFOS = {''};
-	% Initialize the figure
-	figure
-	% If there are more stations than the number allowed on a page
-	if length(N) > pagemaxsubplot
-		% Get paper dimensions
-		ps = get(gcf,'PaperSize');
-		% Set paper length to the needed number of pages
-		set(gcf,'PaperSize',[ps(1),ps(2)*length(N)/pagemaxsubplot])
-	end
-	% Orient the graph vertically on the defined paper
-	orient tall
-
-	% Define the correct word for the decimation's title
-        switch round(P.GTABLE(r).DECIMATE*acq_rate*1440)
-		case 60
-			hcum = decimation_label_1h;
-		case 60*24
-			hcum = decimation_label_1;
-		case 60*24*30
-			hcum = decimation_label_30;
-		case 60*24*365
-			hcum = decimation_label_365;
-		otherwise
-			hcum = sprintf(decimation_label_x,P.GTABLE(r).DECIMATE*acq_rate);
+    % For each time scale
+    for r = 1:length(P.GTABLE)
+        % Date/time limits of the processed time scale
+        tlim = [P.GTABLE(r).DATE1,P.GTABLE(r).DATE2];
+        % If a limit is NaN
+        if any(isnan(tlim))
+            % Limits are defined as min max of all data limits
+            tlim = minmax(cat(1,D.tfirstlast));
         end
-	% For each node, make the node's plot
-	for n = 1:length(N)
-		% Make a subplot for this node
-		subplot(length(N),1,n), extaxes
-		% Data index of the node
-		k = D(n).G(r).k;
-		% Initialize the time and data matrices
-		tk = [];
-		dk = nan(0,1);
-		% If there are data for this node
-		if ~isempty(k)
-			% Decimation of data (averaging)
-			[y,tc] = movsum(D(n).t(k),D(n).d(k,1),acq_rate,acq_rate);
-			[tk,dk] = treatsignal(tc,y,P.GTABLE(r).DECIMATE,P);
-			% Raingauge values must be adjusted after decimation (for correct cumsum). Average multiplied by decimation factor gives cumuls
-			dk(:,1) = dk(:,1)*P.GTABLE(r).DECIMATE;
-			% Draw two graphs : bargraph of (short time cumulated) data and continuous curve of cumulative sum converted to meters
-			[ax, h1, h2] = plotyy(tk, dk(:,1), tk, cumsum(dk(:,1))/1000, 'bar', 'plot');
-			% Set the plots colors
-			set(h1,'FaceColor','green');
-			set(h1,'EdgeColor','green');
-			set(h2,'Color','blue');
-			% Time limits of X axes (for both graphs)
-			set(ax(1),'XLim',tlim);
-			set(ax(2),'XLim',tlim);
-			% Font size of the axes labels
-			set(ax(1),'FontSize',8);
-			set(ax(2),'FontSize',8);
-			% No X ticks for the second graph
-			set(ax(2),'XTick',[],'XTickLabel',[]);
-			% Label of the second graph
-			ylabel(ax(2),sprintf('%s (m)',cumul_label));
-			% Cumulated value
-			P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%s = {\\bf%+g %s}', ...
-				N(n).ALIAS,sum(dk(:,1))/1000,'m')}];
-		end
-		% Font size of the axes labels of empty graphs
-		set(gca,'FontSize',7)
-		% Date labelling of the X axis
-		datetick2('x',P.GTABLE(r).DATESTR)
-		% Left label of the subplot : node's alias
-		ylabel(sprintf('%s',N(n).ALIAS))
+        % Title : PROC's name and timescale
+        OPT.GTITLE = gtitle(stitre,P.GTABLE(r).TIMESCALE);
+        % Status line : TODO
+        OPT.GSTATUS = [tlim(2),rmean(cat(1,G.last)),rmean(cat(1,G.samp))];
+        % Additional information : empty before processing data
+        OPT.INFOS = {''};
+        % Initialize the figure
+        figure
+        % If there are more stations than the number allowed on a page
+        if length(N) > pagemaxsubplot
+            % Get paper dimensions
+            ps = get(gcf,'PaperSize');
+            % Set paper length to the needed number of pages
+            set(gcf,'PaperSize',[ps(1),ps(2)*length(N)/pagemaxsubplot])
+        end
+        % Orient the graph vertically on the defined paper
+        orient tall
 
-		% If no data is present
-		if isempty(D(n).d) || all(isnan(D(n).d(k,1)))
-			% Display an empty subplot
-			nodata(tlim)
-		end
-		% Above the first subplot
-		if n == 1
-			% Subtitle with decimation period
-			title(sprintf(rain_subtitle,hcum))
-		end
-		% Below the last subplot
-		if n == length(N)
-			% Label of the graph : date/time limits
-			tlabel(tlim,P.TZ)
-		end
-	end
-	% Export current figure to files with prefix : timescale
-	mkgraph(WO,sprintf('_%s',P.GTABLE(r).TIMESCALE),P,OPT)
-	% End of the current figure
-	close
+        % Define the correct word for the decimation's title
+            switch round(P.GTABLE(r).DECIMATE*acq_rate*1440)
+            case 60
+                hcum = decimation_label_1h;
+            case 60*24
+                hcum = decimation_label_1;
+            case 60*24*30
+                hcum = decimation_label_30;
+            case 60*24*365
+                hcum = decimation_label_365;
+            otherwise
+                hcum = sprintf(decimation_label_x,P.GTABLE(r).DECIMATE*acq_rate);
+            end
+        % For each node, make the node's plot
+        for n = 1:length(N)
+            % Make a subplot for this node
+            subplot(length(N),1,n), extaxes
+            % Data index of the node
+            k = D(n).G(r).k;
+            % Initialize the time and data matrices
+            tk = [];
+            dk = nan(0,1);
+            % If there are data for this node
+            if ~isempty(k)
+                % Decimation of data (averaging)
+                [y,tc] = movsum(D(n).t(k),D(n).d(k,1),acq_rate,acq_rate);
+                [tk,dk] = treatsignal(tc,y,P.GTABLE(r).DECIMATE,P);
+                % Raingauge values must be adjusted after decimation (for correct cumsum). Average multiplied by decimation factor gives cumuls
+                dk(:,1) = dk(:,1)*P.GTABLE(r).DECIMATE;
+                % Draw two graphs : bargraph of (short time cumulated) data and continuous curve of cumulative sum converted to meters
+                [ax, h1, h2] = plotyy(tk, dk(:,1), tk, cumsum(dk(:,1))/1000, 'bar', 'plot');
+                % Set the plots colors
+                set(h1,'FaceColor','green');
+                set(h1,'EdgeColor','green');
+                set(h2,'Color','blue');
+                % Time limits of X axes (for both graphs)
+                set(ax(1),'XLim',tlim);
+                set(ax(2),'XLim',tlim);
+                % Font size of the axes labels
+                set(ax(1),'FontSize',8);
+                set(ax(2),'FontSize',8);
+                % No X ticks for the second graph
+                set(ax(2),'XTick',[],'XTickLabel',[]);
+                % Label of the second graph
+                ylabel(ax(2),sprintf('%s (m)',cumul_label));
+                % Cumulated value
+                P.GTABLE(r).INFOS = [P.GTABLE(r).INFOS{:},{sprintf('%s = {\\bf%+g %s}', ...
+                    N(n).ALIAS,sum(dk(:,1))/1000,'m')}];
+            end
+            % Font size of the axes labels of empty graphs
+            set(gca,'FontSize',7)
+            % Date labelling of the X axis
+            datetick2('x',P.GTABLE(r).DATESTR)
+            % Left label of the subplot : node's alias
+            ylabel(sprintf('%s',N(n).ALIAS))
+
+            % If no data is present
+            if isempty(D(n).d) || all(isnan(D(n).d(k,1)))
+                % Display an empty subplot
+                nodata(tlim)
+            end
+            % Above the first subplot
+            if n == 1
+                % Subtitle with decimation period
+                title(sprintf(rain_subtitle,hcum))
+            end
+            % Below the last subplot
+            if n == length(N)
+                % Label of the graph : date/time limits
+                tlabel(tlim,P.TZ)
+            end
+        end
+        % Export current figure to files with prefix : timescale
+        mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
+        % End of the current figure
+        close
+    end
 end
 
 

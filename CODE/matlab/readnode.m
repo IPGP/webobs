@@ -36,7 +36,7 @@ function N=readnode(WO,nodefullid,NODES)
 %
 %   Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %   Created: 2013-02-22
-%   Updated: 2026-08-12
+%   Updated: 2026-08-24
 
 
 if ~exist('NODES','var')
@@ -220,8 +220,10 @@ end
 
 % --- node events
 evtpath = sprintf('%s/%s/%s',NODES.PATH_NODES,id,NODES.SPATH_INTERVENTIONS);
-if exist(evtpath,'dir')
+X = dir(evtpath);
+if ~isempty(X) && any(cat(1,X.bytes)) > 0
 	[s,w] = wosystem(sprintf('find %s -name "*_????-??-??_??-??*.txt"',evtpath));
+    w = regexprep(w,'\^M','');
 else
 	s = 1;
 end
