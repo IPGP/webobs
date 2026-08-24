@@ -314,150 +314,10 @@ if (@$domains) {
         if ( $domrows > 0 ) {
             print "<TR>";
             print "<TD rowspan=\"$domrows\" style=\"vertical-align: center\"><h2 class=\"h2gn\"><A href=\"$me?domain=$dc&type=$subsetType\">$dn</A></h2>" if ($subsetDomain eq "");
-            if ( $ns > 0 ) {
-                for my $vs (@sefrans) {
-                    my %G = readSefran($vs);
-                    if (%G) {
-                        print "<TR>" if ($vs ne $sefrans[0]);
-                        print "<TD style=\"text-align: center\"><SPAN class=\"gridtype-sefran\">SEFRAN</SPAN></TD>" if ($subsetType ne "");
-                        my $desc = $G{$vs}{DESCRIPTION} // "";
-                        $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('$desc',CAPTION,'SEFRAN.$vs',BGCOLOR, '$gridColor{SEFRAN}'$olopt)\"";
-                        print "<TD $ovl>";
-                        if (WebObs::Users::clientHasAdm(type=>"authprocs",name=>$G{$vs}{MC3_NAME})) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=SEFRAN.$vs\" title=\"$__{'Edit Sefran'}\" ><img src='/icons/modif.png'></a>" }
-                        print     "&nbsp;&nbsp;<a style=\"font-weight: bold\" href=\"/cgi-bin/sefran3.pl?s3=$vs&header=1\">$G{$vs}{NAME}</a>";
-                        print "</TD>";
-                        print "<TD>".(split('\|',$G{$vs}{CHANNELLIST}))." channels</TD>";
-                        print "<TD>".(defined($G{$vs}{TYPE}) ? $G{$vs}{TYPE} : "")."</TD>"  if ($showType);
-                        print "<TD>".(defined($G{$vs}{OWNCODE}) ?
-                              (defined($OWNRS{$G{$vs}{OWNCODE}})
-                                ? $OWNRS{$G{$vs}{OWNCODE}}
-                                : $G{$vs}{OWNCODE}) : "")
-                          ."</TD>"  if ($showOwnr);
-                        if ( -d "$G{$vs}{ROOT}" ) {
-                            print "<TD style=\"text-align:center\"><A HREF=\"/cgi-bin/sefran3.pl?s3=$vs&header=1\"><IMG border=\"0\" alt=\"$vs\" SRC=\"/icons/visu.png\"></A>";
-                        } else { print "<TD>&nbsp;" }
-                        print "</TD>";
-                        print "<TD style=\"text-align:center\">";
-                        if (defined($G{$vs}{MC3_NAME}) && $G{$vs}{MC3_NAME} ne '') {
-                            my %MC3 = readCfg("$WEBOBS{ROOT_CONF}/$G{$vs}{MC3_NAME}.conf");
-                            print "<A HREF=\"/cgi-bin/mc3.pl?mc=$G{$vs}{MC3_NAME}\" title=\"$MC3{TITLE}\"><IMG border=\"0\" alt=\"$G{$vs}{MC3_NAME}\" SRC=\"/icons/form.png\"></A>";
-                        }
-                        print "</TD>";
-                        for (@grids) { if (/^SEFRAN.$vs/) { s/$/|$G{$vs}{NAME}/; last; } }
-                    }
-                    print "</TR>\n";
-                }
-            }
-            if ( $np > 0 ) {
-                for my $vp (@procs) {
-                    my %G = readProc($vp);
-                    if (%G) {
-                        print "<TR>" if ($vp ne $procs[0]);
-                        print "<TD style=\"text-align: center\"><SPAN class=\"gridtype-proc\">PROC</SPAN></TD>" if ($subsetType ne "");
-                        my $desc = $G{$vp}{DESCRIPTION} // "";
-                        $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('$desc',CAPTION,'PROC.$vp',BGCOLOR, '$gridColor{PROC}'$olopt)\")\"";
-                        print "<TD $ovl><a href='#popupY' title=\"$__{'Find text in Proc'}\" onclick='srchopenPopup(\"+PROC.$vp\");return false'><img class='ic' src='/icons/search.png'></a>";
-                        print     "<a href='/cgi-bin/gvTransit.pl?grid=PROC.$vp')><img src=\"/icons/tmap.png\"></a>";
-                        if (WebObs::Users::clientHasAdm(type=>"authprocs",name=>$vp)) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=PROC.$vp\" title=\"$__{'Edit Proc'}\" ><img src='/icons/modif.png'></a>" }
-                        print     "&nbsp;&nbsp;<a style=\"font-weight: bold\" href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=PROC.$vp\">$G{$vp}{NAME}</a>";
-                        print "</TD>";
-                        print "<TD>".scalar(@{$G{$vp}{NODESLIST}})."&nbsp;";
-                        if (defined($G{$vp}{NODE_NAME})) { printf ("%s%s","$G{$vp}{NODE_NAME}",scalar(@{$G{$vp}{NODESLIST}})>1?"s":"") }
-                        else                            { printf ("node%s",scalar(@{$G{$vp}{NODESLIST}})>1?"s":"") }
-                        print "</TD>";
-                        print "<TD>".(defined($G{$vp}{TYPE}) ? $G{$vp}{TYPE} : "")
-                          ."</TD>"  if ($showType);
-                        print "<TD>".(defined($G{$vp}{OWNCODE}) ?
-                              (defined($OWNRS{$G{$vp}{OWNCODE}})
-                                ? $OWNRS{$G{$vp}{OWNCODE}}
-                                : $G{$vp}{OWNCODE}) : "")
-                          ."</TD>"  if ($showOwnr);
-                        if ( -d "$WEBOBS{ROOT_OUTG}/PROC.$vp/$WEBOBS{PATH_OUTG_GRAPHS}" ) {
-                            print "<TD style=\"text-align:center\"><A HREF=\"/cgi-bin/showOUTG.pl?grid=PROC.$vp\"><IMG border=\"0\" alt=\"$vp\" SRC=\"/icons/visu.png\"></A>";
-                        } elsif ( -d "$WEBOBS{ROOT_OUTG}/PROC.$vp/$WEBOBS{PATH_OUTG_EVENTS}" ) {
-                            print "<TD  style=\"text-align:center\"><A HREF=\"/cgi-bin/showOUTG.pl?grid=PROC.$vp&ts=events\"><IMG border=\"0\" alt=\"$vp\" SRC=\"/icons/visu.png\"></A>";
-                        } else { print "<TD>&nbsp;" }
-                        print "</TD>";
-                        print "<TD style=\"text-align:center\">";
-                        if (defined($G{$vp}{URNDATA}) && $G{$vp}{URNDATA} ne '') {
-                            print "<A HREF=\"$G{$vp}{URNDATA}\"><IMG border=\"0\" alt=\"\" SRC=\"/icons/data.png\"></A>";
-                        }
-                        print "</TD>";
-                        for (@grids) { if (/^PROC.$vp/) { s/$/|$G{$vp}{NAME}/; last; } }
-                    }
-                    print "</TR>\n";
-                }
-            }
-            if ( $nf > 0 ) {
-                for my $vf (@forms) {
-                    my %G = readForm($vf);
-                    if (%G) {
-                        print "<TR>" if ($vf ne $forms[0]);
-                        print "<TD style=\"text-align: center\"><SPAN class=\"gridtype-form\">FORM</SPAN></TD>" if ($subsetType ne "");
-                        my $desc = $G{$vf}{DESCRIPTION} // "";
-                        $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('$desc',CAPTION,'FORM.$vf',BGCOLOR, '$gridColor{FORM}'$olopt)\")\"";
-                        print "<TD $ovl><a href='#popupY' title=\"$__{'Find text in Form'}\" onclick='srchopenPopup(\"+FORM.$vf\");return false'><img class='ic' src='/icons/search.png'></a>";
-                        print     "<a href='/cgi-bin/gvTransit.pl?grid=FORM.$vf')><img src=\"/icons/tmap.png\"></a>";
-                        if (WebObs::Users::clientHasAdm(type=>"authforms",name=>$vf)) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=FORM.$vf\" title=\"$__{'Edit Form'}\" ><img src='/icons/modif.png'></a>" }
-                        print     "&nbsp;&nbsp;<a style=\"font-weight: bold\" href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=FORM.$vf\">$G{$vf}{NAME}</a>";
-                        print "</TD>";
-                        print "<TD>".scalar(@{$G{$vf}{NODESLIST}})."&nbsp;";
-                        if (defined($G{$vf}{NODE_NAME})) { printf ("%s%s","$G{$vf}{NODE_NAME}",scalar(@{$G{$vf}{NODESLIST}})>1?"s":"") }
-                        else                            { printf ("node%s",scalar(@{$G{$vf}{NODESLIST}})>1?"s":"") }
-                        print "</TD>";
-                        print "<TD>".(defined($G{$vf}{TYPE}) ? $G{$vf}{TYPE} : "")
-                          ."</TD>"  if ($showType);
-                        print "<TD>".(defined($G{$vf}{OWNCODE}) ?
-                              (defined($OWNRS{$G{$vf}{OWNCODE}})
-                                ? $OWNRS{$G{$vf}{OWNCODE}}
-                                : $G{$vf}{OWNCODE}) : "")
-                          ."</TD>"  if ($showOwnr);
-                        if ( -d "$WEBOBS{ROOT_OUTG}/FORM.$vf/$WEBOBS{PATH_OUTG_MAPS}" ) {
-                            print "<TD style=\"text-align:center\"><A HREF=\"/cgi-bin/showOUTG.pl?grid=FORM.$vf&ts=map\"><IMG border=\"0\" alt=\"$vf\" SRC=\"/icons/map.png\"></A>";
-                        } else { print "<TD>&nbsp;" }
-                        print "</TD>";
-                        print "<TD style=\"text-align:center\">";
-                        print "<A HREF=\"/cgi-bin/showGENFORM.pl?form=$vf\"><IMG border=\"0\" alt=\"$vf\" SRC=\"/icons/form.png\"></A>";
-                        print "</TD>";
-                        for (@grids) { if (/^FORM.$vf/) { s/$/|$G{$vf}{NAME}/; last; } }
-                    }
-                    print "</TR>\n";
-                }
-            }
-            if ( $nv > 0 ) {
-                for my $vn (@views) {
-                    my %G = readView($vn);
-                    if (%G) {
-                        print "<TR>" if ($np > 0 || $vn ne $views[0]);
-                        print "<TD style=\"text-align: center\"><SPAN class=\"gridtype-view\">VIEW</SPAN></TD>";
-                        my $desc = $G{$vn}{DESCRIPTION} // "";
-                        $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('$desc',CAPTION,'VIEW.$vn',BGCOLOR, '$gridColor{VIEW}'$olopt)\")\"";
-                        print "<TD $ovl><a href='#popupY' title=\"$__{'Find text in View'}\" onclick='srchopenPopup(\"+VIEW.$vn\");return false'><img class='ic' src='/icons/search.png'></a>";
-                        print     "<a href='/cgi-bin/gvTransit.pl?grid=VIEW.$vn')><img src=\"/icons/tmap.png\"></a>";
-                        if (WebObs::Users::clientHasAdm(type=>"authviews",name=>$vn)) { print "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=VIEW.$vn\" title=\"$__{'Edit View'}\" ><img src='/icons/modif.png'></a>" }
-                        print     "&nbsp;&nbsp;<a style=\"font-weight: bold\" href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=VIEW.$vn\">$G{$vn}{NAME}</a>";
-                        print "<TD>".scalar(@{$G{$vn}{NODESLIST}})."&nbsp;";
-                        if (defined($G{$vn}{NODE_NAME})) { printf ("%s%s","$G{$vn}{NODE_NAME}",scalar(@{$G{$vn}{NODESLIST}})>1?"s":"") }
-                        else                            { printf ("node%s",scalar(@{$G{$vn}{NODESLIST}})>1?"s":"") }
-                        print "<TD>".(defined($G{$vn}{TYPE}) ?  $G{$vn}{TYPE} : "")."</TD>"
-                          if ($showType);
-                        print "<TD>".(defined($G{$vn}{OWNCODE})  ?
-                              (defined($OWNRS{$G{$vn}{OWNCODE}})
-                                ? $OWNRS{$G{$vn}{OWNCODE}}
-                                : $G{$vn}{OWNCODE}) : "")
-                          ."</TD>"  if ($showOwnr);
-                        if ( -d "$WEBOBS{ROOT_OUTG}/VIEW.$vn/$WEBOBS{PATH_OUTG_MAPS}" ) {
-                            print "<TD style=\"text-align:center\"><A HREF=\"/cgi-bin/showOUTG.pl?grid=VIEW.$vn&ts=map\"><IMG border=\"0\" alt=\"$vn\" SRC=\"/icons/map.png\"></A>";
-                        } else { print "<TD>&nbsp;" }
-                        print "</TD>";
-                        if ($wantProcs) {
-                            print "<TD></TD>";
-                        }
-                        for (@grids) { if (/^VIEW.$vn/) { s/$/|$G{$vn}{NAME}/; last; } }
-                    }
-                    print "</TR>\n";
-                }
-            }
+            print htmltrgrid('SEFRAN',\@sefrans);
+            print htmltrgrid('PROC',\@procs);
+            print htmltrgrid('FORM',\@forms);
+            print htmltrgrid('VIEW',\@views);
         }
     }
     print "<TR><TH colspan=\"8\" class=\"th-bottom\"></TH></TR></TABLE></CENTER><BR>";
@@ -491,6 +351,107 @@ printdesc('References','BIBLIO',$descGridType,$descGridName,$descLegacy,1,$editO
 
 # ---- We're done !
 print "</BODY>\n</HTML>\n";
+
+# -----------------------------------------------------------------------------
+# ---- sub to display an HTML <TR> line for a grid (SEFRAN, PROC, FORM, or VIEW)
+# htmltrgrid('GRIDTYPE',\@ARRAY) returns an HTML string "<TR>...</TR>"
+
+sub htmltrgrid {
+    my $gt = $_[0];
+    my @g = @{$_[1]};
+
+    my $html = "";
+    my %G;
+    for my $gn (@g) {
+        my $search = "";
+        my $transit = "";
+        my $edit = "";
+        my $show = "";
+        my $nn;
+        my $visu = "&nbsp;";
+        my $data = "&nbsp;";
+        switch ($gt) {
+            # ---
+            case 'SEFRAN' {
+                %G = readSefran($gn);
+                # sefran3 resource is the associated MC3
+                if (WebObs::Users::clientHasAdm(type=>"authprocs",name=>$G{$gn}{MC3_NAME})) {
+                    $edit = "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=SEFRAN.$gn\" title=\"$__{'Edit Sefran'}\" ><img src='/icons/modif.png'></a>";
+                }
+                $show = "/cgi-bin/sefran3.pl?s3=$gn&header=1";
+                $nn = (split('\|',$G{$gn}{CHANNELLIST}))."&nbsp;$__{'channels'}";
+                if ( -d "$G{$gn}{ROOT}" ) {
+                    $visu = "<A HREF=\"/cgi-bin/sefran3.pl?s3=$gn&header=1\"><IMG border=\"0\" alt=\"$gn\" SRC=\"/icons/visu.png\"></A>";
+                }
+                if (defined($G{$gn}{MC3_NAME}) && $G{$gn}{MC3_NAME} ne '') {
+                    my %MC3 = readCfg("$WEBOBS{ROOT_CONF}/$G{$gn}{MC3_NAME}.conf");
+                    $data = "<A HREF=\"/cgi-bin/mc3.pl?mc=$G{$gn}{MC3_NAME}\" title=\"$MC3{TITLE}\"><IMG border=\"0\" alt=\"$G{$gn}{MC3_NAME}\" SRC=\"/icons/form.png\"></A>";
+                }
+                last;
+            }
+            # ---
+            case 'PROC' {
+                %G = readProc($gn);
+                if ( -d "$WEBOBS{ROOT_OUTG}/PROC.$gn/$WEBOBS{PATH_OUTG_GRAPHS}" ) {
+                    $visu = "<A href=\"/cgi-bin/showOUTG.pl?grid=PROC.$gn\"><IMG border=\"0\" alt=\"$gn\" SRC=\"/icons/visu.png\"></A>";
+                } elsif ( -d "$WEBOBS{ROOT_OUTG}/PROC.$gn/$WEBOBS{PATH_OUTG_EVENTS}" ) {
+                    $visu = "<A href=\"/cgi-bin/showOUTG.pl?grid=PROC.$gn&ts=events\"><IMG border=\"0\" alt=\"$gn\" SRC=\"/icons/visu.png\"></A>";
+                }
+                if (defined($G{$gn}{URNDATA}) && $G{$gn}{URNDATA} ne '') {
+                    $data = "<A href=\"$G{$gn}{URNDATA}\"><IMG border=\"0\" alt=\"\" SRC=\"/icons/data.png\"></A>";
+                }
+                next;
+            }
+            # ---
+            case 'FORM' {
+                %G = readForm($gn);
+                if ( -d "$WEBOBS{ROOT_OUTG}/FORM.$gn/$WEBOBS{PATH_OUTG_MAPS}" ) {
+                    $visu = "<A href=\"/cgi-bin/showOUTG.pl?grid=FORM.$gn&ts=map\"><IMG border=\"0\" alt=\"$gn\" SRC=\"/icons/map.png\"></A>";
+                }
+                $data = "<A href=\"/cgi-bin/showGENFORM.pl?form=$gn\"><IMG border=\"0\" alt=\"$gn\" SRC=\"/icons/form.png\"></A>";
+                next;
+            }
+            # ---
+            case 'VIEW' {
+                %G = readView($gn);
+                if ( -d "$WEBOBS{ROOT_OUTG}/VIEW.$gn/$WEBOBS{PATH_OUTG_MAPS}" ) {
+                    $visu = "<A href=\"/cgi-bin/showOUTG.pl?grid=VIEW.$gn&ts=map\"><IMG border=\"0\" alt=\"$gn\" SRC=\"/icons/map.png\"></A>";
+                }
+                next;
+            }
+            # --- some common things for PROC/FORM/VIEW (switch fall-through)
+            case /PROC|FORM|VIEW/ {
+                $search = "<A href='#popupY' title=\"$__{'Find text in $gt'}\" onclick='srchopenPopup(\"+$gt.$gn\");return false'><IMG class='ic' src='/icons/search.png'></A>";
+                $transit = "<A href=\"/cgi-bin/gvTransit.pl?grid=PROC.$gn\")><IMG src=\"/icons/tmap.png\"></A>";
+                if (WebObs::Users::clientHasAdm(type=>"auth".lc($gt)."s",name=>$gn)) {
+                    $edit = "&nbsp;<A href=\"/cgi-bin/formGRID.pl?grid=$gt.$gn\" title=\"$__{'Edit $gt'}\" ><img src='/icons/modif.png'></A>";
+                }
+                $show = "/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$gt.$gn";
+                $nn = @{$G{$gn}{NODESLIST}}."&nbsp;".(defined($G{$gn}{NODE_NAME}) ? $G{$gn}{NODE_NAME}:"node")
+                      .(@{$G{$gn}{NODESLIST}} > 1 ? "s":"");
+            }
+        }
+        
+        # common for all grid type
+        if (%G) {
+            my $desc = $G{$gn}{DESCRIPTION} // "";
+            my $ovl = "onMouseOut=\"nd()\" onMouseOver=\"overlib('$desc',CAPTION,'$gt.$gn',BGCOLOR, '$gridColor{$gt}',FGCOLOR,'white')\"";
+            $html .= "<TR>" if ($gn ne $g[0]);
+            $html .= "<TD $ovl style=\"text-align: center\"><SPAN class=\"gridtype-".lc($gt)."\">$gt</SPAN></TD>\n" if ($subsetType ne "");
+            $html .= "<TD $ovl>$search$transit$edit&nbsp;&nbsp;<a style=\"font-weight: bold\" href=\"$show\">$G{$gn}{NAME}</A></TD>\n"
+                    ."<TD $ovl>$nn</TD>\n";
+            $html .= "<TD $ovl>".(defined($G{$gn}{TYPE}) ? $G{$gn}{TYPE} : "")."</TD>\n"  if ($showType);
+            $html .= "<TD $ovl>".(defined($G{$gn}{OWNCODE}) ? (
+                            defined($OWNRS{$G{$gn}{OWNCODE}}) ? $OWNRS{$G{$gn}{OWNCODE}} : $G{$gn}{OWNCODE}
+                        ) : "")."</TD>\n"  if ($showOwnr);
+            $html .= "<TD $ovl style=\"text-align:center\">$visu</TD>\n";
+            $html .= "<TD $ovl style=\"text-align:center\">$data</A></TD>\n";
+            for (@grids) { if (/^$gt.$gn/) { s/$/|$G{$gn}{NAME}/; last; } }
+        }
+        $html .= "</TR>\n";
+    }
+    return $html;
+}
 
 # -----------------------------------------------------------------------------
 # ---- helper edit grid popup
@@ -585,7 +546,7 @@ François Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2025 - Institut de Physique du Globe Paris
+WebObs - 2012-2026 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
