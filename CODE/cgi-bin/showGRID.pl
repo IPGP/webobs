@@ -599,7 +599,7 @@ $htmlcontents .= ($editOK ? "<TH width=\"14px\" rowspan=2>".($admOK ? $newNODE:"
   ."<TH rowspan=2>$__{'Type'}</TH>";
 if ($CLIENT ne 'guest') {
     $htmlcontents .= "<TH rowspan=2>$__{'Nb<br>Evnt'}</TH>";
-    $htmlcontents .= "<TH".($usrProject eq "on" ? " colspan=2>$__{'Project'}":" rowspan=2>")."</TH>";
+    $htmlcontents .= "<TH".($usrProject eq "on" ? " rowspan=2></TH><TH colspan=2>$__{'Project'}":" rowspan=2>")."</TH>";
 }
 $htmlcontents .= "<TH colspan=3>$__{'Proc Parameters'}</TH>" if ($usrProcparam eq 'on');
 $htmlcontents .= "<TH rowspan=2></TH><TH colspan=".(@procTS).">$__{'Proc Graphs'}</TH>" if ($procOUTG);
@@ -619,7 +619,7 @@ if ($usrCoord eq "utm") {
     $htmlcontents .= "<TH>$__{'Lat.'} (WGS84)</TH><TH>$__{'Lon.'} (WGS84)</TH><TH>$__{'Elev.'} (m)</TH>";
 }
 $htmlcontents .= "<TH>$__{'Start / Installation'}</TH><TH>$__{'End / Stop'}</TH>";
-$htmlcontents .= "<TH>".$__{'Subject'}."</TH><TH><IMG src=\"/icons/worker.png\" title=\"$__{'Assignees'}\">" if ($usrProject eq "on");
+$htmlcontents .= "<TH align=left>".$__{'Subject'}."</TH><TH><IMG src=\"/icons/worker.png\" title=\"$__{'Assignees'}\">" if ($usrProject eq "on");
 $htmlcontents .= "<TH>$__{'FID'}</TH><TH>$__{'Raw Format'}</TH><TH>$__{'Chan.'}</TH>" if ($usrProcparam eq 'on');
 if ($procOUTG eq "events") {
     $htmlcontents .= "<TH>Events</TH>";
@@ -744,7 +744,7 @@ for (@{$GRID{NODESLIST}}) {
 
             #my $nbInter  = 0;
             #find(sub { $nbInter++ if /^$NODEName.*\.txt$/ }, $pathInter);
-            $htmltr .= "<TD align=center><A href=\"/cgi-bin/showNODE.pl?node=$grid.$NODEName#EVENTS\">".scalar(@interventions)."</A></TD><TD align=center>";
+            $htmltr .= "<TD align=center><A href=\"/cgi-bin/showNODE.pl?node=$grid.$NODEName#EVENTS\">".scalar(@interventions)."</A></TD><TD></TD><TD align=left>";
             my $titleProj = "";
             my $textProj = "";
             if ((-e $fileProj) && (-s $fileProj)) {
