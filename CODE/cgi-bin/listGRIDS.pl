@@ -60,16 +60,14 @@ my %G;
 my $GRIDName = my $GRIDType = my $RESOURCE = "";
 
 # ======== the main list of grid types
-my @GT = ('SEFRAN','PROC','FORM','VIEW');
-my @GT_lc = map { lc($_) } @GT;
-my @GT_uc1 = map { ucfirst($_) } @GT_lc;
+my @GTYPE = ('SEFRAN','PROC','FORM','VIEW');
 
 my $subsetDomain = checkParam(scalar($cgi->param('domain')), qr/^[a-zA-Z0-9_-]*$/, "domain")  // "";
 my $subsetType = checkParam(scalar($cgi->param('type')), qr/^[a-zA-Z0-9_-]*$/, "type") // "all";
 $subsetType = 'all' if ( $subsetType ne 'proc' && $subsetType ne 'form' && $subsetType ne 'view' && $subsetType ne 'sefran');
 my %wantGrids;
-foreach (@GT) {
-    $wantGrids{"$_"} = ($subsetType eq 'all' || uc($subsetType) eq "$_") ? 1 : 0;
+foreach (@GTYPE) {
+    $wantGrids{$_} = ($subsetType eq 'all' || uc($subsetType) eq $_) ? 1 : 0;
 }
 
 my $showType = (defined($GRIDS{SHOW_TYPE}) && ($GRIDS{SHOW_TYPE} eq 'N')) ? 0 : 1;
@@ -82,46 +80,6 @@ my $admVIEWS = 0;
 my $admPROCS = 0;
 my $admFORMS = 0;
 my $descGridType = my $descGridName = my $descLegacy = "";
-
-# Open an SQLite connection to the domains database
-sub connectDbDomains {
-    return DBI->connect("dbi:SQLite:$WEBOBS{SQL_DOMAINS}", "", "", {
-            'AutoCommit' => 1,
-            'PrintError' => 1,
-            'RaiseError' => 1,
-        }) || die "Error connecting to $WEBOBS{SQL_DOMAINS}: $DBI::errstr";
-}
-
-sub getDomains {
-
-    # Return the (code, name) tuples from the domains table.
-    # A domain code can be provided to only fetch this domain.
-    # Returns a reference to list of array references.
-    my $dbh = shift;
-    my $domain = shift // '';
-    my $where = '';
-    my @bind_values = ();
-    if ($domain) {
-        $where = "where CODE = ?";
-        push @bind_values, $domain;
-    }
-    my $q = "select CODE, NAME from $WEBOBS{SQL_TABLE_DOMAINS} $where order by OOA";
-    return $dbh->selectall_arrayref($q, undef, @bind_values);
-}
-
-sub getDomainGrids {
-
-    # Return the list of names of grids from the grids2domains table
-    # for the provided type ('SEFRAN', 'PROC', 'FORM', or 'VIEW') and domain code.
-    # Returns a reference to a list of grid names.
-    my $dbh = shift;
-    my $type = shift;
-    my $domain_code = shift;
-    my $q = "select NAME from $WEBOBS{SQL_TABLE_GRIDS} "
-      ."where TYPE = ? and DCODE = ? order by name";
-    return $dbh->selectcol_arrayref($q, { 'Columns' => [1] },
-        $type, $domain_code);
-}
 
 if ($subsetDomain ne '') {
     $descGridType = 'DOMAIN';
@@ -142,21 +100,14 @@ $editOK = 1 if ( WebObs::Users::clientHasEdit(type=>"authviews",name=>"*")
     && WebObs::Users::clientHasEdit(type=>"authprocs",name=>"*")
     && WebObs::Users::clientHasEdit(type=>"authforms",name=>"*") );
 
-# Regroup all database queries here for optimisation
-my $dbh = connectDbDomains();
-my $domains = getDomains($dbh, $subsetDomain);
-my %domainProcs   = map(($_->[0] => []), @$domains);
-my %domainForms   = map(($_->[0] => []), @$domains);
-my %domainViews   = map(($_->[0] => []), @$domains);
-my %domainSefrans = map(($_->[0] => []), @$domains);
-for my $d (@$domains) {
-    my ($code, $name) = @$d;
-    push @{$domainProcs{$code}},   @{getDomainGrids($dbh, 'PROC', $code)}   if $wantGrids{PROC};
-    push @{$domainForms{$code}},   @{getDomainGrids($dbh, 'FORM', $code)}   if $wantGrids{FORM};
-    push @{$domainViews{$code}},   @{getDomainGrids($dbh, 'VIEW', $code)}   if $wantGrids{VIEW};
-    push @{$domainSefrans{$code}}, @{getDomainGrids($dbh, 'SEFRAN', $code)} if $wantGrids{SEFRAN};
+# array of domain's key to be displayed
+my @domains;
+if ($subsetDomain ne '') {
+    @domains = ($subsetDomain);
+} else {
+    @domains = @sortedDomains;
 }
-$dbh->disconnect();
+
 
 # ---- Start HTML page
 #
@@ -178,13 +129,6 @@ print "<!-- overLIB (c) Erik Bosrup -->
 # ---- Title is = selected type (aka subsetType)
 #
 print "<A NAME=\"MYTOP\"></A>";
-if ($cgi->param('debug') ne '') {
-    print "<H2>Debug</H2>";
-    print "<P>subsetType = $subsetType</P>";
-    print "<P>";
-    for (keys(%wantGrids)) { print "\%wantGrids{$_} = $wantGrids{$_}, "; }
-    print "</P>";
-}
 print "<H1 style=\"margin-bottom:6px\">";
 print "$DOMAINS{$subsetDomain}{NAME} " if ($subsetDomain ne "");
 if ($subsetType eq 'all') {
@@ -196,18 +140,18 @@ print "</H1>\n";
 
 # ---- Subtitle menu to other domains/grids displays
 #
-print "<P>»» [ <A href=\"/cgi-bin/vsearch.pl\"><IMG src=\"/icons/rsearch.png\" border=0 title=\"Search node's events\"></A> All";
+print "<P>»» [ <A href=\"/cgi-bin/vsearch.pl\"><IMG src=\"/icons/rsearch.png\" border=0 title=\"Search node's events\"></A> $__{'All_grids'}";
 print " ".($subsetType ne 'all' || $subsetDomain ne '' ? "<A href=\"$me\">Grids</A>":"<B>Grids</B>");
-foreach (@GT) {
+foreach (@GTYPE) {
     print " | ".(uc($subsetType) ne $_ || $subsetDomain ne '' ? "<A href=\"$me?type=".lc($_)."\">".ucfirst(lc($_))."s</A>":"<B>".ucfirst(lc($_))."s</B>");
 }
 if ($subsetDomain eq '') {
-    print " - Domains: ";
-    print join(" | ", map("<A href=\"$me?domain=$_->[0]&type=$subsetType\">$_->[1]</A>", @$domains));
+    print " - $__{'Domains:'} ";
+    print join(" | ", map("<A href=\"$me?domain=$_&type=$subsetType\">$DOMAINS{$_}{NAME}</A>", @domains));
 } else {
     print " - $DOMAINS{$subsetDomain}{NAME}";
     print " ".($subsetType ne 'all' ? "<A href=\"$me?domain=$subsetDomain\">Grids</A>":"<B>Grids</B>");
-    foreach (@GT) {
+    foreach (@GTYPE) {
         print " | ".(uc($subsetType) ne $_ || $subsetDomain ne '' ? "<A href=\"$me?type=".lc($_)."&domain=$subsetDomain\">".ucfirst(lc($_))."s</A>":"<B>".ucfirst(lc($_))."s</B>");
     }
 }
@@ -221,8 +165,7 @@ printdesc('Purpose','DESCRIPTION',$descGridType,$descGridName,$descLegacy,0,$edi
 #
 print "<div id=\"noscrolldiv\">";
 my @grids;
-my $d = my $p = my $v = 0;
-if (@$domains) {
+if (@domains) {
 
     # ---- The invisible-until-triggered-by-js popups ;-)
     print "<a name=\"popupY\"></a>\n";
@@ -251,44 +194,28 @@ if (@$domains) {
     $htmlcontents .= "<TH>$__{'Graphs'}</TH>";
     $htmlcontents .= "<TH>$__{'Raw Data'}</TH>" if ($wantGrids{PROC} || $wantGrids{SEFRAN} || $wantGrids{FORM});
     print "$htmlcontents</TR>\n";
-    for my $d (@$domains) {
-        my ($dc, $dn) = @$d;
-        #for (@GT) {
-        #    if ($wantGrids{$_}) {
-        #        @procs = grep(WebObs::Users::clientHasRead(type=>"auth".lc($_)."s", name=>$_), @{$domainProcs{$dc}});
-        #    }
-        my @procs;
-        if ($wantGrids{PROC}) {
-            @procs = grep(WebObs::Users::clientHasRead(type=>"authprocs", name=>$_), @{$domainProcs{$dc}});
+    for (@domains) {
+        my $d = $_;
+        my $domrows = 0;
+        my %displayedGrids;
+        for (@GTYPE) {
+            my $g = $_;
+            if ($wantGrids{$g}) {
+                my $auth = ($g ne 'SEFRAN' ? "auth".lc($g)."s":"authprocs");
+                my @selectedGrids = grep(WebObs::Users::clientHasRead(type=>$auth, name=>$_), @{getDomainGrids($g,$d)});
+                push(@{$displayedGrids{$g}},@selectedGrids);
+                $domrows += @selectedGrids;
+                push(@grids,map { "$g.".$_."|$gridColor{$g}" } @selectedGrids);
+            } else {
+                @{$displayedGrids{$g}} = ();
+            }
         }
-        push(@grids,map { "PROC.".$_."|$gridColor{PROC}" } @procs);
-
-        my @forms;
-        if ($wantGrids{FORM}) {
-            @forms = grep(WebObs::Users::clientHasRead(type=>"authforms", name=>$_), @{$domainForms{$dc}});
-        }
-        push(@grids,map { "FORM.".$_."|$gridColor{FORM}" } @forms);
-
-        my @views;
-        if ($wantGrids{VIEW}) {
-            @views = grep(WebObs::Users::clientHasRead(type=>"authviews", name=>$_), @{$domainViews{$dc}});
-        }
-        push(@grids,map { "VIEW.".$_."|$gridColor{VIEW}" } @views);
-
-        my @sefrans;
-        if ($wantGrids{SEFRAN}) {
-            @sefrans = grep(WebObs::Users::clientHasRead(type=>"authprocs", name=>$_), @{$domainSefrans{$dc}});
-        }
-        push(@grids,map { "SEFRAN.".$_."|purple" } @sefrans);
-
-        my $domrows = @sefrans + @procs + @forms + @views;
         if ( $domrows > 0 ) {
             print "<TR>";
-            print "<TD rowspan=\"$domrows\" style=\"vertical-align: center\"><h2 class=\"h2gn\"><A href=\"$me?domain=$dc&type=$subsetType\">$dn</A></h2>" if ($subsetDomain eq "");
-            print htmltrgrid('SEFRAN',\@sefrans);
-            print htmltrgrid('PROC',\@procs);
-            print htmltrgrid('FORM',\@forms);
-            print htmltrgrid('VIEW',\@views);
+            print "<TD rowspan=\"$domrows\" style=\"vertical-align: center\"><h2 class=\"h2gn\"><A href=\"$me?domain=$d&type=$subsetType\">$DOMAINS{$d}{NAME}</A></h2>" if ($subsetDomain eq "");
+            foreach (@GTYPE) {
+                print htmltrgrid($_,$displayedGrids{$_});
+            }
         }
     }
     print "<TR><TH colspan=\"8\" class=\"th-bottom\"></TH></TR></TABLE></CENTER><BR>";
@@ -320,10 +247,41 @@ printdesc('Information','PROTOCOLE',$descGridType,$descGridName,$descLegacy,1,$e
 #
 printdesc('References','BIBLIO',$descGridType,$descGridName,$descLegacy,1,$editOK);
 
+# ---- some debugging info
+if ($cgi->param('debug') ne '') {
+    print "<H2>Debug</H2><UL>";
+    print "<LI><B>subsetType</B> = $subsetType</LI>";
+    print "<LI>";
+    for (keys(%wantGrids)) { print "\%wantGrids{$_} = $wantGrids{$_}, "; }
+    print "</LI>";
+    print "<LI><B>\@GTYPE</B> = ".join(", ",@GTYPE)."</LI>";
+    print "<LI><B>\@domains</B> = ".join(", ",@domains)."</LI>";
+}
+
 # ---- We're done !
 print "</BODY>\n</HTML>\n";
 
+
 # -----------------------------------------------------------------------------
+sub getDomainGrids {
+    # Return the list of names of grids from the grids2domains table
+    # for the provided type ('SEFRAN', 'PROC', 'FORM', or 'VIEW') and domain code.
+    # Returns a reference to a list of grid names.
+    my $dbh = DBI->connect("dbi:SQLite:$WEBOBS{SQL_DOMAINS}", "", "", {
+            'AutoCommit' => 1,
+            'PrintError' => 1,
+            'RaiseError' => 1,
+        }) || die "Error connecting to $WEBOBS{SQL_DOMAINS}: $DBI::errstr";
+    my $type = shift;
+    my $domain_code = shift;
+    my $q = "select NAME from $WEBOBS{SQL_TABLE_GRIDS} "
+      ."where TYPE = ? and DCODE = ? order by name";
+    my $ret = $dbh->selectcol_arrayref($q, { 'Columns' => [1] }, $type, $domain_code);
+    $dbh->disconnect();
+    return $ret;
+}
+
+
 # ---- sub to display an HTML <TR> line for a grid (SEFRAN, PROC, FORM, or VIEW)
 # htmltrgrid('GRIDTYPE',\@ARRAY) returns an HTML string "<TR>...</TR>"
 
@@ -333,7 +291,8 @@ sub htmltrgrid {
 
     my $html = "";
     my %G;
-    for my $gn (@g) {
+    for (@g) {
+        my $gn = $_;
         my $search = "";   # icon/link to grid search tool
         my $transit = "";  # icon/link to transit viewer
         my $edit = "";     # icon/link to grid edit (with admin auth)
@@ -417,6 +376,7 @@ sub htmltrgrid {
                         ) : "")."</TD>\n"  if ($showOwnr);
             $html .= "<TD $ovl style=\"text-align:center\">$visu</TD>\n";
             $html .= "<TD $ovl style=\"text-align:center\">$data</A></TD>\n";
+            # adds the grid full name for maps
             for (@grids) { if (/^$gt.$gn/) { s/$/|$G{$gn}{NAME}/; last; } }
         }
         $html .= "</TR>\n";

@@ -2147,6 +2147,12 @@ msgstr "node(s) orphelin(s)"
 
 # ---- listGRIDS.pl
 
+msgid "All_grids"
+msgstr "Tous les"
+
+msgid "Domains:"
+msgstr "Domaines :"
+
 msgid "Edit/Create a Domain/Producer"
 msgstr "Modifier/Créer un Domaine/Producteur"
 

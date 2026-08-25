@@ -216,6 +216,11 @@ msgid "gzt_fmt_long_year"
 msgstr "Year %Y"
 
 
+# ---- listGRIDS.pl
+
+msgid "All_grids"
+msgstr "All"
+
 # ---- showGRID.pl
 
 msgid "Active_nodes"

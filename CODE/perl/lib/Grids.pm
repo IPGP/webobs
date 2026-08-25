@@ -34,25 +34,24 @@ use WebObs::i18n;
 use Locale::TextDomain('webobs');
 use POSIX qw(strftime);
 
-#our(@ISA, @EXPORT, @EXPORT_OK, $VERSION, %OWNRS, %DOMAINS, %DISCP, %GRIDS, %NODES);
-our(@ISA, @EXPORT, @EXPORT_OK, $VERSION, %OWNRS, %DOMAINS, %GRIDS, %NODES, %node2node, %gridColor);
+our(@ISA, @EXPORT, @EXPORT_OK, $VERSION, %OWNRS, %DOMAINS, @sortedDomains, %GRIDS, %NODES, %node2node, %gridColor);
 require Exporter;
 @ISA        = qw(Exporter);
-@EXPORT     = qw(%OWNRS %DOMAINS %NODES %GRIDS %node2node %gridColor readDomain readGrid readSefran readProc readForm readView readNode listNodeGrids listGridNodes parentEvents getNodeString normNode readCLB printdesc);
+@EXPORT     = qw(%OWNRS %DOMAINS @sortedDomains %NODES %GRIDS %node2node %gridColor readDomain readGrid readSefran readProc readForm readView readNode listNodeGrids listGridNodes parentEvents getNodeString normNode readCLB printdesc);
 $VERSION    = "1.00";
 
-%DOMAINS = readDomain();
+my ($d_ref,$sd_ref) = readDomain();
+%DOMAINS = %{$d_ref};
+@sortedDomains = @{$sd_ref};
 
 %gridColor = ( VIEW => 'darkgreen',
-                  PROC => 'firebrick',
-                  FORM => 'darkorange',
-                SEFRAN => 'purple');
+               PROC => 'firebrick',
+               FORM => 'darkorange',
+             SEFRAN => 'purple' );
 
 if (-e $WEBOBS{FILE_OWNERS}) {
     %OWNRS = readCfg($WEBOBS{FILE_OWNERS});
 }
-
-#FB-was: if (-e $WEBOBS{FILE_DISCIPLINES}) { %DISCP = readCfg($WEBOBS{FILE_DISCIPLINES}); }
 
 if (-e $WEBOBS{CONF_NODES}) {
     %NODES = readCfg($WEBOBS{CONF_NODES});
@@ -90,14 +89,16 @@ Reads all 'domains' configurations into a HoH.
 
 sub readDomain {
     my %ret;
+    my @sod;
     my @dom = qx(sqlite3 $WEBOBS{SQL_DOMAINS}  "select CODE,OOA,NAME from $WEBOBS{SQL_TABLE_DOMAINS} order by OOA");
     chomp(@dom);
     for (@dom) {
         my @tmp = split(/\|/,$_);
+        push(@sod,$tmp[0]);
         $ret{$tmp[0]}{OOA} = $tmp[1];
         $ret{$tmp[0]}{NAME} = $tmp[2];
     }
-    return %ret;
+    return (\%ret ,\@sod);
 }
 
 =pod
