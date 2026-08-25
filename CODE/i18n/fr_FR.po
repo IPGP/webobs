@@ -758,6 +758,24 @@ msgstr "Date & heure début"
 msgid "End date & time"
 msgstr "Date & heure fin"
 
+msgid "Select names of people involved remotely (hold CTRL key for multiple selections)"
+msgstr "Choisir les intervenants à distance (maintenir la touche CTRL pour sélection multiple)"
+
+msgid "Assignee(s)"
+msgstr "Responsable(s) du projet"
+
+msgid "Select names of people assigned to the project (hold CTRL key for multiple selections)"
+msgstr "Choisir les responsables du projet (maintenir la touche CTRL pour sélection multiple)"
+
+msgid "Assignees"
+msgstr "Responsables du projet"
+
+msgid "Remote operators"
+msgstr "Opérateurs distants"
+
+msgid "Project assigned to"
+msgstr "Projet attribué à"
+
 msgid "Full name"
 msgstr "Nom & prénom"
 

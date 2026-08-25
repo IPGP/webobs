@@ -648,8 +648,13 @@ for my $ulogin (@logins) {
 }
 print "</SELECT>\n";
 print "</TD>\n<TD style=\"text-align: left; vertical-align: top; border: none;\">";
-print "<B>$__{'Remote Operator(s)'}: </B><BR><SELECT id=\"roper\" name=\"roper\" size=\"10\" multiple style=\"vertical-align:text-top\"
-      onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{'Select names of people involved remotely (hold CTRL key for multiple selections)'})."')\">\n";
+if (!$isProject) {
+    print "<B>$__{'Remote Operator(s)'}: </B><BR><SELECT id=\"roper\" name=\"roper\" size=\"10\" multiple style=\"vertical-align:text-top\"
+        onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{'Select names of people involved remotely (hold CTRL key for multiple selections)'})."')\">\n";
+} else {
+    print "<B>$__{'Assignee(s)'}: </B><BR><SELECT id=\"roper\" name=\"roper\" size=\"10\" multiple style=\"vertical-align:text-top\"
+        onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{'Select names of people assigned to the project (hold CTRL key for multiple selections)'})."')\">\n";
+}
 for my $ulogin (@logins) {
     my $uid = $USERS{$ulogin}{UID};
     my $sel = ((grep {$_ eq $uid} @roper) ? 'selected':'');

@@ -352,12 +352,10 @@ sub eventsShow {
             unshift(@file,"|untitled\n");  # force our own default (add a line)
         }
         my ($author,$remote,$title,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd) = headersplit($file[0]);
-        my @authors = @$author;
-        my @remotes = @$remote;
-        my $EVTusers = join(", ",WebObs::Users::userName(@authors));
-        my $EVTroper = join(", ",WebObs::Users::userName(@remotes));
+        my $EVTusers = join(", ",WebObs::Users::userName(@$author));
+        my $EVTroper = join(", ",WebObs::Users::userName(@$remote));
         if ($EVTusers ne "" || $EVTroper ne "") {
-            $EVTusers = "<I>(".($EVTusers ne "" ? $EVTusers:"").($EVTroper ne "" ? " / $EVTroper":"").")</I>";
+            $EVTusers = "<I>(".($EVTusers ne "" ? $EVTusers:"").($EVTroper ne "" ? " / <IMG src=\"/icons/remote.png\" title=\"".js($__{'Remote operators'})."\">$EVTroper":"").")</I>";
         }
         my $EVTtitle = "<B>".ucfirst($title)."</B>";
         my $EVTdate = "$date $time".($date eq $date2 ? ($time eq $time2 || $time2 eq "" ? "":" &rarr; $time2"):" &rarr; $date2 $time2");
@@ -449,10 +447,13 @@ sub projectShow {
         if ($file[0] !~ /\|/) {            # if firstline doesn't look like 'something|someotherthing'
             unshift(@file,"|untitled\n");  # force our own default (add a line)
         }
-        my @firstline = split(/\|/,$file[0]);
-        my @users = split(/\+/,$firstline[0]);
-        my $Pusers = join(", ",WebObs::Users::userName(@users));
-        my $Ptitle = ($#firstline > 0) ? ucfirst($firstline[1]) : "NA" ;
+        my ($author,$assignee,$title) = headersplit($file[0]);
+        my $EVTusers = join(", ",WebObs::Users::userName(@$author));
+        my $EVTworker = join(", ",WebObs::Users::userName(@$assignee));
+        my $Pusers = "";
+        if ($EVTusers ne "" || $EVTworker ne "") {
+            $Pusers = "<I>(".($EVTusers ne "" ? $EVTusers:"").($EVTworker ne "" ? " / <IMG src=\"/icons/worker.png\" title=\"".js($__{'Assignees'})."\">$EVTworker":"").")</I>";
+        }
 
         # remaining lines = event text contents
         shift(@file);
@@ -471,7 +472,7 @@ sub projectShow {
         }
         my $Pfts = $Pts->strftime("%Y-%m-%d %H:%M");
         $html .= "<BLOCKQUOTE>";
-        $html .= "<P class=\"titleEvent\"><B>$Ptitle</B>".($Pusers ne "" ? " <I>($Pusers)</I>":"")." modified:$Pfts  $Pedit</P>\n";
+        $html .= "<P class=\"titleEvent\"><B>$title</B> $Pusers - modified:$Pfts  $Pedit</P>\n";
         $html .= "<BLOCKQUOTE class=\"contentEvent\">$Pphotos$Ptext</BLOCKQUOTE>";
         $html .= "</BLOCKQUOTE>";
     }

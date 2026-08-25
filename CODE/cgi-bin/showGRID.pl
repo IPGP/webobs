@@ -599,7 +599,7 @@ $htmlcontents .= ($editOK ? "<TH width=\"14px\" rowspan=2>".($admOK ? $newNODE:"
   ."<TH rowspan=2>$__{'Type'}</TH>";
 if ($CLIENT ne 'guest') {
     $htmlcontents .= "<TH rowspan=2>$__{'Nb<br>Evnt'}</TH>";
-    $htmlcontents .= "<TH rowspan=2>".($usrProject eq "on" ? $__{'Project'}:"")."</TH>";
+    $htmlcontents .= "<TH".($usrProject eq "on" ? " colspan=2>$__{'Project'}":" rowspan=2>")."</TH>";
 }
 $htmlcontents .= "<TH colspan=3>$__{'Proc Parameters'}</TH>" if ($usrProcparam eq 'on');
 $htmlcontents .= "<TH rowspan=2></TH><TH colspan=".(@procTS).">$__{'Proc Graphs'}</TH>" if ($procOUTG);
@@ -619,6 +619,7 @@ if ($usrCoord eq "utm") {
     $htmlcontents .= "<TH>$__{'Lat.'} (WGS84)</TH><TH>$__{'Lon.'} (WGS84)</TH><TH>$__{'Elev.'} (m)</TH>";
 }
 $htmlcontents .= "<TH>$__{'Start / Installation'}</TH><TH>$__{'End / Stop'}</TH>";
+$htmlcontents .= "<TH>".$__{'Subject'}."</TH><TH><IMG src=\"/icons/worker.png\" title=\"$__{'Assignees'}\">" if ($usrProject eq "on");
 $htmlcontents .= "<TH>$__{'FID'}</TH><TH>$__{'Raw Format'}</TH><TH>$__{'Chan.'}</TH>" if ($usrProcparam eq 'on');
 if ($procOUTG eq "events") {
     $htmlcontents .= "<TH>Events</TH>";
@@ -750,43 +751,40 @@ for (@{$GRID{NODESLIST}}) {
                 my @proj = readFile($fileProj);
                 @proj = grep(!/^$|^WebObs: /, @proj);
                 chomp(@proj);
-                if ($proj[0] =~ "|") {
-                    my @pLigne = split(/\|/,$proj[0]);
-                    my @listeNoms = split(/\+/,$pLigne[0]);
-                    my $noms = join(", ",WebObs::Users::userName(@listeNoms));
-                    my $titre = $pLigne[1];
+                my ($author,$assignee,$title) = WebObs::Events::headersplit($proj[0]);
+                my $EVTusers = join(", ",WebObs::Users::userName(@$author));
+                my $EVTworker = join(", ",WebObs::Users::userName(@$assignee));
+                my $worker = "";
+                if ($EVTworker ne "") {
+                    $worker = "<IMG src=\"/icons/worker.png\" onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($EVTworker)."',CAPTION,'".js($__{'Project assigned to'})."')\">";
+                }
+                if ($title ne "") {
                     shift(@proj);
-                    if (defined($titre) && $titre ne "") {
-                        $titleProj = "<b>$titre</b>";
-                    }
-                    if ($noms ne "") {
-                        $titleProj .= " <I>($noms)</I>";
-                    }
-                    if ($titleProj ne "") {
-                        $titleProj .= "<br>";
-                    }
+                    $titleProj = "<B>$title</B>".($EVTusers ne "" ? " <I>($EVTusers)</I>":"");
                 }
                 $textProj = WebObs::Wiki::wiki2html(join("\n",@proj));
                 if ($usrProject eq "on") {
-                    $htmltr .= $textProj.$titleProj;
+                    $htmltr .= "$titleProj<BR>$textProj<TD text-align=center>$worker</TD>\n";
                 } else {
-                    $htmltr .= "<IMG src=\"/icons/attention.gif\" onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($textProj)."',CAPTION,'$NODE{ALIAS}: $titleProj')\">";
+                    $htmltr .= "<IMG src=\"/icons/attention.gif\" onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($textProj)."',CAPTION,'$NODE{ALIAS}: $titleProj')\">$worker";
                 }
+            } else {
+                $htmltr .= "<TD></TD>" if ($usrProject eq "on");
             }
-            $htmltr .= "</TD>";
+            $htmltr .= "</TD>\n";
         }
 
         # Node's proc parameters
         $NODE{RAWFORMAT} //= "";
         if ($usrProcparam eq 'on') {
-            $htmltr .= "<TD align=\"center\"><SPAN class=\"code\">".(($NODE{"$grid.FID"} // "") ? $NODE{"$grid.FID"} : $NODE{FID})."</SPAN></TD>"
+            $htmltr .= "<TD align=\"center\"><SPAN class=\"code\">".(($NODE{"$grid.FID"} // "") ? $NODE{"$grid.FID"} : $NODE{FID})."</SPAN></TD>\n"
               ."<TD align=\"center\">".(($NODE{"$grid.RAWFORMAT"} // "") ? $NODE{"$grid.RAWFORMAT"}
-                : ($NODE{RAWFORMAT} ne "" ? $NODE{RAWFORMAT} : $GRID{RAWFORMAT}))."</TD>"
+                : ($NODE{RAWFORMAT} ne "" ? $NODE{RAWFORMAT} : $GRID{RAWFORMAT}))."</TD>\n"
               ."<TD align=\"center\">";
             my %carCLB = readCLB("$grid.$NODEName");
             my $maxchid = ( sort { $carCLB{$a}{"nv"} <=> $carCLB{$b}{"nv"} } keys %carCLB )[-1] // "";
             $htmltr .= "<A href=\"/cgi-bin/$CLBS{CGI_FORM}?node=$grid.$NODEName\">".($carCLB{$maxchid}{"nv"} // "")."</A>";
-            $htmltr .= "</TD>";
+            $htmltr .= "</TD>\n";
         }
         if ($procOUTG) {
             my $urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName";
