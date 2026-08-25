@@ -108,13 +108,11 @@ sub readDomain {
 Reads one or more 'procs' configurations into a HoH.
 Adds uppercase NODESLIST hash key to point to the list of linked-to NODES for a PROC.
 Adds DOMAIN code from grids2domains db
-Adds FORM code if proc is linked to any form
 
     %N = readProc("^S");           # all PROCS whose names start in S
     $x = $N{SISMOHYP}{NAME}        # value of 'NAME' field of SISMOHYP proc
     $d = $N{SISMOHYP}{DOMAIN}      # value of 'DOMAIN' field of SISMOHYP proc
     @s = $N{CGPSWI}{NODESLIST}     # list of linked-to nodes for CGPSWI proc
-    @f = $N{SOURCES}{FORM}         # optional linked-to form for SOURCES proc
 
 Internally uses WebObs::listProcNames.
 
@@ -154,13 +152,6 @@ sub readProc {
         foreach (@lSn) {s/^PROC\.($f)\.//g};
         @lSn =  sort {$a cmp $b} @lSn ;
         $tmp{'NODESLIST'} = \@lSn;
-        closedir(DIR);
-
-        # --- get list of associated FORMS
-        opendir(DIR, "$WEBOBS{PATH_GRIDS2FORMS}");
-        my @lSf = grep {/^PROC\.($f)\./ && -l $WEBOBS{PATH_GRIDS2FORMS}."/".$_} readdir(DIR);
-        foreach (@lSf) {s/^PROC\.($f)\.//g};
-        $tmp{'FORM'} = $lSf[0];    #NOTE: keeps only the first FORM
         closedir(DIR);
 
         # --- get DOMAIN
@@ -288,13 +279,15 @@ sub readView {
 =head2 readGrid
 
 Reads one single 'grid' configuration into a hash. Argument must be GridType.GridName.
-Adds uppercase NODESLIST hash key to point to the list of linked-to NODES for a GRID
-Adds DOMAIN code from grids2domains db
+Unlike readProc, readView, readForm and readSefran that return a HoH, readGrid returns a simple hash.
+Adds supplementary hash keys:
+    - NODESLIST = reference of array to associated NODES ID
+    - NODESPROJECT = number of projects in nodes
+    - DOMAIN = associated domain code from grids2domains db
 
 =cut
 
 sub readGrid {
-    my %ret;
     my %tmp;
     my $f = $_[0];
     my ($gt,$gn) = split(/\./,$f);
@@ -308,17 +301,25 @@ sub readGrid {
         foreach (@l) {s/^$f\.//g};
         @l =  sort {$a cmp $b} @l ;
         $tmp{'NODESLIST'} = \@l;
+        # counting the number of projects
+        my $proj = 0;
+        for (@l) {
+            $proj += 1 if (-s "$WEBOBS{PATH_NODES}/$_/$NODES{SPATH_INTERVENTIONS}/".$_."_Projet.txt");
+        }
+        $tmp{'NODESPROJECT'} = $proj;
     } else {
         my @cha = readCfgFile("$WEBOBS{$z}/$gn/channels.conf");
+        my @alias = map { (split /\s+/)[0] } @cha;
         my @stream = map { (split /\s+/)[1] } @cha;
-        $tmp{'NODESLIST'} = \@stream;
+        $tmp{'NODESLIST'} = \@alias;
+        $tmp{'CHANNELLIST'} = \@stream;
+        $tmp{'NODESPROJECT'} = 0;
     }
     # gets the domain
     my @qx = qx(sqlite3 $WEBOBS{SQL_DOMAINS} "select DCODE from $WEBOBS{SQL_TABLE_GRIDS} where TYPE = '$gt' and NAME = '$gn'");
     chomp(@qx);
     $tmp{'DOMAIN'} = $qx[0];
-    $ret{$f}=\%tmp;
-    return %ret;
+    return %tmp;
 
 }
 

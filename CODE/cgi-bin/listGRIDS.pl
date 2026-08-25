@@ -189,6 +189,7 @@ if (@domains) {
     $htmlcontents .= "&nbsp;<a href='#popupY' title=\"$__{'Create a new Grid'}\" onclick='geditopenPopup();return false'><img class='ic' src='/icons/new.png'></a>" if ($admVIEWS || $admPROCS || $admFORMS);
     $htmlcontents .= "&nbsp;&nbsp;&nbsp;$__{'Name'}</TH>";
     $htmlcontents .= "<TH style=\"text-align: left\">$__{'Nodes'}</TH>";
+    $htmlcontents .= "<TH style=\"text-align: center\">$__{'Project'}</TH>";
     $htmlcontents .= "<TH style=\"text-align: left\">$__{'Type'}</TH>" if ($showType);
     $htmlcontents .= "<TH style=\"text-align: left\">$__{'Owner'}</TH>" if ($showOwnr);
     $htmlcontents .= "<TH>$__{'Graphs'}</TH>";
@@ -301,41 +302,40 @@ sub htmltrgrid {
         my $nn;            # number of node with name
         my $visu = "";
         my $data = "";
+
+        %G = readGrid("$gt.$gn");
         switch ($gt) {
             # ---
             case 'SEFRAN' {
-                %G = readSefran($gn);
                 # sefran3 resource is the associated MC3
-                if (WebObs::Users::clientHasAdm(type=>"authprocs",name=>$G{$gn}{MC3_NAME})) {
+                if (WebObs::Users::clientHasAdm(type=>"authprocs",name=>$G{MC3_NAME})) {
                     $edit = "&nbsp;<a href=\"/cgi-bin/formGRID.pl?grid=SEFRAN.$gn\" title=\"$__{'Edit Sefran'}\" ><img src='/icons/modif.png'></a>";
                 }
                 $show = "/cgi-bin/sefran3.pl?s3=$gn&header=1";
-                $nn = (split('\|',$G{$gn}{CHANNELLIST}))."&nbsp;$__{'channels'}";
-                if ( -d "$G{$gn}{ROOT}" ) {
+                $nn = @{$G{CHANNELLIST}}."&nbsp;$__{'channels'}";
+                if ( -d "$G{ROOT}" ) {
                     $visu = "<A HREF=\"/cgi-bin/sefran3.pl?s3=$gn&header=1\"><IMG border=\"0\" alt=\"$gn\" SRC=\"/icons/visu.png\"></A>";
                 }
-                if (defined($G{$gn}{MC3_NAME}) && $G{$gn}{MC3_NAME} ne '') {
-                    my %MC3 = readCfg("$WEBOBS{ROOT_CONF}/$G{$gn}{MC3_NAME}.conf");
-                    $data = "<A HREF=\"/cgi-bin/mc3.pl?mc=$G{$gn}{MC3_NAME}\" title=\"$MC3{TITLE}\"><IMG border=\"0\" alt=\"$G{$gn}{MC3_NAME}\" SRC=\"/icons/form.png\"></A>";
+                if (defined($G{MC3_NAME}) && $G{MC3_NAME} ne '') {
+                    my %MC3 = readCfg("$WEBOBS{ROOT_CONF}/$G{MC3_NAME}.conf");
+                    $data = "<A HREF=\"/cgi-bin/mc3.pl?mc=$G{MC3_NAME}\" title=\"$MC3{TITLE}\"><IMG border=\"0\" alt=\"$G{MC3_NAME}\" SRC=\"/icons/form.png\"></A>";
                 }
                 last;
             }
             # ---
             case 'PROC' {
-                %G = readProc($gn);
                 if ( -d "$WEBOBS{ROOT_OUTG}/PROC.$gn/$WEBOBS{PATH_OUTG_GRAPHS}" ) {
                     $visu = "<A href=\"/cgi-bin/showOUTG.pl?grid=PROC.$gn\"><IMG border=\"0\" alt=\"$gn\" SRC=\"/icons/visu.png\"></A>";
                 } elsif ( -d "$WEBOBS{ROOT_OUTG}/PROC.$gn/$WEBOBS{PATH_OUTG_EVENTS}" ) {
                     $visu = "<A href=\"/cgi-bin/showOUTG.pl?grid=PROC.$gn&ts=events\"><IMG border=\"0\" alt=\"$gn\" SRC=\"/icons/visu.png\"></A>";
                 }
-                if (defined($G{$gn}{URNDATA}) && $G{$gn}{URNDATA} ne '') {
-                    $data = "<A href=\"$G{$gn}{URNDATA}\"><IMG border=\"0\" alt=\"\" SRC=\"/icons/data.png\"></A>";
+                if (defined($G{URNDATA}) && $G{$gn}{URNDATA} ne '') {
+                    $data = "<A href=\"$G{URNDATA}\"><IMG border=\"0\" alt=\"\" SRC=\"/icons/data.png\"></A>";
                 }
                 next;
             }
             # ---
             case 'FORM' {
-                %G = readForm($gn);
                 if ( -d "$WEBOBS{ROOT_OUTG}/FORM.$gn/$WEBOBS{PATH_OUTG_MAPS}" ) {
                     $visu = "<A href=\"/cgi-bin/showOUTG.pl?grid=FORM.$gn&ts=map\"><IMG border=\"0\" alt=\"$gn\" SRC=\"/icons/map.png\"></A>";
                 }
@@ -344,7 +344,6 @@ sub htmltrgrid {
             }
             # ---
             case 'VIEW' {
-                %G = readView($gn);
                 if ( -d "$WEBOBS{ROOT_OUTG}/VIEW.$gn/$WEBOBS{PATH_OUTG_MAPS}" ) {
                     $visu = "<A href=\"/cgi-bin/showOUTG.pl?grid=VIEW.$gn&ts=map\"><IMG border=\"0\" alt=\"$gn\" SRC=\"/icons/map.png\"></A>";
                 }
@@ -358,27 +357,28 @@ sub htmltrgrid {
                     $edit = "&nbsp;<A href=\"/cgi-bin/formGRID.pl?grid=$gt.$gn\" title=\"$__{'Edit'} $gt\" ><img src='/icons/modif.png'></A>";
                 }
                 $show = "/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$gt.$gn";
-                $nn = @{$G{$gn}{NODESLIST}}."&nbsp;".(defined($G{$gn}{NODE_NAME}) ? $G{$gn}{NODE_NAME}:"node")
-                      .(@{$G{$gn}{NODESLIST}} > 1 ? "s":"");
+                $nn = @{$G{NODESLIST}}."&nbsp;".( defined($G{NODE_NAME}) ? $G{NODE_NAME}:"node" ).( @{$G{NODESLIST}} > 1 ? "s":"" );
             }
         }
         
         # common for all grid type
         if (%G) {
-            my $desc = $G{$gn}{DESCRIPTION} // "";
+            my $desc = $G{DESCRIPTION} // "";
             my $ovl = "onMouseOut=\"nd()\" onMouseOver=\"overlib('$desc',CAPTION,'$gt.$gn',BGCOLOR, '$gridColor{$gt}',FGCOLOR,'white')\"";
             $html .= "<TR>" if ($gn ne $g[0]);
             $html .= "<TD $ovl style=\"text-align: center\"><SPAN class=\"gridtype-".lc($gt)."\">$gt</SPAN></TD>\n" if ($subsetType ne "");
-            $html .= "<TD $ovl>$search$transit$edit&nbsp;&nbsp;<a style=\"font-weight: bold\" href=\"$show\">$G{$gn}{NAME}</A></TD>\n"
-                    ."<TD $ovl>$nn</TD>\n";
-            $html .= "<TD $ovl>".(defined($G{$gn}{TYPE}) ? $G{$gn}{TYPE} : "")."</TD>\n"  if ($showType);
-            $html .= "<TD $ovl>".(defined($G{$gn}{OWNCODE}) ? (
-                            defined($OWNRS{$G{$gn}{OWNCODE}}) ? $OWNRS{$G{$gn}{OWNCODE}} : $G{$gn}{OWNCODE}
+            $html .= "<TD $ovl>$search$transit$edit&nbsp;&nbsp;<a style=\"font-weight: bold\" href=\"$show\">$G{NAME}</A></TD>\n"
+                    ."<TD $ovl>$nn</TD>\n"
+                    ."<TD $ovl style=\"text-align:center\">"
+                        .($G{NODESPROJECT} > 0 ? "<IMG src=\"/icons/attention.gif\" title=\"$G{NODESPROJECT} $__{'with a project'}\">":"")."</TD>\n";
+            $html .= "<TD $ovl>".(defined($G{TYPE}) ? $G{$gn}{TYPE} : "")."</TD>\n"  if ($showType);
+            $html .= "<TD $ovl>".(defined($G{OWNCODE}) ? (
+                            defined($OWNRS{$G{OWNCODE}}) ? $OWNRS{$G{OWNCODE}} : $G{OWNCODE}
                         ) : "")."</TD>\n"  if ($showOwnr);
             $html .= "<TD $ovl style=\"text-align:center\">$visu</TD>\n";
             $html .= "<TD $ovl style=\"text-align:center\">$data</A></TD>\n";
             # adds the grid full name for maps
-            for (@grids) { if (/^$gt.$gn/) { s/$/|$G{$gn}{NAME}/; last; } }
+            for (@grids) { if (/^$gt.$gn/) { s/$/|$G{NAME}/; last; } }
         }
         $html .= "</TR>\n";
     }

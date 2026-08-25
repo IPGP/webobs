@@ -202,12 +202,12 @@ for my $g (@gridlist) {
         $gridtypeflag{$gt} = 1;
     }
     %G = readGrid($g);
-    my $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('".$G{$g}{DESCRIPTION}."',CAPTION,'$g',BGCOLOR, '$gridColor{$gt}',FGCOLOR,'white')\")\"";
-    my $nn = scalar(@{$G{$g}{NODESLIST}});
+    my $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('".$G{DESCRIPTION}."',CAPTION,'$g',BGCOLOR, '$gridColor{$gt}',FGCOLOR,'white')\")\"";
+    my $nn = @{$G{NODESLIST}};
     (my $gg = $g) =~ s/\./_/g;
     if ($nn > 0) {
         print "<INPUT type=\"checkbox\" name=\"g_$g\" title=\"$g\" onclick=\"selGrid('$gg')\" value=\"0\"$ovl>",
-              " <B>$G{$g}{NAME}</B> (<B>$nn</B> $G{$g}{NODE_NAME}".($nn>1?"s":"").")<BR>\n";
+              " <B>$G{NAME}</B> (<B>$nn</B> $G{NODE_NAME}".($nn>1?"s":"").")<BR>\n";
         print pkeys($g,\%G);
     }
 }
@@ -297,7 +297,7 @@ sub pkeys {
         foreach (split(/,/,$GRIDMAPS{REQUEST_GRID_KEYLIST})) {
             s/^\s+|\s+$//g;
             $div .= sprintf("<label for='%s.%s'>%s:</label>",$g,$_,$_);
-            $div .= sprintf("<input disabled id='%s.%s' name='%s.%s' maxlength='200' size='20' value='%s'><br>",$g,$_,$g,$_,defined($GG->{$g}{$_})?$GG->{$g}{$_}:"");
+            $div .= sprintf("<input disabled id='%s.%s' name='%s.%s' maxlength='200' size='20' value='%s'><br>",$g,$_,$g,$_,defined($GG->{$_})?$GG->{$_}:"");
         }
         $div .= "</div>";
         return $div;
@@ -311,11 +311,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Francois Beauducel, Didier Lafon
+François Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2017 - Institut de Physique du Globe Paris
+WebObs - 2012-2026 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

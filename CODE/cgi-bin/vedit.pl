@@ -176,8 +176,7 @@ if ($object =~ /^.*\..*\..*$/) {
 
     # ... or a grid (gridtype.gridname)
 } else {
-    my %S = readGrid($object);
-    %GRID = %{$S{$object}};
+    %GRID = readGrid($object);
     $objectfullname = "<B>$GRID{NAME}</B>";
     $tz = $GRID{TZ};
 }
