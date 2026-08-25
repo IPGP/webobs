@@ -211,6 +211,7 @@ if (@domains) {
             }
         }
         if ( $domrows > 0 ) {
+            $domrows += 1;
             print "<TR>";
             print "<TD rowspan=\"$domrows\" style=\"vertical-align: center\"><h2 class=\"h2gn\"><A href=\"$me?domain=$d&type=$subsetType\">$DOMAINS{$d}{NAME}</A></h2>" if ($subsetDomain eq "");
             foreach (@GTYPE) {
