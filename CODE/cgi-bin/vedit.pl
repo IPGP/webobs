@@ -725,7 +725,7 @@ sub htmlMsgOK {
         $msg .= "+ Notify error $t" if ( $t > 0);
     }
     print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
-    print "$msg\n" if ($WEBOBS{CGI_CONFIRM_SUCCESSFUL} ne "NO");
+    print "$msg\n" if (!isok($WEBOBS{CGI_CONFIRM_SUCCESSFUL}));
 }
 sub htmlMsgNotOK {
     print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
@@ -737,11 +737,12 @@ sub htmlMsgNotOK {
 sub notify {
     my $eventname = "eventnode";
     my $senderId  = $USERS{$CLIENT}{UID};
-    my $names = join(", ",WebObs::Users::userName(@oper))."/".join(", ",WebObs::Users::userName(@roper));
+    my $names = join(", ",WebObs::Users::userName(@oper));
+    my $rnames = join(", ",WebObs::Users::userName(@roper));
     my $msg = '';
     my $isnode = ($object =~ /^.*\..*\..*$/ ? 1:0);
 
-    $msg .= "$__{'New event'} WebObs-$WEBOBS{WEBOBS_ID}.\n\n";
+    $msg .= "WebObs-$WEBOBS{WEBOBS_ID} - $pagetitle.\n\n";
     if ($isnode) {
         my %allNodeGrids = WebObs::Grids::listNodeGrids(node=>$NODEName);
         $msg .= "$__{'Node'}: {$NODEName} $NODE{ALIAS}: $NODE{NAME} ($NODE{TYPE})\n";
@@ -749,8 +750,15 @@ sub notify {
     } else {
         $msg .= "$__{'Grid'}: {$GRIDType.$GRIDName} $GRID{NAME}\n";
     }
-    $msg .= "$__{'Date'}: $date $time\n";
+    $msg .= "$__{'Date'}: $date $time\n" if (!$isProject);
     $msg .= "$__{'Author(s)'}: $names\n";
+    if ($rnames ne "") {
+        if (!$isProject) {
+            $msg .= "$__{'Remote operator(s):'} $rnames\n";
+        } else {
+            $msg .= "$__{'Assignee(s):'} $rnames\n";
+        }
+    }
     $msg .= "$__{'Title'}: $titre\n\n";
     $msg .= "$contents\n\n" if (isok($WEBOBS{EVENTS_NOTIFY_FULL_MESSAGE}));
     if ($isnode) {

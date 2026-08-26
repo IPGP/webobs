@@ -338,6 +338,8 @@ sub eventsShow {
         # grid name might contain '_' so reads date and time by splitting '-'
         my ($obj,$date,$time,$ver) = eventnameSplit(basename($extevt));
 
+        my $Pts = Time::Piece->strptime((stat($evt))[9],"%s");
+        my $Pfts = $Pts->strftime("%Y-%m-%d %H:%M");
         my @file = readFile($evt);
 
         #DL-beforeMMD # ignore blank lines and LF
@@ -352,13 +354,13 @@ sub eventsShow {
         my $EVTusers = join(", ",WebObs::Users::userName(@$author));
         my $EVTroper = join(", ",WebObs::Users::userName(@$remote));
         if ($EVTusers ne "" || $EVTroper ne "") {
-            $EVTusers = "<I>(".($EVTusers ne "" ? $EVTusers:"").($EVTroper ne "" ? " / <IMG src=\"/icons/remote.png\" title=\"".js($__{'Remote operators'})."\">$EVTroper":"").")</I>";
+            $EVTusers = "<I>(".($EVTusers ne "" ? $EVTusers:"").($EVTroper ne "" ? " / <IMG src=\"/icons/remote.png\" title=\"$__{'Remote operators'}\">$EVTroper":"").")</I>";
         }
         my $EVTtitle = "<B>".ucfirst($title)."</B>";
         my $EVTdate = "$date $time".($date eq $date2 ? ($time eq $time2 || $time2 eq "" ? "":" &rarr; $time2"):" &rarr; $date2 $time2");
 
         #my $EVTver = (defined($ver)) ? " v$ver" : "";
-        my $EVToutcome = ($outcome > 0 ? "<IMG src=\"/icons/attention.gif\" border=0 onMouseOut=\"nd()\" onMouseOver=\"overlib('Potential outcome on sensor/data',CAPTION,'Warning')\">":"");
+        my $EVToutcome = ($outcome > 0 ? "<IMG src=\"/icons/attention.gif\" border=0 onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{'Potential outcome on sensor/data'})."',CAPTION,'Warning')\">":"");
         my $EVTinfo = ucfirst($feature);
         $EVTinfo .= ($channel ne "" ? " • $__{Channel} $channel":"");
         $EVTinfo .= ($notebook > 0 ? " • $__{Notebook} # $notebook".($notebookfwd > 0 ? " ($__{forward})":""):"");
@@ -403,7 +405,7 @@ sub eventsShow {
 
         # event body
         $html .= "<P class=\"subEvent\">".parents($path,$relextevt)."</P>\n";
-        $html .= "<P class=\"subEvent\">$EVTinfo</P>\n" if ($EVTinfo ne "");
+        $html .= "<P class=\"subEvent\">$EVTinfo".($EVTinfo ne "" ? " • ":"")."$__{'modified:'} $Pfts</P>\n";
         $html .= "<BLOCKQUOTE class=\"contentEvent\">$EVTphotos$EVTtext</BLOCKQUOTE></LI>\n";
     }
     $html .= "</UL>\n";

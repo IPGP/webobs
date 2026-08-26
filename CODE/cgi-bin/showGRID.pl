@@ -116,10 +116,9 @@ my $usrCoord = checkParam($cgi->param('coord'), qr/^[a-zA-Z]*$/, 'coord')
 my $usrProjectOnly = checkParam($cgi->param('projectonly'), qr/^(on|off)?$/, 'projectonly')
   // "off";
 my $usrProject = checkParam($cgi->param('project'), qr/^(on|off)?$/, 'project')
-  // $GRIDS{DEFAULT_PROJECT_FILTER};
-my $usrProcparam = checkParam($cgi->param('procparam'),
-    qr/^(on|off)?$/, 'procparam')
-  // $GRIDS{DEFAULT_PROCPARAM_FILTER};
+  // isok($GRIDS{DEFAULT_PROJECT_FILTER}) ? 'on':'off';
+my $usrProcparam = checkParam($cgi->param('procparam'), qr/^(on|off)?$/, 'procparam')
+  // isok($GRIDS{DEFAULT_PROCPARAM_FILTER}) ? 'on':'off';
 my $usrSortby = checkParam($cgi->param('sortby'), qr/^[a-z]*$/, 'sortby')
   // "event";
 my $usrMap = checkParam($cgi->param('map'), qr/^[0-9]*$/, 'map') // '';
