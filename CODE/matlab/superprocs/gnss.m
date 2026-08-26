@@ -38,9 +38,9 @@ function DOUT=gnss(varargin)
 %
 %
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
-%            Jean-Marie Saurel / WEBOBS, IPGP
+%            Jean-Marie Saurel, Pierre Sakic / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-08-24
+%   Updated: 2026-08-26
 
 WO = readcfg;
 
@@ -144,10 +144,7 @@ vectors_included = field2str(P,'VECTORS_INCLUDED_NODELIST');
 vectors_excluded_target = field2num(P,'VECTORS_EXCLUDED_FROM_TARGET_KM',0,'notempty');
 vrelmode = isok(P,'VECTORS_RELATIVE');
 if vrelmode
-	vref = '';
-	if isfield(P,'VECTORS_VELOCITY_REF')
-		vref = P.VECTORS_VELOCITY_REF;
-	end
+	vref = field2str(P,'VECTORS_VELOCITY_REF','');
 	% PCA applied on relative components X(2)
 	if pernode_timezoom < 0
 		pernode_timezoom = -2;
@@ -583,6 +580,8 @@ for r = 1:numel(P.GTABLE)
 		tr = tr - repmat(voffset,numel(N),1);
 		fprintf('---> Relative mode "%s"%s - velocity reference = %1.2f, %1.2f, %1.2f %s\n',mode,repmat(' (horiz. only)',vrelhorizonly),voffset,P.trendunit);
 	end
+    % only for potential export header
+    P.VECTORS_VELOCITY_REF_VALUE = sprintf('%g,%g,%g',voffset);
 
 	% --- per node plots
 	for n = 1:numel(N)
