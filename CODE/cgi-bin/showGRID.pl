@@ -981,7 +981,7 @@ print "<BR>";
 print "<A name=\"INFO\"></A>\n";
 $htmlcontents = "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#infoID');\">&nbsp;&nbsp;";
 $htmlcontents .= "$__{'Information'}";
-if ($editOK) { $htmlcontents .= "&nbsp;&nbsp;<A href=\"$editCGI\?file=$GRIDS{PROTOCOLE_SUFFIX}\&grid=$GRIDType.$GRIDName\"><img src=\"/icons/modif.png\"></A>" }
+if ($editOK) { $htmlcontents .= "&nbsp;&nbsp;<A href=\"$editCGI\?file=$GRIDS{PROTOCOLE_SUFFIX}\&grid=$GRIDType.$GRIDName\"><img src=\"/icons/modif.png\" title=\"$__{'New project'}\"></A>" }
 $htmlcontents .= "&nbsp;$go2top</div><div id=\"infoID\"><BR>";
 if ($#protocole >= 0) { $htmlcontents .= "<P>".WebObs::Wiki::wiki2html(join("",@protocole))."</P>\n" }
 $htmlcontents .= "</div></div>";
@@ -992,7 +992,7 @@ print $htmlcontents;
 print "<BR><A name=\"PROJECT\"></A>\n";
 print "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#projID');\">&nbsp;&nbsp;";
 print "$__{Project}";
-if ($editOK) { print "&nbsp;&nbsp;<A href=\"/cgi-bin/vedit.pl?action=new&event=$GRIDName\_Projet.txt&object=$GRIDType.$GRIDName\"><img src=\"/icons/modif.png\"></A>" }
+if ($editOK) { print "&nbsp;&nbsp;<A href=\"/cgi-bin/vedit.pl?action=new&event=$GRIDName\_Projet.txt&object=$GRIDType.$GRIDName\"><img src=\"/icons/new.png\" title=\"$__{'New event'}\"></A>" }
 print "&nbsp;$go2top</div><div id=\"projID\"><BR>";
 my $htmlProj = projectShow("$GRIDType.$GRIDName", $editOK);
 print $htmlProj;

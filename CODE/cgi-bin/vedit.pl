@@ -688,7 +688,8 @@ if (!($action =~ /new/i) && $object =~ /^.*\..*\..*$/ && !$isProject) {
     }
     print "</SELECT>\n";
 }
-print "</P>\n<P style=\"background-color: #ffffee\">";
+print "</P>\n</TD></TR></TABLE>\n";
+print "<P style=\"text-align:center\">";
 print "<input type=\"button\" name=\"lien\" value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
 if (length($meta) == 0 && $mmd) {
     print "<input type=\"button\" name=lien value=\"$__{'> MMD'}\" onClick=\"convert2MMD();\" style=\"font-weight:normal\">";
@@ -701,7 +702,6 @@ print "<input type=\"hidden\" name=\"s2g\" value=\"0\">";
 print "<input type=\"hidden\" name=\"conv\" value=\"0\">";
 print "<input type=\"hidden\" name=\"meta\" value=\"$meta\">\n";
 print "</P>";
-print "</TABLE>";
 print "</FORM>\n";
 
 print "\n</BODY>\n</HTML>\n";

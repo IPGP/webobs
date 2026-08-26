@@ -405,7 +405,7 @@ msgid "Distance (beeline)"
 msgstr "Distance (vol d'oiseau)"
 
 msgid "Elev. gain"
-msgstr "Dénivelée"
+msgstr "Dénivelé"
 
 msgid "Transmission"
 msgstr "Transmission"
@@ -492,7 +492,7 @@ msgid "Location map"
 msgstr "Carte de localisation"
 
 msgid "Neighbour nodes"
-msgstr "Nœuds voisins"
+msgstr "Nodes voisins"
 
 msgid "This node has a project"
 msgstr "Ce node a un projet actif"

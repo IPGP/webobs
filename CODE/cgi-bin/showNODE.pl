@@ -373,7 +373,7 @@ if (!($NODE{LAT_WGS84} eq "" && $NODE{LON_WGS84} eq "" && $NODE{ALTITUDE} eq "")
         }
         print "<TD valign=top style='border:0'><TABLE style='border-collapse:collapse'><TR>"
           ."<TH width=10%><SMALL>$__{'Distance (beeline)'}</SMALL></TH><TH width=10%><SMALL>$__{'Elev. gain'}</SMALL></TH>"
-          ."<TH><SMALL>$__{'Neighbour nodes'}</SMALL></TH></TR>\n";
+          ."<TH style=\"text-align:left\"><SMALL>$__{'Neighbour nodes'}</SMALL></TH></TR>\n";
         my $n = 1;
         foreach (sort { $dist{$a} <=> $dist{$b} or $a cmp $b } keys %dist) {
             if ($_ ne $NODEName) {
@@ -859,7 +859,7 @@ print "<TR><TH colspan=\"3\" class=\"th-bottom\"></TH></TR></TABLE>\n";
 print "<BR><A name=\"PROJECT\"></A>\n";
 print "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#projID');\">&nbsp;&nbsp;";
 print "$__{Project}";
-if ($editOK) { print "&nbsp;&nbsp;<A href=\"/cgi-bin/vedit.pl?action=new&event=$NODEName\_Projet.txt&object=$GRIDType.$GRIDName.$NODEName\"><img src=\"/icons/modif.png\"></A>" }
+if ($editOK) { print "&nbsp;&nbsp;<A href=\"/cgi-bin/vedit.pl?action=new&event=$NODEName\_Projet.txt&object=$GRIDType.$GRIDName.$NODEName\"><img src=\"/icons/new.png\" title=\"$__{'New project'}\"></A>" }
 print "&nbsp;$go2top</div><div id=\"projID\"><BR>";
 my $htmlProj = projectShow("$GRIDType.$GRIDName.$NODEName", $editOK);
 print $htmlProj;
