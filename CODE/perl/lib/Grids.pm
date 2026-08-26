@@ -301,12 +301,17 @@ sub readGrid {
         foreach (@l) {s/^$f\.//g};
         @l =  sort {$a cmp $b} @l ;
         $tmp{'NODESLIST'} = \@l;
-        # counting the number of projects
+        # counting the number of projects in nodes
         my $proj = 0;
         for (@l) {
             $proj += 1 if (-s "$WEBOBS{PATH_NODES}/$_/$NODES{SPATH_INTERVENTIONS}/".$_."_Projet.txt");
         }
         $tmp{'NODESPROJECT'} = $proj;
+        my $proj = "$WEBOBS{PATH_GRIDS}/$gt/$gn/$GRIDS{SPATH_INTERVENTIONS}/".$gn."_Projet.txt";
+        if (-s $proj) {
+            my @file = readFile($proj);
+            $tmp{'PROJECT'} = $file[0];
+        }
     } else {
         my @cha = readCfgFile("$WEBOBS{$z}/$gn/channels.conf");
         my @alias = map { (split /\s+/)[0] } @cha;
@@ -314,6 +319,7 @@ sub readGrid {
         $tmp{'NODESLIST'} = \@alias;
         $tmp{'CHANNELLIST'} = \@stream;
         $tmp{'NODESPROJECT'} = 0;
+        $tmp{'PROJECT'} = "";
     }
     # gets the domain
     my @qx = qx(sqlite3 $WEBOBS{SQL_DOMAINS} "select DCODE from $WEBOBS{SQL_TABLE_GRIDS} where TYPE = '$gt' and NAME = '$gn'");

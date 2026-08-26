@@ -541,12 +541,12 @@ $htmlcontents .= " | ";
 $htmlcontents .= ($usrNodes eq "all" ? "<B>$__{'All_nodes'}</B>":"<A href=\"$myself&amp;nodes=all&amp;coord=$usrCoord&amp;project=$usrProject&amp;projectonly=$usrProjectOnly$procParm#NODES\">$__{'All_nodes'}</A>");
 $htmlcontents .= " ] ";
 if ( $admOK ) {
-    $htmlcontents .= " -- $__{'Invalid nodes'} [ <A href=\"$myself&amp;coord=$usrCoord&amp;project=$usrProject&amp;projectonly=$usrProjectOnly&amp;nodes=$usrNodes$procParm&amp;invalid=";
+    $htmlcontents .= " &mdash; $__{'Invalid nodes'} [ <A href=\"$myself&amp;coord=$usrCoord&amp;project=$usrProject&amp;projectonly=$usrProjectOnly&amp;nodes=$usrNodes$procParm&amp;invalid=";
     $htmlcontents .= ($usrInvalid eq "on" ? "off#NODES\">$__{'Hide'}":"on#NODES\">$__{'Show'}")."</A> ]";
 }
 
 # -- Nodes list submenu Coordinates
-$htmlcontents .= " -- $__{Coordinates} [ "
+$htmlcontents .= " &mdash; $__{Coordinates} [ "
   .($usrCoord eq "latlon" ? "<B>Lat/Lon</B>":"<A href=\"$myself&amp;project=$usrProject&amp;projectonly=$usrProjectOnly&amp;nodes=$usrNodes&amp;coord=latlon$procParm#NODES\">Lat/Lon</A>")." | "
   .($usrCoord eq "utm"    ? "<B>UTM</B>":"<A href=\"$myself&amp;project=$usrProject&amp;projectonly=$usrProjectOnly&amp;nodes=$usrNodes&amp;coord=utm$procParm#NODES\">UTM</A>");
 if (defined($GRID{UTM_LOCAL}) && -e $GRID{UTM_LOCAL} ) {
@@ -557,13 +557,13 @@ $htmlcontents .= " | "
 
 # -- Nodes list submenu Proc paramaters
 if ($isProc) {
-    $htmlcontents .= " -- $__{'Proc parameters'} [ <A href=\"$myself&amp;nodes=$usrNodes&amp;coord=$usrCoord&amp;project=$usrProject&amp;projectonly=$usrProjectOnly&amp;procparam="
+    $htmlcontents .= " &mdash; $__{'Proc parameters'} [ <A href=\"$myself&amp;nodes=$usrNodes&amp;coord=$usrCoord&amp;project=$usrProject&amp;projectonly=$usrProjectOnly&amp;procparam="
       .($usrProcparam eq "on" ? "off#NODES\">$__{'Hide'}":"on#NODES\">$__{'Show'}")."</A> ]";
 }
 
 # -- Nodes list submenu Project
 if ( $CLIENT ne 'guest' ) {
-    $htmlcontents .= " -- $__{Project} [ "
+    $htmlcontents .= " &mdash; $__{Project} [ "
         .($usrProjectOnly eq "on" ? "<B>$__{'Only'}</B>":"<A href=\"$myself&amp;project=$usrProject&amp;nodes=$usrNodes&amp;coord=$usrCoord$procParm&amp;projectonly=on#NODES\">$__{'Only'}</A>")." | "
         .($usrProjectOnly eq "off" ? "<B>$__{'All nodes'}</B>":"<A href=\"$myself&amp;project=$usrProject&amp;nodes=$usrNodes&amp;coord=$usrCoord$procParm&amp;projectonly=off#NODES\">$__{'All nodes'}</A>");
     
@@ -571,7 +571,7 @@ if ( $CLIENT ne 'guest' ) {
       .($usrProject eq "on"  ? "off#NODES\">$__{'Hide'}":"on#NODES\">$__{'Show'}")."</A> ]";
 }
 # -- submenu Export
-$htmlcontents .= " -- $__{Export} [";
+$htmlcontents .= " &mdash; $__{Export} [";
 $htmlcontents .= " <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$grid&format=txt&amp;coord=$usrCoord&amp;nodes=$usrNodes')\" title=\"Exports TXT file\">TXT</A> |";
 $htmlcontents .= " <A href=\"#\" onclick=\"javascript:window.open('/cgi-bin/nloc.pl?grid=$grid&format=csv&amp;coord=$usrCoord&amp;nodes=$usrNodes')\" title=\"Exports CSV file\">CSV</A>";
 if ($WEBOBS{GOOGLE_EARTH_LINK} eq 1) {

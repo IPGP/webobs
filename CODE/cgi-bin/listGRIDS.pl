@@ -45,6 +45,7 @@ use WebObs::Config;
 use WebObs::Grids;
 use WebObs::Users;
 use WebObs::Utils;
+use WebObs::Events;
 use WebObs::Search;
 use WebObs::Wiki;
 use WebObs::i18n;
@@ -189,7 +190,7 @@ if (@domains) {
     $htmlcontents .= "&nbsp;<a href='#popupY' title=\"$__{'Create a new Grid'}\" onclick='geditopenPopup();return false'><img class='ic' src='/icons/new.png'></a>" if ($admVIEWS || $admPROCS || $admFORMS);
     $htmlcontents .= "&nbsp;&nbsp;&nbsp;$__{'Name'}</TH>";
     $htmlcontents .= "<TH style=\"text-align: left\">$__{'Nodes'}</TH>";
-    $htmlcontents .= "<TH style=\"text-align: center\">$__{'Project'}</TH>";
+    $htmlcontents .= "<TH style=\"text-align: left\">$__{'Project'}</TH>";
     $htmlcontents .= "<TH style=\"text-align: left\">$__{'Type'}</TH>" if ($showType);
     $htmlcontents .= "<TH style=\"text-align: left\">$__{'Owner'}</TH>" if ($showOwnr);
     $htmlcontents .= "<TH>$__{'Graphs'}</TH>";
@@ -368,10 +369,15 @@ sub htmltrgrid {
             $html .= "<TR>" if ($gn ne $g[0]);
             $html .= "<TD $ovl style=\"text-align: center\"><SPAN class=\"gridtype-".lc($gt)."\">$gt</SPAN></TD>\n" if ($subsetType ne "");
             $html .= "<TD $ovl>$search$transit$edit&nbsp;&nbsp;<a style=\"font-weight: bold\" href=\"$show\">$G{NAME}</A></TD>\n"
-                    ."<TD $ovl>$nn</TD>\n"
-                    ."<TD $ovl style=\"text-align:center\">"
-                        .($G{NODESPROJECT} > 0 ? "<IMG src=\"/icons/attention.gif\" title=\"$G{NODESPROJECT} $__{'with a project'}\">":"")."</TD>\n";
-            $html .= "<TD $ovl>".(defined($G{TYPE}) ? $G{$gn}{TYPE} : "")."</TD>\n"  if ($showType);
+                    ."<TD $ovl>$nn".($G{NODESPROJECT} > 0 ? "&nbsp;<IMG src=\"/icons/attention.gif\" title=\"$G{NODESPROJECT} $__{'with project'}\">":"")."</TD>\n"
+                    ."<TD $ovl style=\"text-align:left\">";
+            if ($G{PROJECT} ne "") {
+                my ($author,$assignee,$title) = WebObs::Events::headersplit($G{PROJECT});
+                $html .= "<IMG src=\"/icons/attention.gif\" title=\"$title (".join(",",@$author).")\">";
+                $html .= "<IMG src=\"/icons/worker.png\" title=\"$__{'assigned to'} ".join(",",@$assignee)."\">" if (@$assignee > 0);
+            }
+            $html .= "</TD>\n";
+            $html .= "<TD $ovl>".(defined($G{TYPE}) ? $G{TYPE} : "")."</TD>\n"  if ($showType);
             $html .= "<TD $ovl>".(defined($G{OWNCODE}) ? (
                             defined($OWNRS{$G{OWNCODE}}) ? $OWNRS{$G{OWNCODE}} : $G{OWNCODE}
                         ) : "")."</TD>\n"  if ($showOwnr);

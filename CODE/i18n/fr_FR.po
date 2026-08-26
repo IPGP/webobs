@@ -590,14 +590,17 @@ msgstr "Ajouter un sous-événement"
 msgid "Title"
 msgstr "Titre"
 
+msgid "Title:"
+msgstr "Titre :"
+
 msgid "Content"
 msgstr "Contenu"
 
-msgid "Author(s)"
-msgstr "Auteur(s)"
+msgid "Author(s):"
+msgstr "Auteur(s) :"
 
-msgid "Remote Operator(s)"
-msgstr "Opérateur(s) distant(s)"
+msgid "Remote Operator(s):"
+msgstr "Opérateur(s) distant(s) :"
 
 msgid "Copy"
 msgstr "Copier"
@@ -740,8 +743,8 @@ msgstr "Caractéristiques"
 msgid "Feature"
 msgstr "Caractéristique"
 
-msgid "Sensor"
-msgstr "Capteur"
+msgid "Sensor:"
+msgstr "Capteur :"
 
 msgid "Sensor/data outcome"
 msgstr "Influence capteur/données"
@@ -749,20 +752,23 @@ msgstr "Influence capteur/données"
 msgid "Notebook Nb"
 msgstr "Cahier N°"
 
-msgid "Forward to notebook"
-msgstr "Renvoi au cahier"
+msgid "Forward to notebook:"
+msgstr "Renvoi au cahier :"
 
-msgid "Start date & time"
-msgstr "Date & heure début"
+msgid "Creation date & time:"
+msgstr "Date & heure de création :"
 
-msgid "End date & time"
-msgstr "Date & heure fin"
+msgid "Start date & time:"
+msgstr "Date & heure début :"
+
+msgid "End date & time:"
+msgstr "Date & heure fin : :"
 
 msgid "Select names of people involved remotely (hold CTRL key for multiple selections)"
 msgstr "Choisir les intervenants à distance (maintenir la touche CTRL pour sélection multiple)"
 
-msgid "Assignee(s)"
-msgstr "Responsable(s) du projet"
+msgid "Assignee(s):"
+msgstr "Responsable(s) du projet :"
 
 msgid "Select names of people assigned to the project (hold CTRL key for multiple selections)"
 msgstr "Choisir les responsables du projet (maintenir la touche CTRL pour sélection multiple)"
@@ -1583,7 +1589,7 @@ msgid "last DB update"
 msgstr "mise &agrave; jour"
 
 msgid "failed opening holidays definitions"
-msgstr "echec acc&egrave; aux d&eacute;finitions jours f&eacute;ri&eacute;s"
+msgstr "échec d'accès aux définitions jours fériés"
 
 msgid "invalid project name"
 msgstr "nom projet invalide"
@@ -1598,25 +1604,25 @@ msgid "No or invalid action"
 msgstr "action manquante ou invalide"
 
 msgid "article removed from Gazette"
-msgstr "article supprim&eacute; de la Gazette"
+msgstr "article supprimé de la Gazette"
 
-msgid "Create Event"
-msgstr "Cr&eacute;ation &Eacute;v&eacute;nement"
+msgid "Create a new event"
+msgstr "Création d'un nouvel événement"
 
-msgid "Creation Projet"
-msgstr "Cr&eacute;ation Projet"
+msgid "Create a new projet"
+msgstr "Création d'un nouveau projet"
 
-msgid "Edit Event"
-msgstr "&Eacute;dition &Eacute;v&eacute;nement"
+msgid "Edit an event"
+msgstr "Édition d'un événement"
 
-msgid "Edit Project"
-msgstr "&Eacute;dition Projet"
+msgid "Edit a project"
+msgstr "Édition d'un projet"
 
 msgid "Successful"
 msgstr "Succ&egrave;s"
 
 msgid "written to Gazette"
-msgstr "enregistr&eacute; dans la Gazette"
+msgstr "enregistré dans la Gazette"
 
 msgid "FAILED"
 msgstr "ECHEC"
@@ -1765,8 +1771,8 @@ msgstr "Utilisateurs :"
 msgid "all"
 msgstr "tous"
 
-msgid "Date & Time"
-msgstr "Date & Heure"
+msgid "Date & Time:"
+msgstr "Date & Heure :"
 
 msgid "Host"
 msgstr "Serveur"
@@ -2203,6 +2209,9 @@ msgstr "Réinitialiser"
 
 msgid "Create"
 msgstr "Créer"
+
+msgid "with project"
+msgstr "avec projet"
 
 # ---- formUPLOAD.pl
 

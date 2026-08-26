@@ -177,7 +177,7 @@ if ($object =~ /^.*\..*\..*$/) {
     # ... or a grid (gridtype.gridname)
 } else {
     %GRID = readGrid($object);
-    $objectfullname = "<B>$GRID{NAME}</B>";
+    $objectfullname = "<B>$object: $GRID{NAME}</B>".($GRID{TYPE} ne "" ? " <I>($GRID{TYPE})</I>":"");
     $tz = $GRID{TZ};
 }
 
@@ -194,13 +194,14 @@ if ($action =~ /save/i ) {
 # and  $evpath (event= in querystring) which is the event file name relative to $evbase:
 #      $evpath is: "subpath/evname.txt" OR "subpath" OR ""
     $target = "$evbase/$evpath";
+    my $fp = dirname($target);    qx(mkdir -p "$fp" 2>/dev/null);
 
     # extract the event's file name from $evpath and make sure the path exists
     my $evname = ($evpath =~ /.*\.txt$/) ? basename($evpath) : "";
 
-    my $tline = join("+",@oper)."/".join("+",@roper)."|$titre";
+    my $tline = join("+",@oper)."/".join("+",@roper)."|$titre|$date2 $time2";
     if (!$isProject) {
-        $tline .= "|$date2 $time2|$feature|$channel|$outcome|$notebook|$notebookfwd";
+        $tline .= "|$feature|$channel|$outcome|$notebook|$notebookfwd";
 
         # now build an event's file name from form's elements
         $time =~ s/:/-/;
@@ -329,13 +330,15 @@ if ($action =~ /new/i ) {
         }
         $date2 = $date;
         $time2 = $time;
-        $pagetitle = "$__{'Create Event'}";
+        $pagetitle = "$__{'Create a new event'}";
 
         # fool parents() with a pseudo (xx) evntname if needed
         $parents = WebObs::Events::parents($evbase, "$evpath/xx") if ($evpath ne "" && $parents eq "");
         $s2g = ( $GazetteWhat eq "ALL" ) ? 1 : 0;
     } else {
-        $pagetitle = "$__{'Create Project'}";
+        $date2 = $today->strftime('%Y-%m-%d');
+        $time2 = $today->strftime('%H:%M');
+        $pagetitle = "$__{'Create a new project'}";
     }
     $meta = "WebObs: created by vedit\n\n";         # add MMD
 }
@@ -348,10 +351,10 @@ if ($action =~ /upd/i ) {
     if (!$isProject) {
         my ($fname,$ft) = split(/\./,basename($evpath));
         ($name,$date,$time,$version) = WebObs::Events::eventnameSplit(basename($fname));
-        $pagetitle = "$__{'Edit Event'} [$date $time".($tz ne "" ? " <I>($tz)</I>":"")." $version]";
+        $pagetitle = "$__{'Edit an event'} [$date $time".($tz ne "" ? " <I>($tz)</I>":"")." $version]";
         $s2g = ( $GazetteWhat eq "ALL" ) ? 1 : 0;
     } else {
-        $pagetitle = "$__{'Edit Project'}";
+        $pagetitle = "$__{'Edit a project'}";
     }
 
 # event metadata are stored in the header line of file as pipe-separated fields:
@@ -363,6 +366,10 @@ if ($action =~ /upd/i ) {
     (my $authors,my $remotes,$titre,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd) = WebObs::Events::headersplit($lines[0]);
     @oper = @$authors;
     @roper = @$remotes;
+    if ($isProject) {
+        $date2 = $today->strftime('%Y-%m-%d') if ($date2 eq "");
+        $time2 = $today->strftime('%H:%M') if ($time2 eq "");
+    }
     shift(@lines);
     $contents = join("\n",@lines)."\n";
     ($contents, $meta) = WebObs::Wiki::stripMDmetadata($contents);
@@ -570,17 +577,17 @@ print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 print "<TABLE><TR>";
 print "<TD style=\"vertical-align: top; border: none;\">";
 if (!$isProject) {
-    print "<LABEL style=\"width:100px\" for=\"date\">$__{'Start date & time'}: </LABEL><INPUT size=\"10\" name=\"date\" id=\"date\" value=\"$date\"> ";
-    print "<INPUT size=\"5\" name=\"time\" id=\"time\" value=\"$time\">".($tz ne "" ? " <I>GMT $tz</I>":"")."<br><br>\n";
-    print "<LABEL style=\"width:100px\" for=\"date2\">$__{'End date & time'}: </LABEL><INPUT size=\"10\" name=\"date2\" id=\"date2\" value=\"$date2\"> ";
-    print "<INPUT size=\"5\" name=\"time2\" id=\"time2\" value=\"$time2\">".($tz ne "" ? " <I>GMT $tz</I>":"")."<br><br>\n";
+    print "<LABEL style=\"width:150px\" for=\"date2\">$__{'Start date & time:'}</LABEL><INPUT size=\"10\" name=\"date\" id=\"date\" value=\"$date\"> ";
+    print "<INPUT size=\"5\" name=\"time\" id=\"time\" value=\"$time\">".($tz ne "" ? " <I>GMT ".sprintf("%+03d",$tz)."</I>":"")."<br><br>\n";
 }
-print "<LABEL style=\"width:100px\" for=\"titre\">$__{'Title'}:</LABEL><INPUT type=\"text\" name=\"titre\" id=\"titre\" value=\"$titre\" size=\"80\"><br><br>\n";
+print "<LABEL style=\"width:150px\" for=\"date2\">".($isProject ? $__{'Creation date & time:'}:$__{'End date & time:'})."</LABEL><INPUT size=\"10\" name=\"date2\" id=\"date2\" value=\"$date2\"> ";
+print "<INPUT size=\"5\" name=\"time2\" id=\"time2\" value=\"$time2\">".($tz ne "" ? " <I>GMT ".sprintf("%+03d",$tz)."</I>":"")."<br><br>\n";
+print "<LABEL style=\"width:150px\" for=\"titre\">$__{'Title:'}</LABEL><INPUT type=\"text\" name=\"titre\" id=\"titre\" value=\"$titre\" size=\"80\"><br><br>\n";
 
 # only for node's event
 if ($object =~ /^.*\..*\..*$/) {
     if (!$isProject) {
-        print "<LABEL style=\"width:100px\" for=\"feature\">$__{Feature}:</LABEL><SELECT id=\"feature\" name=\"feature\" size=\"0\">";
+        print "<LABEL style=\"width:150px\" for=\"feature\">$__{'Feature:'}</LABEL><SELECT id=\"feature\" name=\"feature\" size=\"0\">";
         my @features = ("",split(/[,\|]/,$NODE{FILES_FEATURES}));
         push(@features,$feature) if !(@features =~ $feature); # adds current feature if not in the list
         foreach (@features) {
@@ -591,7 +598,7 @@ if ($object =~ /^.*\..*\..*$/) {
         # only if node associated to a proc and calibration file defined
         my $clbFile = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb";
         if (-s $clbFile != 0) {
-            print "<LABEL style=\"width:80px\" for=\"channel\">$__{'Sensor'}: </LABEL>";
+            print "<LABEL style=\"width:150px\" for=\"channel\">$__{'Sensor:'}</LABEL>";
             my @carCLB   = readCfgFile($clbFile);
 
     # make a list of available channels and label them with last Chan. + Loc. codes
@@ -610,18 +617,23 @@ if ($object =~ /^.*\..*\..*$/) {
         print "<INPUT type=\"hidden\" name=\"channel\" value=\"$channel\">\n";
     }
     if (!$isProject) {
-        print "<B>$__{'Sensor/data outcome'}: </B><INPUT type=\"checkbox\" name=\"outcome\" value=\"1\"".($outcome ? "checked":"").">";
+        print "<LABEL style=\"width:150px\" for=\"outcome\">$__{'Sensor/data outcome'}:</LABEL><INPUT type=\"checkbox\" name=\"outcome\" value=\"1\"".($outcome ? "checked":"").">";
     }
     if (isok($NODES{EVENTNODE_NOTEBOOK})) {
-        print "<B style=\"margin-left:20px\">$__{'Notebook Nb'}: </B><INPUT type=\"text\" size=\"3\" name=\"notebook\" value=\"$notebook\">";
-        print "<B style=\"margin-left:20px\">$__{'Forward to notebook'}: </B><INPUT type=\"checkbox\" name=\"notebookfwd\" value=\"1\" ".($notebookfwd ? "checked":"").">";
+        print "<B style=\"margin-left:20px\">$__{'Notebook Nb:'} </B><INPUT type=\"text\" size=\"3\" name=\"notebook\" value=\"$notebook\">";
+        print "<B style=\"margin-left:20px\">$__{'Forward to notebook:'} </B><INPUT type=\"checkbox\" name=\"notebookfwd\" value=\"1\" ".($notebookfwd ? "checked":"").">";
     } else {
         print "<INPUT type=\"hidden\" name=\"notebook\" value=\"$notebook\">\n";
         print "<INPUT type=\"hidden\" name=\"notebookfwd\" value=\"$notebookfwd\">\n";
     }
+} else {
+        print "<INPUT type=\"hidden\" name=\"feature\" value=\"\">\n";
+        print "<INPUT type=\"hidden\" name=\"outcome\" value=\"\">\n";
+        print "<INPUT type=\"hidden\" name=\"notebook\" value=\"\">\n";
+        print "<INPUT type=\"hidden\" name=\"notebookfwd\" value=\"\">\n";
 }
 print "</TD>\n<TD style=\"text-align: left; vertical-align: top; border: none;\">";
-print "<B>$__{'Author(s)'}: </B><BR><SELECT id=\"oper\" name=\"oper\" size=\"10\" multiple style=\"vertical-align:text-top\"
+print "<B>$__{'Author(s):'} </B><BR><SELECT id=\"oper\" name=\"oper\" size=\"10\" multiple style=\"vertical-align:text-top\"
       onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{'Select names of people involved (hold CTRL key for multiple selections)'})."')\">\n";
 
 # makes a list of active (and inactive) users
@@ -649,10 +661,10 @@ for my $ulogin (@logins) {
 print "</SELECT>\n";
 print "</TD>\n<TD style=\"text-align: left; vertical-align: top; border: none;\">";
 if (!$isProject) {
-    print "<B>$__{'Remote Operator(s)'}: </B><BR><SELECT id=\"roper\" name=\"roper\" size=\"10\" multiple style=\"vertical-align:text-top\"
+    print "<B>$__{'Remote Operator(s):'} </B><BR><SELECT id=\"roper\" name=\"roper\" size=\"10\" multiple style=\"vertical-align:text-top\"
         onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{'Select names of people involved remotely (hold CTRL key for multiple selections)'})."')\">\n";
 } else {
-    print "<B>$__{'Assignee(s)'}: </B><BR><SELECT id=\"roper\" name=\"roper\" size=\"10\" multiple style=\"vertical-align:text-top\"
+    print "<B>$__{'Assignee(s):'} </B><BR><SELECT id=\"roper\" name=\"roper\" size=\"10\" multiple style=\"vertical-align:text-top\"
         onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{'Select names of people assigned to the project (hold CTRL key for multiple selections)'})."')\">\n";
 }
 for my $ulogin (@logins) {

@@ -172,22 +172,19 @@ sub headersplit {
 
 # event metadata are stored in the header line of file as pipe-separated fields:
 #     UID1[+UID2+...][/RUID1[+RUID2+...]]|title|enddatetime|feature|channel|outcome|notebook|notebookfwd
-    my $pipes = $_[0] =~ tr/\|//; # count the number of pipes in header
+    #my $pipes = $_[0] =~ tr/\|//; # count the number of pipes in header
     my @header = split(/\|/,$_[0]); # splits pipe-separated arguments
     my @people = split(/\//,$header[0]); # splits authors and remotes (forward slash separator)
     my @UIDs = split(/\+/,$people[0]); # array of authors
     my @RUIDs = split(/\+/,$people[1]) if ($#people > 0); # array of remotes
-    if ($pipes > 1 && $pipes < 6) {
-        $title = join("\|",@header[1..$#header]); # rare case of a former header with unescaped pipe in the title...
-    } else {
-        $title = $header[1] if ($#header > 0);
-        ($date2,$time2) = split(/ /,$header[2]) if ($#header > 1);
-        $feature = $header[3] if ($#header > 2);
-        $channel = $header[4] if ($#header > 3);
-        $outcome = $header[5] if ($#header > 4);
-        $notebook = $header[6] if ($#header > 5);
-        $notebookfwd = $header[7] if ($#header > 6);
-    }
+    
+    $title = $header[1] if ($#header > 0);
+    ($date2,$time2) = split(/ /,$header[2]) if ($#header > 1);
+    $feature = $header[3] if ($#header > 2);
+    $channel = $header[4] if ($#header > 3);
+    $outcome = $header[5] if ($#header > 4);
+    $notebook = $header[6] if ($#header > 5);
+    $notebookfwd = $header[7] if ($#header > 6);
     $title =~ s/\"/\'\'/g;
 
     return (\@UIDs,\@RUIDs,$title,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd);
@@ -447,7 +444,7 @@ sub projectShow {
         if ($file[0] !~ /\|/) {            # if firstline doesn't look like 'something|someotherthing'
             unshift(@file,"|untitled\n");  # force our own default (add a line)
         }
-        my ($author,$assignee,$title) = headersplit($file[0]);
+        my ($author,$assignee,$title,$date,$heure) = headersplit($file[0]);
         my $EVTusers = join(", ",WebObs::Users::userName(@$author));
         my $EVTworker = join(", ",WebObs::Users::userName(@$assignee));
         my $Pusers = "";
@@ -472,7 +469,8 @@ sub projectShow {
         }
         my $Pfts = $Pts->strftime("%Y-%m-%d %H:%M");
         $html .= "<BLOCKQUOTE>";
-        $html .= "<P class=\"titleEvent\"><B>$title</B> $Pusers - modified:$Pfts  $Pedit</P>\n";
+        $html .= "<P class=\"titleEvent\"><B>$title</B> $Pusers  $Pedit</P>\n";
+        $html .= "<P class=\"subEvent\">$__{'created:'} $date $heure / $__{'modified:'} $Pfts</P>\n";
         $html .= "<BLOCKQUOTE class=\"contentEvent\">$Pphotos$Ptext</BLOCKQUOTE>";
         $html .= "</BLOCKQUOTE>";
     }
