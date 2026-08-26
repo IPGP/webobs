@@ -13,14 +13,14 @@ function tz = gettz
 %
 %	Author: F. Beauducel / WEBOBS
 %	Created: 2017-01-17 in Yogyakarta, Indonesia
-%	Update: 2026-02-24
+%	Update: 2026-08-26
 %
 
 [rc,w] = wosystem('/bin/date +%z','chomp','trim'); % returns string ±HHMM
 if rc == 0 && length(w) == 5
 	tz = str2double(w(1:3)) + str2double(w([1,4:5]))/60;
 else
-	fprintf('WEBOBS{gettz}: ** Warning: problem to get TZ value with system command "date" [%s].\n',w);
+	wolog('** Warning: problem to get TZ value with system command "date" [%s].\n',w);
 	tz = 0;
 end
 

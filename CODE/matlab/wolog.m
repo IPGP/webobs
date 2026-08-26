@@ -10,11 +10,13 @@ function wolog(s,varargin)
 %
 %   Author: F. Beauducel, IPGP
 %   Created: 2026-04-28 in La Plaine des Cafres, Réunion
+%   Udated: 2026-08-26
 
 ST = dbstack;
 n = min(2,length(ST));
+fun = strjoin(fliplr(cat(1,{ST(n:end).name})),':');
 if nargin < 1
     s = '';
 end
 
-fprintf(['%s - WEBOBS{%s}: ' s],datestr(now),ST(n).name,varargin{:})
+fprintf(['%s - WO{%s}: ' s],datestr(now),fun,varargin{:})

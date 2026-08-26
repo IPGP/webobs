@@ -25,7 +25,7 @@ function [P,N,D] = readproc(WO,varargin)
 %
 %	Authors: F. Beauducel, D. Lafon, WEBOBS/IPGP
 %	Created: 2013-04-05 in Paris (France)
-%	Updated: 2026-08-07
+%	Updated: 2026-08-26
 
 
 proc = varargin{1};
@@ -249,7 +249,7 @@ end
 
 if lf < nlist
 	P.(fd)(lf+1:nlist) = dv(lf+1:nlist);
-	fprintf('WEBOBS{readproc:tnorm}: ** WARNING ** inconsistent length or inexisting %s in %s timescale table. Fill with default value.\n',fd,P.SELFREF);
+	wolog('** WARNING ** inconsistent length or inexisting %s in %s timescale table. Fill with default value.\n',fd,P.SELFREF);
 end
 
 
