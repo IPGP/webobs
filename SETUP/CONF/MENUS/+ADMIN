@@ -22,6 +22,7 @@
 *             <li><a href="/cgi-bin/xedit.pl?fs=CONF_NODES">NODES.rc</a></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=CLB_CONF">CLB.conf</a></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=CONF_NODES(FILE_TELE)">TRANStypes.conf</a></li>
+*             <li><a href="/cgi-bin/xedit.pl?fs=FILE_MENU(SIGNATURE)&encoding=utf8">Page signature</a></li>
 *             <li class="menutitle">Menus</li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=FILE_MENU(NAVIGATION)&encoding=utf8">Main Menu Edit</a></li>
 *             <li><a href="/cgi-bin/xedit.pl?fs=CONF/MENUS/%2BADMIN&encoding=utf8">+ADMIN Menu Edit</a></li>

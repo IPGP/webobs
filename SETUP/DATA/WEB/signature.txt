@@ -1,8 +1,8 @@
-<h6>(c) WEBOBS / Institut de physique du globe de Paris<br>
+<SPAN style="color:gray;font-size:10"><I><B>(c) WEBOBS / Institut de physique du globe de Paris / CNRS-INSU</B><br>
 All information included in this site should not be used without written permission.<br>
 <script type="text/javascript">
 <!--
 document.write("Last update: " + document.lastModified);
 //-->
 </script>
-</h6>
+</I></SPAN>

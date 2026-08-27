@@ -443,6 +443,10 @@ if (!$isProject) {
     });
 });
 
+setTimeout(function() {
+    window.parent.document.getElementById('wmtarget').style.height = document.documentElement.scrollHeight + 'px';
+}, 100);
+
 function postform() {
     var form = \$(\"#theform\")[0];
     var bad = false;
@@ -526,6 +530,10 @@ function convert2MMD()
     var h = \$(\"textarea#markItUp\").css('line-height').match(/(\\d+)(.*)/);
     \$(\"textarea#markItUp\").css('height',(h[1]*\$(\"textarea#markItUp\").attr('rows'))+h[2]);
 });
+
+setTimeout(function() {
+    window.parent.document.getElementById('wmtarget').style.height = document.documentElement.scrollHeight + 'px';
+}, 100);
 
 function postform() {
     var form = \$(\"#theform\")[0];

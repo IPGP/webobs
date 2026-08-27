@@ -232,10 +232,10 @@ print <<"FIN";
 FIN
 print <<"FIN";
         <div style="clear: both"></div>
-        <iframe name="wmtarget" id="wmtarget" src="$iframepage" width="100%" height="100%" frameborder=0>no iframe!!</iframe>
+        <iframe name="wmtarget" id="wmtarget" src="$iframepage" width="100%" frameborder=0>no iframe!!</iframe>
         <!--<iframe name="wmtarget" id="wmtarget" width="100%" height="100%" frameborder=0>no iframe!!</iframe>-->
         <hr/>
-        <div id="wmsig">$signature</div>
+        <div id="wmsig" class="signature">$signature</div>
         <noscript><div id="nojsMsg">$__{'WebObs pages require JavaScript enabled'}</div></noscript>
     </body>
 </html>
