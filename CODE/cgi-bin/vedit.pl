@@ -167,7 +167,7 @@ my $objectfullname;
 my %NODE;
 my %GRID;
 
-# object if a node (gridtype.gridname.nodename)
+# object is a node (gridtype.gridname.nodename)
 if ($object =~ /^.*\..*\..*$/) {
     my %S = readNode($NODEName);
     %NODE = %{$S{$NODEName}};
@@ -595,23 +595,27 @@ if ($object =~ /^.*\..*\..*$/) {
         }
         print "</SELECT><BR><BR>\n";
 
-        # only if node associated to a proc and calibration file defined
-        my $clbFile = "$NODES{PATH_NODES}/$NODEName/$NODEName.clb";
-        if (-s $clbFile != 0) {
-            print "<LABEL style=\"width:150px\" for=\"channel\">$__{'Sensor:'}</LABEL>";
-            my @carCLB   = readCfgFile($clbFile);
-
-    # make a list of available channels and label them with last Chan. + Loc. codes
-            my %chan;
-            for (@carCLB) {
-                my (@chpCLB) = split(/\|/,$_);
-                $chan{$chpCLB[2]} = "$chpCLB[2]: $chpCLB[3] ($chpCLB[6] $chpCLB[19])";
+        # only if node is associated to a proc and calibration file defined
+        if ($GRIDType eq 'PROC') {
+            my %carCLB = readCLB("$GRIDType.$GRIDName.$NODEName");
+            if (%carCLB) {
+                # make a list of available channels and label them with last Chan. + Loc. codes
+                my %chan;
+                my @nv;
+                foreach (keys %carCLB) {
+                    push(@nv,$carCLB{$_}{'nv'});
+                }
+                @nv = do { my %seen; grep { !$seen{$_}++ } @nv }; # uniq
+                foreach (@nv) {
+                    $chan{$_} = "$carCLB{$_}{'nm'} ($carCLB{$_}{'un'}) - $carCLB{$_}{'cd'} $carCLB{$_}{'lc'}";
+                }
+                print "<LABEL style=\"width:150px\" for=\"channel\">$__{'Sensor:'}</LABEL>";
+                print "<SELECT name=\"channel\" size=\"1\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_nodeevent_channel})."')\" id=\"channel\">";
+                for (sort{ $a <=> $b } (keys(%chan))) {
+                    print "<option".($_ eq $channel ? " selected":"")." value=\"$_\">"."$_: $chan{$_}</option>\n";
+                }
+                print "</SELECT><BR><BR>\n";
             }
-            print "<SELECT name=\"channel\" size=\"1\" onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{help_nodeevent_channel})."')\" id=\"channel\">";
-            for (("",sort(keys(%chan)))) {
-                print "<option".($_ eq $channel ? " selected":"")." value=\"$_\">".($_ eq "" ? "":$chan{$_})."</option>\n";
-            }
-            print "</SELECT><BR><BR>\n";
         }
     } else {
         print "<INPUT type=\"hidden\" name=\"channel\" value=\"$channel\">\n";
