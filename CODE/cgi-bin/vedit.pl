@@ -348,6 +348,7 @@ if ($action =~ /new/i ) {
         $date2 = $today->strftime('%Y-%m-%d');
         $time2 = $today->strftime('%H:%M');
         $pagetitle = "$__{'Create a new project'}";
+        $contents = "**$__{'Project created on'} $date2 $time2 $__{'by'} $USERS{$CLIENT}{FULLNAME} [$USERS{$CLIENT}{UID}]**\n\n";
     }
     $meta = "WebObs: created by vedit\n\n";         # add MMD
 }
@@ -562,13 +563,18 @@ function postform() {
     \$('input[type!=\"button\"],select',form).each(function() { \$(this).css('background-color','transparent')});
     if (form.oper.value == '') {
         bad = true;
-        msg = 'Please select at least one operator.';
+        msg = 'Please select an author.';
         form.oper.style.background = '#FF9999';
     }
     if (form.titre.value == '') {
         bad = true;
         msg = 'Please enter a title.';
         form.titre.style.background = '#FF9999';
+    }
+    if (form.oper.value != form.author.value) {
+        if (!confirm(\"You will change the project author. Are you sure?\")) {
+            return false;
+        }
     }
     if (bad) {
         //\$('html,body').animate({ scrollTop: 0 }, 400);
@@ -672,6 +678,7 @@ if ($object =~ /^.*\..*\..*$/) {
         print "<INPUT type=\"hidden\" name=\"notebook\" value=\"\">\n";
         print "<INPUT type=\"hidden\" name=\"notebookfwd\" value=\"\">\n";
 }
+print "<INPUT type=\"hidden\" name=\"author\" value=\"$oper[0]\">\n";
 
 # makes a list of active (and inactive) users
 my %alogins;
@@ -717,7 +724,7 @@ if (!$isProject) {
     for (@logins) {
         my $ulogin = $_;
         my $uid = $USERS{$ulogin}{UID};
-        my $sel = ((grep {$_ eq $uid} @oper) || ($action =~ /new/i && $ulogin eq $CLIENT) ? 'selected':'');
+        my $sel = ($ulogin eq $CLIENT ? 'selected':'');
         print "<option $sel value=\"$uid\">$USERS{$ulogin}{FULLNAME} ($uid)</option>\n";
     }
     print "</SELECT><BR><BR>\n";
