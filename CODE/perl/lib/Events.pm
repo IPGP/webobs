@@ -75,6 +75,8 @@ require Exporter;
 @EXPORT     = qw(struct eventsShow projectShow eventsTree eventsChrono);
 $VERSION    = "1.00";
 
+my $query = $ENV{SCRIPT_NAME}.($ENV{QUERY_STRING} ? "?$ENV{QUERY_STRING}":"");
+
 =pod
 
 =head1 FUNCTIONS
@@ -465,8 +467,7 @@ sub projectShow {
 
         my $Pedit = "";
         if ($editOK) {
-            $Pedit .= "<a href=\"/cgi-bin/vedit.pl?object=$objectname&event=$projname&action=upd\"><img src=\"/icons/modif.png\" title=\"$__{'Edit...'}\" border=0 alt=\"$__{'Edit...'}\"></a>";
-            $Pedit .= "<img src=\"/icons/no.png\" onclick=\"delEvent('/cgi-bin/vedit.pl','$objectname','$projname')\" style=\"cursor:pointer\" title=\"$__{'Remove...'}\" border=0 alt=\"$__{'Remove...'}\"></a>";
+            $Pedit .= "<a href=\"/cgi-bin/vedit.pl?object=$objectname&event=$projname&action=upd&return_url=$query\"><img src=\"/icons/modif.png\" title=\"$__{'Edit...'}\" border=0 alt=\"$__{'Edit...'}\"></a>";
             $Pedit .= "<a href=\"$WEBOBS{CGI_UPLOAD}?object=$objectname&doc=SPATH_INTERVENTIONS&event=$projdir\"><img src=\"/icons/camera.png\" title=\"$__{'Manage Photos'}\" border=0 alt=\"$__{'Manage Photos'}\"></a>";
         }
         my $Pfts = $Pts->strftime("%Y-%m-%d %H:%M");

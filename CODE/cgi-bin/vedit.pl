@@ -50,12 +50,13 @@ WebObs::Gazette::delEventArticle is used by vedit 'del' action, based on $WEBOBS
 
 =item B<action=>
 
-    { upd | del | new | save }
+    { upd | del | new | save | close }
 
-B<save> is 'called' to actually process a previous B<new> or B<upd> or B<del> request from the user.
+B<save> is 'called' to actually process a previous B<new> or B<upd> or B<close> or B<del> request from the user.
 
-For B<upd> or B<del>, event must be the targeted event's file (*.txt). For B<new>,
-event must be the parent's event (ie. may be "" if event is not a subevent).
+For B<upd> or B<del>, event must be the targeted event's file (*.txt). For B<close>, event must
+be the targeted project file (*.txt). For B<new>, event must be the parent's event 
+(ie. may be "" if event is not a subevent).
 
 
 =item B<event=eventrelpath>
@@ -65,7 +66,7 @@ event must be the parent's event (ie. may be "" if event is not a subevent).
 
 =item B<event=projectName>
 
-    projectName  := NODEName_Projet.txt
+    projectName  := nodeName_Projet.txt | gridName_Projet.txt
 
 =back
 
@@ -96,10 +97,10 @@ $CGI::DISABLE_UPLOADS = 1;
 
 # ---- webobs stuff ----------------------------------
 use WebObs::Config;
-use WebObs::Events;
 use WebObs::Gazette;
 use WebObs::Users qw(%USERS $CLIENT clientHasRead clientHasEdit clientHasAdm);
 use WebObs::Grids;
+use WebObs::Events;
 use WebObs::Utils;
 use WebObs::Wiki;
 use WebObs::i18n;
@@ -139,19 +140,22 @@ my $notebook    = $QryParm->{'notebook'} // "000";
 my $notebookfwd = $QryParm->{'notebookfwd'} // "0";
 my $metain      = $QryParm->{'meta'} // "";     # add MMD
 my $conv        = $cgi->param('conv')  // "0";  # add MMD
+my $return_url  = $cgi->param('return_url');
+
 $contents = "$metain$contents";            # add MMD
 my $meta = "";                                  # add MMD
 my $mmd = isok($WEBOBS{WIKI_MMD}) // 1;    # add MMD
 my $target = "";
 my $tz = "";
 
-if ($action =~ /upd|new|del|save/i) {
+if ($action =~ /^upd|new|del|save|close$/i) {
     if (defined($GRIDType)) {
         $isProject = ($evpath =~ /$NODEName\_Projet.txt/);
         if (clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")) {
             if ( $isProject && basename($evpath) ne $evpath ) { die $__{'invalid project name'} }
             if ( $action =~ /upd|del/i && $evpath !~ /.*\.txt$/i) { die "\"$evpath\" $__{'invalid for action'} $action" }
             if ( $action =~ /upd|del/i && !-f "$evbase/$evpath") { die "\"$evpath\" $__{'not found'}" }
+            if ( $action =~ /close/i && !$isProject ) { die "\"$evpath\" $__{'invalid for action'} $action" } # close is only for project
             if ( $action =~ /new/i && -f "$evbase/$evpath" ) { $action = 'upd' } # new on existing: force upd !
         } else {
             die "$__{'Not authorized'}";
@@ -302,6 +306,11 @@ if ($action =~ /del/i ) {
     } else {
         htmlMsgNotOK("$msg\nError $rc");
     }
+    print qq{
+        <script>
+        window.location.href = "$return_url";
+        </script>
+    };
     exit;
 }
 
@@ -345,34 +354,44 @@ if ($action =~ /new/i ) {
 
 # ---------------------------------------------------------------------------------------
 # ---- action 'upd' : show user an event form to update contents of event file
+# ---- action 'close' : show user an event form to update contents of a former project file
 # (object,event)
 #
-if ($action =~ /upd/i ) {
+if ($action =~ /upd|close/i ) {
+    # event metadata are stored in the header line of file as pipe-separated fields:
+    #     UID1[+UID2+...]/RUID1[+RUID2+...]|title|enddatetime|feature|channel|outcome|notebook|notebookfwd
+    #    event text content
+    #    ...
+    @lines = readFile("$evbase/$evpath");
+    chomp(@lines);
+    (my $authors,my $remotes,$titre,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd) = WebObs::Events::headersplit($lines[0]);
+    shift(@lines);
+    $contents = join("\n",@lines)."\n";
+    ($contents, $meta) = WebObs::Wiki::stripMDmetadata($contents);
+    @oper = @$authors;
+    @roper = @$remotes;
+    
     if (!$isProject) {
         my ($fname,$ft) = split(/\./,basename($evpath));
         ($name,$date,$time,$version) = WebObs::Events::eventnameSplit(basename($fname));
         $pagetitle = "$__{'Edit an event'} [$date $time".($tz ne "" ? " <I>($tz)</I>":"")." $version]";
         $s2g = ( $GazetteWhat eq "ALL" ) ? 1 : 0;
     } else {
-        $pagetitle = "$__{'Edit a project'}";
+        if ($action =~ /close/i ) {
+            $pagetitle = "$__{'Closing a project'}";
+            $contents = "**$__{'Closed project created on'} $date2 $time2 $__{'by'} $oper[0]**\n\n".$contents;
+            @oper = @roper; # project assignee becomes the author
+            @roper = ();
+            $date2 = $time2 = "";
+            $isProject = 0;
+        } else {
+            $pagetitle = "$__{'Edit a project'}";
+        }
     }
-
-# event metadata are stored in the header line of file as pipe-separated fields:
-#     UID1[+UID2+...]/RUID1[+RUID2+...]|title|enddatetime|feature|channel|outcome|notebook|notebookfwd
-#    event text content
-#    ...
-    @lines = readFile("$evbase/$evpath");
-    chomp(@lines);
-    (my $authors,my $remotes,$titre,$date2,$time2,$feature,$channel,$outcome,$notebook,$notebookfwd) = WebObs::Events::headersplit($lines[0]);
-    @oper = @$authors;
-    @roper = @$remotes;
     if ($isProject) {
         $date2 = $today->strftime('%Y-%m-%d') if ($date2 eq "");
         $time2 = $today->strftime('%H:%M') if ($time2 eq "");
     }
-    shift(@lines);
-    $contents = join("\n",@lines)."\n";
-    ($contents, $meta) = WebObs::Wiki::stripMDmetadata($contents);
 }
 
 # ---- wodp stuff
@@ -525,15 +544,15 @@ function convert2MMD()
     #
 } else {
     print "<script language=\"javascript\" type=\"text/javascript\">
+setTimeout(function() {
+    window.parent.document.getElementById('wmtarget').style.height = document.documentElement.scrollHeight + 'px';
+}, 100);
+
 \$(document).ready(function() {
     \$(\"#markItUp\").markItUp(mySettings);
     var h = \$(\"textarea#markItUp\").css('line-height').match(/(\\d+)(.*)/);
     \$(\"textarea#markItUp\").css('height',(h[1]*\$(\"textarea#markItUp\").attr('rows'))+h[2]);
 });
-
-setTimeout(function() {
-    window.parent.document.getElementById('wmtarget').style.height = document.documentElement.scrollHeight + 'px';
-}, 100);
 
 function postform() {
     var form = \$(\"#theform\")[0];
@@ -568,6 +587,16 @@ function convert2MMD()
         postform();
     }
 }
+function deleteProject() {
+    if (confirm(\"This project will be definitively deleted. Are you sure?\")) {
+        location.href = \"/cgi-bin/vedit.pl?object=$object&event=$evpath&action=del&return_url=$return_url\";
+    }
+}
+function closeProject() {
+    if (confirm(\"This project will be closed and saved as a new event. Are you sure?\")) {
+        location.href = \"/cgi-bin/vedit.pl?object=$object&event=$evpath&action=close&return_url=$return_url\";
+    }
+}
 </script>";
 }
 
@@ -578,9 +607,10 @@ print "<!-- overLIB (c) Erik Bosrup -->
 <div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>
 <DIV ID=\"helpBox\"></DIV>";
 print "<A NAME=\"MYTOP\"></A>";
-print "\n<H2>$objectfullname</H2><H3>$pagetitle";
+print "\n<H2>$objectfullname</H2>\n<H3>$pagetitle";
 print "<br><small>$parents</small>" if ($parents ne "");
-print "</H3>";
+print " <A href=\"#\" onClick=\"deleteProject();\" title=\"$__{'Delete this project'}\"><IMG src=\"/icons/no.png\"></A>" if ($isProject);
+print "</H3>\n";
 print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 print "<TABLE><TR>";
 print "<TD style=\"vertical-align: top; border: none;\">";
@@ -625,11 +655,9 @@ if ($object =~ /^.*\..*\..*$/) {
                 print "</SELECT><BR><BR>\n";
             }
         }
+        print "<LABEL style=\"width:150px\" for=\"outcome\">$__{'Sensor/data outcome:'}</LABEL><INPUT type=\"checkbox\" name=\"outcome\" value=\"1\"".($outcome ? "checked":"").">";
     } else {
         print "<INPUT type=\"hidden\" name=\"channel\" value=\"$channel\">\n";
-    }
-    if (!$isProject) {
-        print "<LABEL style=\"width:150px\" for=\"outcome\">$__{'Sensor/data outcome'}:</LABEL><INPUT type=\"checkbox\" name=\"outcome\" value=\"1\"".($outcome ? "checked":"").">";
     }
     if (isok($NODES{EVENTNODE_NOTEBOOK})) {
         print "<B style=\"margin-left:20px\">$__{'Notebook Nb:'} </B><INPUT type=\"text\" size=\"3\" name=\"notebook\" value=\"$notebook\">";
@@ -644,9 +672,6 @@ if ($object =~ /^.*\..*\..*$/) {
         print "<INPUT type=\"hidden\" name=\"notebook\" value=\"\">\n";
         print "<INPUT type=\"hidden\" name=\"notebookfwd\" value=\"\">\n";
 }
-print "</TD>\n<TD style=\"text-align: left; vertical-align: top; border: none;\">";
-print "<B>$__{'Author(s):'} </B><BR><SELECT id=\"oper\" name=\"oper\" size=\"10\" multiple style=\"vertical-align:text-top\"
-      onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{'Select names of people involved (hold CTRL key for multiple selections)'})."')\">\n";
 
 # makes a list of active (and inactive) users
 my %alogins;
@@ -661,31 +686,54 @@ for my $ulogin (keys(%USERS)) {
     }
 }
 my @logins;
-for my $uid (sort keys(%alogins)) { push(@logins,$alogins{$uid}); }
+for (sort keys(%alogins)) { push(@logins,$alogins{$_}); }
 if (!($action =~ /new/i)) { # adds inactive users
-    for my $uid (sort keys(%ilogins)) { push(@logins,$ilogins{$uid}); }
+    for (sort keys(%ilogins)) { push(@logins,$ilogins{$_}); }
 }
-for my $ulogin (@logins) {
-    my $uid = $USERS{$ulogin}{UID};
-    my $sel = ((grep {$_ eq $uid} @oper) || ($action =~ /new/i && $ulogin eq $CLIENT) ? 'selected':'');
-    print "<option $sel value=\"$uid\">$USERS{$ulogin}{FULLNAME} ($uid)</option>\n";
-}
-print "</SELECT>\n";
-print "</TD>\n<TD style=\"text-align: left; vertical-align: top; border: none;\">";
 if (!$isProject) {
+    print "</TD>\n<TD style=\"text-align: left; vertical-align: top; border: none;\">";
+    print "<B>$__{'Author(s):'} </B><BR><SELECT id=\"oper\" name=\"oper\" size=\"10\" multiple style=\"vertical-align:text-top\"
+        onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{'Select names of people involved (hold CTRL key for multiple selections)'})."')\">\n";
+    for (@logins) {
+        my $ulogin  = $_;
+        my $uid = $USERS{$ulogin}{UID};
+        my $sel = ((grep {$_ eq $uid} @oper) || ($action =~ /new/i && $ulogin eq $CLIENT) ? 'selected':'');
+        print "<option $sel value=\"$uid\">$USERS{$ulogin}{FULLNAME} ($uid)</option>\n";
+    }
+    print "</SELECT></TD>\n";
+    print "<TD style=\"text-align: left; vertical-align: top; border: none;\">";
     print "<B>$__{'Remote Operator(s):'} </B><BR><SELECT id=\"roper\" name=\"roper\" size=\"10\" multiple style=\"vertical-align:text-top\"
         onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{'Select names of people involved remotely (hold CTRL key for multiple selections)'})."')\">\n";
+    for (@logins) {
+        my $ulogin  = $_;
+        my $uid = $USERS{$ulogin}{UID};
+        my $sel = ((grep {$_ eq $uid} @roper) ? 'selected':'');
+        print "<option $sel value=\"$uid\">$USERS{$ulogin}{FULLNAME} ($uid)</option>\n";
+    }
+    print "</SELECT></TD>\n";
 } else {
-    print "<B>$__{'Assignee(s):'} </B><BR><SELECT id=\"roper\" name=\"roper\" size=\"10\" multiple style=\"vertical-align:text-top\"
-        onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{'Select names of people assigned to the project (hold CTRL key for multiple selections)'})."')\">\n";
+    print "<LABEL style=\"width:150px\" for=\"oper\">$__{'Author:'}</LABEL><SELECT id=\"oper\" name=\"oper\" size=\"1\" style=\"vertical-align:text-top\"
+        onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{'Name of the project\'s author'})."')\">\n";
+    for (@logins) {
+        my $ulogin = $_;
+        my $uid = $USERS{$ulogin}{UID};
+        my $sel = ((grep {$_ eq $uid} @oper) || ($action =~ /new/i && $ulogin eq $CLIENT) ? 'selected':'');
+        print "<option $sel value=\"$uid\">$USERS{$ulogin}{FULLNAME} ($uid)</option>\n";
+    }
+    print "</SELECT><BR><BR>\n";
+    print "<LABEL style=\"width:150px\" for=\"roper\">$__{'Assignee:'}</LABEL>"
+        ."<SELECT id=\"roper\" name=\"roper\" size=\"1\" style=\"vertical-align:text-top\""
+        ."onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{'Name of the project\'s assignee'})."')\">\n"
+        ."<OPTION value=\"\"></OPTION>\n";
+    for (@logins) {
+        my $ulogin  = $_;
+        my $uid = $USERS{$ulogin}{UID};
+        my $sel = ((grep {$_ eq $uid} @roper) ? 'selected':'');
+        print "<option $sel value=\"$uid\">$USERS{$ulogin}{FULLNAME} ($uid)</option>\n";
+    }
+    print "</TD>\n"
 }
-for my $ulogin (@logins) {
-    my $uid = $USERS{$ulogin}{UID};
-    my $sel = ((grep {$_ eq $uid} @roper) ? 'selected':'');
-    print "<option $sel value=\"$uid\">$USERS{$ulogin}{FULLNAME} ($uid)</option>\n";
-}
-print "</SELECT></TR>\n";
-print "<TR><TD style=\"vertical-align: top; border: none;\" colspan=3>";
+print "</TR><TR><TD style=\"vertical-align: top; border: none;\"".(!$isProject ? " colspan=3":"").">";
 print "<P><TEXTAREA id=\"markItUp\" class=\"markItUp\" rows=\"11\" cols=\"80\" name=\"contents\" dataformatas=\"plaintext\">$contents</TEXTAREA></P>";
 print "<P><B>$__{Notify} (email)</B><input type=\"checkbox\"".(isok($NODES{EVENTNODE_NOTIFY_DEFAULT}) ? " checked":"")." name=\"notify\" value=\"OK\""
   ." onMouseOut=\"nd()\" onmouseover=\"overlib('".js($__{'Send an e-mail to inform Webobs users'})."')\">";
@@ -704,9 +752,10 @@ print "</P>\n</TD></TR></TABLE>\n";
 print "<P style=\"text-align:center\">";
 print "<input type=\"button\" name=\"lien\" value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
 if (length($meta) == 0 && $mmd) {
-    print "<input type=\"button\" name=lien value=\"$__{'> MMD'}\" onClick=\"convert2MMD();\" style=\"font-weight:normal\">";
+    print " <input type=\"button\" name=lien value=\"$__{'> MMD'}\" onClick=\"convert2MMD();\" style=\"font-weight:normal\">";
 }
-print "<input type=\"button\" style=\"font-weight:bold\" value=\"$__{'Submit'}\" onClick=\"postform();\">";
+print " <input type=\"button\" style=\"font-weight:bold\" value=\"$__{'Save'}\" onClick=\"postform();\">";
+print " <input type=\"button\"style=\"font-weight:bold\" value=\"$__{'Close this project'}\" onClick=\"closeProject();\">" if ($isProject && $action !~ /new/i );
 print "<input type=\"hidden\" name=\"action\" value=\"save\">";
 print "<input type=\"hidden\" name=\"object\" value=\"$object\">";
 print "<input type=\"hidden\" name=\"event\" value=\"$evpath\">";
@@ -736,11 +785,11 @@ sub htmlMsgOK {
         $msg .= "+ Notify ok"  if ( $t == 0 );
         $msg .= "+ Notify error $t" if ( $t > 0);
     }
-    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    print $cgi->header(-type=>'text/html', -charset=>'utf-8');
     print "$msg\n" if (!isok($WEBOBS{CGI_CONFIRM_SUCCESSFUL}));
 }
 sub htmlMsgNotOK {
-    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
+    print $cgi->header(-type=>'text/html', -charset=>'utf-8');
     print "$_[0]\n$__{'FAILED'} !\n";
 }
 

@@ -740,14 +740,14 @@ msgstr "Codes, alias et noms"
 msgid "Features"
 msgstr "Caractéristiques"
 
-msgid "Feature"
-msgstr "Caractéristique"
+msgid "Feature:"
+msgstr "Caractéristique :"
 
 msgid "Sensor:"
 msgstr "Capteur :"
 
-msgid "Sensor/data outcome"
-msgstr "Influence capteur/données"
+msgid "Sensor/data outcome:"
+msgstr "Influence capteur/données :"
 
 msgid "Notebook Nb"
 msgstr "Cahier N°"
@@ -767,20 +767,35 @@ msgstr "Date & heure fin : :"
 msgid "Select names of people involved remotely (hold CTRL key for multiple selections)"
 msgstr "Choisir les intervenants à distance (maintenir la touche CTRL pour sélection multiple)"
 
-msgid "Assignee(s):"
-msgstr "Responsable(s) du projet :"
+msgid "Author:"
+msgstr "Auteur :"
 
-msgid "Select names of people assigned to the project (hold CTRL key for multiple selections)"
-msgstr "Choisir les responsables du projet (maintenir la touche CTRL pour sélection multiple)"
+msgid "Name of the project's author"
+msgstr "Auteur du projet"
 
-msgid "Assignees"
-msgstr "Responsables du projet"
+msgid "Assignee:"
+msgstr "Responsable du projet :"
+
+msgid "Name of the project's assignee"
+msgstr "Attribuer un responsable au projet"
+
+msgid "Assignee"
+msgstr "Responsable du projet"
 
 msgid "Remote operators"
 msgstr "Opérateurs distants"
 
 msgid "Project assigned to"
 msgstr "Projet attribué à"
+
+msgid "Close this project"
+msgstr "Fermer ce projet"
+
+msgid "Closing a project"
+msgstr "Fermeture d'un projet"
+
+msgid "Closed project created on"
+msgstr "Projet clos créé le"
 
 msgid "Full name"
 msgstr "Nom & prénom"
