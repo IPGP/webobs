@@ -380,7 +380,7 @@ if ($action =~ /upd|close/i ) {
     } else {
         if ($action =~ /close/i ) {
             $pagetitle = "$__{'Closing a project'}";
-            $contents = "**$__{'Closed project created on'} $date2 $time2 $__{'by'} $oper[0]**\n\n".$contents;
+            #$contents = "**$__{'Closed project created on'} $date2 $time2 $__{'by'} $oper[0]**\n\n".$contents;
             @oper = @roper; # project assignee becomes the author
             @roper = ();
             $date2 = $time2 = "";
