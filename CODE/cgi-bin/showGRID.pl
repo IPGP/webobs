@@ -115,7 +115,7 @@ my $usrCoord = checkParam($cgi->param('coord'), qr/^[a-zA-Z]*$/, 'coord')
   // $GRIDS{DEFAULT_COORDINATES};
 my $usrProjectOnly = checkParam($cgi->param('projectonly'), qr/^(on|off)?$/, 'projectonly')
   // "off";
-my $usrProject = checkParam($cgi->param('project'), qr/^(on|off)?$/, 'project')
+my $usrProject = checkParam($cgi->param('showproject'), qr/^(on|off)?$/, 'showproject')
   // isok($GRIDS{DEFAULT_PROJECT_FILTER}) ? 'on':'off';
 my $usrProcparam = checkParam($cgi->param('procparam'), qr/^(on|off)?$/, 'procparam')
   // isok($GRIDS{DEFAULT_PROCPARAM_FILTER}) ? 'on':'off';
@@ -533,41 +533,48 @@ if ($isProc) {
 
 # -- Nodes list submenu Nodes
 $htmlcontents .= "$__{'Nodes'} [ ";
-$htmlcontents .= ($usrNodes eq "active" ? "<B>$__{'Active_nodes'}</B>":"<A href=\"$myself&amp;nodes=active&amp;coord=$usrCoord&amp;project=$usrProject&amp;projectonly=$usrProjectOnly&amp;$procParm#NODES\">$__{'Active_nodes'}</A>");
+$htmlcontents .= ($usrNodes eq "active" ? "<B>$__{'Active_nodes'}</B>":"<A href=\"$myself&amp;nodes=active&amp;coord=$usrCoord&amp;showproject=$usrProject&amp;projectonly=$usrProjectOnly&amp;$procParm#NODES\">$__{'Active_nodes'}</A>");
 $htmlcontents .= " | ";
-$htmlcontents .= ($usrNodes eq "inactive" ? "<B>$__{'Inactive_nodes'}</B>":"<A href=\"$myself&amp;nodes=inactive&amp;coord=$usrCoord&amp;project=$usrProject&amp;projectonly=$usrProjectOnly&amp;$procParm#NODES\">$__{'Inactive_nodes'}</A>");
+$htmlcontents .= ($usrNodes eq "inactive" ? "<B>$__{'Inactive_nodes'}</B>":"<A href=\"$myself&amp;nodes=inactive&amp;coord=$usrCoord&amp;showproject=$usrProject&amp;projectonly=$usrProjectOnly&amp;$procParm#NODES\">$__{'Inactive_nodes'}</A>");
 $htmlcontents .= " | ";
-$htmlcontents .= ($usrNodes eq "all" ? "<B>$__{'All_nodes'}</B>":"<A href=\"$myself&amp;nodes=all&amp;coord=$usrCoord&amp;project=$usrProject&amp;projectonly=$usrProjectOnly$procParm#NODES\">$__{'All_nodes'}</A>");
+$htmlcontents .= ($usrNodes eq "all" ? "<B>$__{'All_nodes'}</B>":"<A href=\"$myself&amp;nodes=all&amp;coord=$usrCoord&amp;showproject=$usrProject&amp;projectonly=$usrProjectOnly$procParm#NODES\">$__{'All_nodes'}</A>");
 $htmlcontents .= " ] ";
 if ( $admOK ) {
-    $htmlcontents .= " &mdash; $__{'Invalid nodes'} [ <A href=\"$myself&amp;coord=$usrCoord&amp;project=$usrProject&amp;projectonly=$usrProjectOnly&amp;nodes=$usrNodes$procParm&amp;invalid=";
+    $htmlcontents .= " &mdash; $__{'Invalid nodes'} [ <A href=\"$myself&amp;coord=$usrCoord&amp;showproject=$usrProject&amp;projectonly=$usrProjectOnly&amp;nodes=$usrNodes$procParm&amp;invalid=";
     $htmlcontents .= ($usrInvalid eq "on" ? "off#NODES\">$__{'Hide'}":"on#NODES\">$__{'Show'}")."</A> ]";
 }
 
 # -- Nodes list submenu Coordinates
 $htmlcontents .= " &mdash; $__{Coordinates} [ "
-  .($usrCoord eq "latlon" ? "<B>Lat/Lon</B>":"<A href=\"$myself&amp;project=$usrProject&amp;projectonly=$usrProjectOnly&amp;nodes=$usrNodes&amp;coord=latlon$procParm#NODES\">Lat/Lon</A>")." | "
-  .($usrCoord eq "utm"    ? "<B>UTM</B>":"<A href=\"$myself&amp;project=$usrProject&amp;projectonly=$usrProjectOnly&amp;nodes=$usrNodes&amp;coord=utm$procParm#NODES\">UTM</A>");
+  .($usrCoord eq "latlon" ? "<B>Lat/Lon</B>":"<A href=\"$myself&amp;showproject=$usrProject&amp;projectonly=$usrProjectOnly&amp;nodes=$usrNodes&amp;coord=latlon$procParm#NODES\">Lat/Lon</A>")." | "
+  .($usrCoord eq "utm"    ? "<B>UTM</B>":"<A href=\"$myself&amp;showproject=$usrProject&amp;projectonly=$usrProjectOnly&amp;nodes=$usrNodes&amp;coord=utm$procParm#NODES\">UTM</A>");
 if (defined($GRID{UTM_LOCAL}) && -e $GRID{UTM_LOCAL} ) {
-    $htmlcontents .= " | ".($usrCoord eq "local" ? "<B>$localCS</B>":"<A href=\"$myself&amp;project=$usrProject&amp;projectonly=$usrProjectOnly&amp;nodes=$usrNodes&amp;coord=local$procParm#NODES\">$localCS</A>");
+    $htmlcontents .= " | ".($usrCoord eq "local" ? "<B>$localCS</B>":"<A href=\"$myself&amp;showproject=$usrProject&amp;projectonly=$usrProjectOnly&amp;nodes=$usrNodes&amp;coord=local$procParm#NODES\">$localCS</A>");
 }
 $htmlcontents .= " | "
-  .($usrCoord eq "xyz"    ? "<B>XYZ</B>":"<A href=\"$myself&amp;project=$usrProject&amp;projectonly=$usrProjectOnly&amp;nodes=$usrNodes&amp;coord=xyz$procParm#NODES\">XYZ</A>")." ]";
+  .($usrCoord eq "xyz"    ? "<B>XYZ</B>":"<A href=\"$myself&amp;showproject=$usrProject&amp;projectonly=$usrProjectOnly&amp;nodes=$usrNodes&amp;coord=xyz$procParm#NODES\">XYZ</A>")." ]";
 
 # -- Nodes list submenu Proc paramaters
 if ($isProc) {
-    $htmlcontents .= " &mdash; $__{'Proc parameters'} [ <A href=\"$myself&amp;nodes=$usrNodes&amp;coord=$usrCoord&amp;project=$usrProject&amp;projectonly=$usrProjectOnly&amp;procparam="
+    $htmlcontents .= " &mdash; $__{'Proc parameters'} [ <A href=\"$myself&amp;nodes=$usrNodes&amp;coord=$usrCoord&amp;showproject=$usrProject&amp;projectonly=$usrProjectOnly&amp;procparam="
       .($usrProcparam eq "on" ? "off#NODES\">$__{'Hide'}":"on#NODES\">$__{'Show'}")."</A> ]";
 }
 
 # -- Nodes list submenu Project
 if ( $CLIENT ne 'guest' ) {
-    $htmlcontents .= " &mdash; $__{Project} [ "
-        .($usrProjectOnly eq "on" ? "<B>$__{'Only'}</B>":"<A href=\"$myself&amp;project=$usrProject&amp;nodes=$usrNodes&amp;coord=$usrCoord$procParm&amp;projectonly=on#NODES\">$__{'Only'}</A>")." | "
-        .($usrProjectOnly eq "off" ? "<B>$__{'All nodes'}</B>":"<A href=\"$myself&amp;project=$usrProject&amp;nodes=$usrNodes&amp;coord=$usrCoord$procParm&amp;projectonly=off#NODES\">$__{'All nodes'}</A>");
-    
-    $htmlcontents .= " | <A href=\"$myself&amp;nodes=$usrNodes&amp;coord=$usrCoord$procParm&amp;projectonly=$usrProjectOnly&amp;project="
-      .($usrProject eq "on"  ? "off#NODES\">$__{'Hide'}":"on#NODES\">$__{'Show'}")."</A> ]";
+    $htmlcontents .= " &mdash; $__{Project} [ ";
+    if ($usrProjectOnly eq "on") {
+        $htmlcontents .= "<B>$__{'Only'}</B> | <A href=\"$myself&amp;showproject=$usrProject&amp;nodes=$usrNodes&amp;coord=$usrCoord$procParm&amp;projectonly=off#NODES\">$__{'All nodes'}</A>";
+    } else {
+        $htmlcontents .= "<A href=\"$myself&amp;showproject=$usrProject&amp;nodes=$usrNodes&amp;coord=$usrCoord$procParm&amp;projectonly=on#NODES\">$__{'Only'}</A> | <B>$__{'All nodes'}</B>";
+    }
+    $htmlcontents .= " | <A href=\"$myself&amp;nodes=$usrNodes&amp;coord=$usrCoord$procParm&amp;projectonly=$usrProjectOnly";
+    if ($usrProject eq "on") {
+        $htmlcontents .= "&amp;showproject=#NODES\">$__{'Hide'}";
+    } else {
+        $htmlcontents .= "&amp;showproject=on#NODES\">$__{'Show'}";
+    }
+    $htmlcontents .= "</A> ]";
 }
 # -- submenu Export
 $htmlcontents .= " &mdash; $__{Export} [";
@@ -598,7 +605,7 @@ $htmlcontents .= ($editOK ? "<TH width=\"14px\" rowspan=2>".($admOK ? $newNODE:"
   ."<TH rowspan=2>$__{'Type'}</TH>";
 if ($CLIENT ne 'guest') {
     $htmlcontents .= "<TH rowspan=2>$__{'Nb<br>Evnt'}</TH>";
-    $htmlcontents .= "<TH".($usrProject eq "on" ? " rowspan=2></TH><TH colspan=2>$__{'Project'}":" rowspan=2 colspan=2>")."</TH>";
+    $htmlcontents .= "<TH".($usrProject eq "on" ? " rowspan=2></TH><TH colspan=3>":" rowspan=2 align=left>")."$__{'Project'}</TH>";
 }
 $htmlcontents .= "<TH colspan=3>$__{'Proc Parameters'}</TH>" if ($usrProcparam eq 'on');
 $htmlcontents .= "<TH rowspan=2></TH><TH colspan=".(@procTS).">$__{'Proc Graphs'}</TH>" if ($procOUTG);
@@ -618,7 +625,7 @@ if ($usrCoord eq "utm") {
     $htmlcontents .= "<TH>$__{'Lat.'} (WGS84)</TH><TH>$__{'Lon.'} (WGS84)</TH><TH>$__{'Elev.'} (m)</TH>";
 }
 $htmlcontents .= "<TH>$__{'Start / Installation'}</TH><TH>$__{'End / Stop'}</TH>";
-$htmlcontents .= "<TH align=left>".$__{'Subject'}."</TH><TH><IMG src=\"/icons/worker.png\" title=\"$__{'Assignees'}\">" if ($usrProject eq "on");
+$htmlcontents .= "<TH align=left>".$__{'Subject'}."</TH><TH><IMG src=\"/icons/manager.png\" title=\"$__{'Authors'}\"></TH><TH><IMG src=\"/icons/worker.png\" title=\"$__{'Assignees'}\">" if ($usrProject eq "on");
 $htmlcontents .= "<TH>$__{'FID'}</TH><TH>$__{'Raw Format'}</TH><TH>$__{'Chan.'}</TH>" if ($usrProcparam eq 'on');
 if ($procOUTG eq "events") {
     $htmlcontents .= "<TH>Events</TH>";
@@ -743,34 +750,40 @@ for (@{$GRID{NODESLIST}}) {
 
             #my $nbInter  = 0;
             #find(sub { $nbInter++ if /^$NODEName.*\.txt$/ }, $pathInter);
-            $htmltr .= "<TD align=center><A href=\"/cgi-bin/showNODE.pl?node=$grid.$NODEName#EVENTS\">".scalar(@interventions)."</A></TD><TD></TD><TD align=left>";
-            my $titleProj = "";
-            my $textProj = "";
+            $htmltr .= "<TD align=center><A href=\"/cgi-bin/showNODE.pl?node=$grid.$NODEName#EVENTS\">".scalar(@interventions)."</A></TD>";
             if ((-e $fileProj) && (-s $fileProj)) {
+                my $titleProj = "";
+                my $textProj = "";
+                my $author_ovl = "";
+                my $assignee_ovl = "";
                 my @proj = readFile($fileProj);
                 @proj = grep(!/^$|^WebObs: /, @proj);
                 chomp(@proj);
                 my ($author,$assignee,$title) = WebObs::Events::headersplit($proj[0]);
                 my $EVTusers = join(", ",WebObs::Users::userName(@$author));
+                $author_ovl = "onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($EVTusers)."',CAPTION,'".js($__{'Project author'})."')\"" if ($EVTusers ne "");
                 my $EVTworker = join(", ",WebObs::Users::userName(@$assignee));
-                my $worker = "";
-                if ($EVTworker ne "") {
-                    $worker = "<IMG src=\"/icons/worker.png\" onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($EVTworker)."',CAPTION,'".js($__{'Project assigned to'})."')\">";
-                }
+                $assignee_ovl = "onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($EVTworker)."',CAPTION,'".js($__{'Project assigned to'})."')\"" if ($EVTworker ne "");
                 if ($title ne "") {
                     shift(@proj);
-                    $titleProj = "<B>$title</B>".($EVTusers ne "" ? " <I>($EVTusers)</I>":"");
+                    $titleProj = "<B>$title</B>";
                 }
                 $textProj = WebObs::Wiki::wiki2html(join("\n",@proj));
                 if ($usrProject eq "on") {
-                    $htmltr .= "$titleProj<BR>$textProj<TD text-align=center>$worker</TD>\n";
+                    $htmltr .= "<TD></TD><TD align=left>$titleProj<BR>$textProj</TD>"
+                              ."<TD align=center $author_ovl>@$author[0]</TD>"
+                              ."<TD align=center $assignee_ovl>@$assignee[0]</TD>\n";
                 } else {
-                    $htmltr .= "<IMG src=\"/icons/attention.gif\" onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($textProj)."',CAPTION,'$NODE{ALIAS}: $titleProj')\">$worker";
+                    $htmltr .= "<TD text-align=left>"
+                              ."<IMG src=\"/icons/attention.gif\" onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($textProj)."',CAPTION,'$NODE{ALIAS}: $titleProj')\">"
+                              ."<IMG src=\"/icons/manager.png\" $author_ovl>";
+                    $htmltr .= "<IMG src=\"/icons/worker.png\" $assignee_ovl>" if ($EVTworker ne "");
+                    $htmltr .= "</TD>\n";
                 }
             } else {
-                $htmltr .= "<TD></TD>" if ($usrProject eq "on");
+                $htmltr .= "<TD></TD><TD></TD>" if ($usrProject eq "on");
+                $htmltr .= "<TD></TD>\n";
             }
-            $htmltr .= "</TD>\n";
         }
 
         # Node's proc parameters

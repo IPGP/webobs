@@ -50,11 +50,11 @@ WebObs::Gazette::delEventArticle is used by vedit 'del' action, based on $WEBOBS
 
 =item B<action=>
 
-    { upd | del | new | save | close }
+    { upd | p2e | del | new | save }
 
-B<save> is 'called' to actually process a previous B<new> or B<upd> or B<close> or B<del> request from the user.
+B<save> is 'called' to actually process a previous B<new> or B<upd> or B<p2e> or B<del> request from the user.
 
-For B<upd> or B<del>, event must be the targeted event's file (*.txt). For B<close>, event must
+For B<upd> or B<del>, event must be the targeted event's file (*.txt). For B<p2e>, event must
 be the targeted project file (*.txt). For B<new>, event must be the parent's event 
 (ie. may be "" if event is not a subevent).
 
@@ -123,6 +123,7 @@ my $object      = $QryParm->{'object'} // "";
 my ($GRIDType, $GRIDName, $NODEName, $evbase, $evtrash) = WebObs::Events::struct(trim($object));
 my $evpath      = $QryParm->{'event'}  // "";
 my $mvnode      = $QryParm->{'mvnode'} // "";
+my $delproj     = $QryParm->{'delproj'} // "";
 my $s2g         = 0;
 my $send2Gazette = $QryParm->{'s2g'} // 0;
 my $titre       = $QryParm->{'titre'} // "";
@@ -148,14 +149,14 @@ my $mmd = isok($WEBOBS{WIKI_MMD}) // 1;    # add MMD
 my $target = "";
 my $tz = "";
 
-if ($action =~ /^upd|new|del|save|close$/i) {
+if ($action =~ /^upd|p2e|new|del|save$/i) {
     if (defined($GRIDType)) {
-        $isProject = ($evpath =~ /$NODEName\_Projet.txt/);
+        $isProject = (!$delproj && $evpath =~ /$NODEName\_Projet.txt/);
         if (clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")) {
             if ( $isProject && basename($evpath) ne $evpath ) { die $__{'invalid project name'} }
             if ( $action =~ /upd|del/i && $evpath !~ /.*\.txt$/i) { die "\"$evpath\" $__{'invalid for action'} $action" }
             if ( $action =~ /upd|del/i && !-f "$evbase/$evpath") { die "\"$evpath\" $__{'not found'}" }
-            if ( $action =~ /close/i && !$isProject ) { die "\"$evpath\" $__{'invalid for action'} $action" } # close is only for project
+            if ( $action =~ /p2e/i && !$isProject ) { die "\"$evpath\" $__{'invalid for action'} $action" } # p2e is for project only
             if ( $action =~ /new/i && -f "$evbase/$evpath" ) { $action = 'upd' } # new on existing: force upd !
         } else {
             die "$__{'Not authorized'}";
@@ -210,10 +211,27 @@ if ($action =~ /save/i ) {
         # now build an event's file name from form's elements
         $time =~ s/:/-/;
         my $formname = "$NODEName\_$date\_$time.txt";
-        if ($evname eq "") { # no *txt specified, use $formname (new event)
-            $target = "$evbase/$evpath/$formname";
+        if ($evname eq "" || $delproj) { # no *txt specified, use $formname (new event)
+            $target = "$evbase".($delproj ? "":"/$evpath")."/$formname";
             WebObs::Events::versionit(\$target);
             my $fp = dirname($target);    qx(mkdir -p "$fp" 2>/dev/null);
+
+            # closing a former project (content from p2e action)
+            if ($delproj ne "") {
+                # moving the PHOTOS directory
+                my $photos = "$evbase/$evpath/$GRIDS{SPATH_PHOTOS}";
+                $photos =~ s/\.txt//;
+                my $targetsub = $target;
+                $targetsub =~ s/\.txt$//;
+                if (-d "$photos") {
+                    qx(mkdir -p "$targetsub");
+                    qx(mv -f "$photos" "$targetsub/" 2>/dev/null);
+                    $logmsg .= "moving ".basename($photos)." from project to event\n";
+                }
+                # deleting the project
+                qx(rm -f "$evbase/$evpath" 2>/dev/null);
+                $logmsg .= "deleting $evpath\n";
+            }
         } else {
 
             # moving an event
@@ -310,7 +328,7 @@ if ($action =~ /del/i ) {
         <script>
         window.location.href = "$return_url";
         </script>
-    };
+    } if ($return_url ne "");
     exit;
 }
 
@@ -355,10 +373,10 @@ if ($action =~ /new/i ) {
 
 # ---------------------------------------------------------------------------------------
 # ---- action 'upd' : show user an event form to update contents of event file
-# ---- action 'close' : show user an event form to update contents of a former project file
+# ---- action 'p2e' : show user an event form to update contents of a former project file (project to event)
 # (object,event)
 #
-if ($action =~ /upd|close/i ) {
+if ($action =~ /upd|p2e/i ) {
     # event metadata are stored in the header line of file as pipe-separated fields:
     #     UID1[+UID2+...]/RUID1[+RUID2+...]|title|enddatetime|feature|channel|outcome|notebook|notebookfwd
     #    event text content
@@ -378,7 +396,7 @@ if ($action =~ /upd|close/i ) {
         $pagetitle = "$__{'Edit an event'} [$date $time".($tz ne "" ? " <I>($tz)</I>":"")." $version]";
         $s2g = ( $GazetteWhat eq "ALL" ) ? 1 : 0;
     } else {
-        if ($action =~ /close/i ) {
+        if ($action =~ /p2e/i ) {
             $pagetitle = "$__{'Closing a project'}";
             #$contents = "**$__{'Closed project created on'} $date2 $time2 $__{'by'} $oper[0]**\n\n".$contents;
             @oper = @roper; # project assignee becomes the author
@@ -528,14 +546,24 @@ print "     form.s2g.value = $s2g;
         return false;
     }
     \$.post(\"$me\", \$(\"#theform\").serialize(), function(data) {
-         if (data != '') alert(\$(\"<div/>\").html(data).text());
+        if (data != '') alert(\$(\"<div/>\").html(data).text());
+        if (form.closeproject.value == \"1\") {
+            location.href = \"$return_url\";
+        } else {
             location.href = document.referrer;
-       });
+        }
+    });
 }
 function convert2MMD()
 {
     if (confirm(\"Presentation might be affected by conversion,\\nrequiring manual editing.\")) {
         \$(\"#theform\")[0].conv.value = \"1\";
+        postform();
+    }
+}
+function closeProject() {
+    if (confirm(\"This project will be closed and saved as a new event. Are you sure?\")) {
+        \$(\"#theform\")[0].closeproject.value = \"1\";
         postform();
     }
 }
@@ -596,11 +624,6 @@ function convert2MMD()
 function deleteProject() {
     if (confirm(\"This project will be definitively deleted. Are you sure?\")) {
         location.href = \"/cgi-bin/vedit.pl?object=$object&event=$evpath&action=del&return_url=$return_url\";
-    }
-}
-function closeProject() {
-    if (confirm(\"This project will be closed and saved as a new event. Are you sure?\")) {
-        location.href = \"/cgi-bin/vedit.pl?object=$object&event=$evpath&action=close&return_url=$return_url\";
     }
 }
 </script>";
@@ -679,6 +702,7 @@ if ($object =~ /^.*\..*\..*$/) {
         print "<INPUT type=\"hidden\" name=\"notebookfwd\" value=\"\">\n";
 }
 print "<INPUT type=\"hidden\" name=\"author\" value=\"$oper[0]\">\n";
+print "<INPUT type=\"hidden\" name=\"closeproject\" value=\"\">\n";
 
 # makes a list of active (and inactive) users
 my %alogins;
@@ -761,8 +785,12 @@ print "<input type=\"button\" name=\"lien\" value=\"$__{'Cancel'}\" onClick=\"hi
 if (length($meta) == 0 && $mmd) {
     print " <input type=\"button\" name=lien value=\"$__{'> MMD'}\" onClick=\"convert2MMD();\" style=\"font-weight:normal\">";
 }
-print " <input type=\"button\" style=\"font-weight:bold\" value=\"$__{'Save'}\" onClick=\"postform();\">";
-print " <input type=\"button\"style=\"font-weight:bold\" value=\"$__{'Close this project'}\" onClick=\"closeProject();\">" if ($isProject && $action !~ /new/i );
+if ($action !~ /p2e/i) {
+    print " <input type=\"button\" style=\"font-weight:bold\" value=\"$__{'Save'}\" onClick=\"postform();\">";
+} else {
+    print " <input type=\"button\"style=\"font-weight:bold\" value=\"$__{'Close this project'}\" onClick=\"closeProject();\">";
+    print "<input type=\"hidden\" name=\"delproj\" value=\"1\">";
+}
 print "<input type=\"hidden\" name=\"action\" value=\"save\">";
 print "<input type=\"hidden\" name=\"object\" value=\"$object\">";
 print "<input type=\"hidden\" name=\"event\" value=\"$evpath\">";
@@ -796,7 +824,7 @@ sub htmlMsgOK {
     print "$msg\n" if (!isok($WEBOBS{CGI_CONFIRM_SUCCESSFUL}));
 }
 sub htmlMsgNotOK {
-    print $cgi->header(-type=>'text/html', -charset=>'utf-8');
+    print $cgi->header(-type=>'text/plain', -charset=>'utf-8');
     print "$_[0]\n$__{'FAILED'} !\n";
 }
 

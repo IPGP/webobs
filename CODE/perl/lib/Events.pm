@@ -468,7 +468,7 @@ sub projectShow {
         my $Pedit = "";
         if ($editOK) {
             $Pedit .= "<a href=\"/cgi-bin/vedit.pl?object=$objectname&event=$projname&action=upd&return_url=$query\"><img src=\"/icons/modif.png\" title=\"$__{'Edit...'}\"></a>";
-            $Pedit .= "<a href=\"/cgi-bin/vedit.pl?object=$objectname&event=$projname&action=close&return_url=$query\"><img src=\"/icons/check.png\" title=\"$__{'Close the project'}\"\"></a>";
+            $Pedit .= "<a href=\"/cgi-bin/vedit.pl?object=$objectname&event=$projname&action=p2e&return_url=$query\"><img src=\"/icons/check.png\" title=\"$__{'Close the project'}\"\"></a>";
             $Pedit .= "<a href=\"$WEBOBS{CGI_UPLOAD}?object=$objectname&doc=SPATH_INTERVENTIONS&event=$projdir\"><img src=\"/icons/camera.png\" title=\"$__{'Manage Photos'}\"></a>";
         }
         my $Pfts = $Pts->strftime("%Y-%m-%d %H:%M");
