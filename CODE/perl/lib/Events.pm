@@ -356,7 +356,9 @@ sub eventsShow {
         my $EVTusers = join(", ",WebObs::Users::userName(@$author));
         my $EVTroper = join(", ",WebObs::Users::userName(@$remote));
         if ($EVTusers ne "" || $EVTroper ne "") {
-            $EVTusers = "<I>(".($EVTusers ne "" ? $EVTusers:"").($EVTroper ne "" ? " / <IMG src=\"/icons/remote.png\" title=\"$__{'Remote operators'}\">$EVTroper":"").")</I>";
+            $EVTusers = "<I>(".($EVTusers ne "" ? "<IMG src=\"/icons/worker.png\" title=\"$__{'Operator(s)'}\">$EVTusers":"")
+                              .($EVTroper ne "" ? " / <IMG src=\"/icons/remote.png\" title=\"$__{'Remote operator(s)'}\">$EVTroper":"")
+                              .")</I>";
         }
         my $EVTtitle = "<B>".ucfirst($title)."</B>";
         my $EVTdate = "$date $time".($date eq $date2 ? ($time eq $time2 || $time2 eq "" ? "":" &rarr; $time2"):" &rarr; $date2 $time2");
@@ -453,7 +455,9 @@ sub projectShow {
         my $EVTworker = join(", ",WebObs::Users::userName(@$assignee));
         my $Pusers = "";
         if ($EVTusers ne "" || $EVTworker ne "") {
-            $Pusers = "<I>(".($EVTusers ne "" ? $EVTusers:"").($EVTworker ne "" ? " / <IMG src=\"/icons/worker.png\" title=\"".js($__{'Assignees'})."\">$EVTworker":"").")</I>";
+            $Pusers = "<I>(".($EVTusers ne "" ? "<IMG src=\"/icons/manager.png\" title=\"".js($__{'Authors'})."\">$EVTusers":"")
+                            .($EVTworker ne "" ? " / <IMG src=\"/icons/worker.png\" title=\"".js($__{'Assignees'})."\">$EVTworker":"")
+                            .")</I>";
         }
 
         # remaining lines = event text contents

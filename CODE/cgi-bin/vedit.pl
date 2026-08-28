@@ -599,11 +599,16 @@ function postform() {
         msg = 'Please enter a title.';
         form.titre.style.background = '#FF9999';
     }
+";
+if (!($action =~ /new/i)) {
+    print "
     if (form.oper.value != form.author.value) {
         if (!confirm(\"You will change the project author. Are you sure?\")) {
             return false;
         }
-    }
+    }";
+}
+print "
     if (bad) {
         //\$('html,body').animate({ scrollTop: 0 }, 400);
         alert(msg);

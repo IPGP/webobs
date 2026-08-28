@@ -785,6 +785,12 @@ msgstr "Responsable du projet"
 msgid "Remote operators"
 msgstr "Opérateurs distants"
 
+msgid "Remote operator(s)"
+msgstr "Opérateur(s) distant(s)"
+
+msgid "Project author"
+msgstr "Auteur du projet"
+
 msgid "Project assigned to"
 msgstr "Projet attribué à"
 
