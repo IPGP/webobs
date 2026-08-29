@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel, Pierre Sakic / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-08-26
+%   Updated: 2026-08-29
 
 WO = readcfg;
 
@@ -187,6 +187,7 @@ baselines_refoff = field2num(P,'BASELINES_REF_OFFSET_M',0.01);
 baselines_staoff = field2num(P,'BASELINES_STATION_OFFSET_M',0.01);
 baselines_timezoom = field2num(P,'BASELINES_TIMEZOOM',0);
 baselines_trend = isok(P,'BASELINES_PLOT_TREND');
+baselines_maps = field2str(P,'BASELINES_MAPS',{'','right','bottom'});
 
 % STRAINMAP parameters
 strainmap_title = field2str(P,'STRAINMAP_TITLE','{\fontsize{14}{\bf$name - Baselines} ($timescale)}');
@@ -855,6 +856,7 @@ for r = 1:numel(P.GTABLE)
 		OPT.yscalefact = 1/siprefix(OPT.yscaleunit,'m');
         OPT = structmerge(OPT,P,'^TREND_');
 		smartplot(X,tlim,OPT);
+        extaxes(gca,[0.02,0,0.05,0]);
 
 		if isok(P,'PLOT_GRID')
 			grid on
@@ -1453,8 +1455,8 @@ for r = 1:numel(P.GTABLE)
 
                 P.dtlim = diff(wlim);
 				% computes linear trends (mm/yr)
-				tr = nan(numel(kn),3); % trends per station per component
-				tre = nan(numel(kn),3); % trends error per station per component
+				vtr = nan(numel(kn),3); % trends per station per component
+				vtre = nan(numel(kn),3); % trends error per station per component
 				tro = zeros(numel(kn),1); % inits to best orbit per station
 				for j = 1:numel(kn)
 					n = kn(j);
@@ -1463,9 +1465,9 @@ for r = 1:numel(P.GTABLE)
 						if ~isempty(k) && ~all(isnan(D(n).d(k,i+4)))
 							k1 = k(find(~isnan(D(n).d(k,i+4)),1,'first'));
 							ke = k(find(~isnan(D(n).d(k,i+4)),1,'last'));
-							[tk,dk,lr,trd] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),D(n).e(k,i),P.GTABLE(r).DECIMATE,P,1);
-							tr(j,i) = trd(1);
-                            tre(j,i) = trd(2);
+							[~,~,~,trd] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),D(n).e(k,i),P.GTABLE(r).DECIMATE,P,1);
+							vtr(j,i) = trd(1);
+                            vtre(j,i) = trd(2);
 							% sets a lower orbit if there is not enough data
 							%if D(n).t(D(n).G(r).ke) >= M(m).t(w)
 							if (D(n).t(ke) + 1) < W(m).t(w)
@@ -1477,14 +1479,14 @@ for r = 1:numel(P.GTABLE)
 
 				% computes reference (auto, fixed or station)
 				if numel(kn) > 1
-					mvv = rsum(tr./tre)./rsum(1./tre);
+					mvv = rsum(vtr./vtre)./rsum(1./vtre);
 				else
-					mvv = tr;
+					mvv = vtr;
 				end
 				if vrelmode
 					voffset = [mvv(1:2),0];
 					if ~isempty(vref) && ismember(vref,{N.FID})
-						voffset = tr(strcmp(vref,{N.FID}),:);
+						voffset = vtr(strcmp(vref,{N.FID}),:);
 						if any(isnan(voffset))
 							voffset = [0,0,0];
 						end
@@ -1492,11 +1494,11 @@ for r = 1:numel(P.GTABLE)
 					if numel(sstr2num(vref)) == 3
 						voffset = sstr2num(vref)*P.trendfact/365250;
 					end
-					tr = tr - repmat(voffset,numel(kn),1);
+					vtr = vtr - repmat(voffset,numel(kn),1);
 				end
 
 				% makes (or not) the relative data array
-				d = [tr,tre];
+				d = [vtr,vtre];
 				% computes absolute displacement in mm (from velocity in mm/yr or TREND_FACTOR)
 				d = d*diff(wlim)*1e3/P.trendfact;
                 % stores vector data for export
@@ -1508,6 +1510,10 @@ for r = 1:numel(P.GTABLE)
 
 		% exports data (1 file per station)
         if isok(P,'EXPORTS')
+            % needed for VFLOW Perl/js scripts
+            if isempty(strfind(field2str(P,'EXPORT_HEADER_PROC_KEYLIST'),'VFLOW_PERIOD_DAY'))
+                P.EXPORT_HEADER_PROC_KEYLIST = [field2str(P,'EXPORT_HEADER_PROC_KEYLIST'),',VFLOW:VFLOW_PERIOD_DAY'];
+            end
 			E.t = W(1).t;
 
             n = 6;
