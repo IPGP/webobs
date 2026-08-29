@@ -9,12 +9,12 @@ function extaxes(h,mm)
 %   to specify different left/right margins.
 %
 %   EXTAXES(H,LRUD) extends the axe size by a fraction of it, using a 4-element
-%   vector LRUD = [LEFT,RIGHT,UP,DOWN]. Use 0 value to fix any of axe limit.
+%   vector LRUD = [LEFT,RIGHT,DOWN,UP]. Use 0 value to fix any of axe limit.
 %
 %
 %   Author: F. Beauducel, OVSG-IPGP
 %   Created: 2005
-%   Updated: 2017-08-02
+%   Updated: 2026-08-28
 
 if nargin < 1
 	h = gca;
@@ -39,7 +39,7 @@ case {1,2}
 	set(h,'Position',[mm(1),pos(2),1-sum(mm),pos(4)]);
 case 4
 	set(h,'Position',[pos(1) - mm(1)*pos(3), ...
-	                  pos(2) - mm(2)*pos(4), ...
+	                  pos(2) - mm(3)*pos(4), ...
 			  pos(3)*(1 + sum(mm(1:2))), ...
 			  pos(4)*(1 + sum(mm(3:4)))]);
 end
