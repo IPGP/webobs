@@ -1568,7 +1568,7 @@ for r = 1:numel(P.GTABLE)
 				X(nn).d = mavr(rf(D(n).d(k,5:7)),motion_filter);
 			else
 				X(nn).t = [];
-				X(nn).d = [];
+				X(nn).d = zeros(0,3);
 			end
 		end
 		alldata = cat(1,X.d);
