@@ -557,7 +557,7 @@ $htmlcontents .= " | "
 # -- Nodes list submenu Proc paramaters
 if ($isProc) {
     $htmlcontents .= " &mdash; $__{'Proc parameters'} [ <A href=\"$myself&amp;nodes=$usrNodes&amp;coord=$usrCoord&amp;showproject=$usrProject&amp;projectonly=$usrProjectOnly&amp;procparam="
-      .($usrProcparam eq "on" ? "off#NODES\">$__{'Hide'}":"on#NODES\">$__{'Show'}")."</A> ]";
+      .($usrProcparam eq "on" ? "#NODES\">$__{'Hide'}":"on#NODES\">$__{'Show'}")."</A> ]";
 }
 
 # -- Nodes list submenu Project
@@ -607,7 +607,7 @@ if ($CLIENT ne 'guest') {
     $htmlcontents .= "<TH rowspan=2>$__{'Nb<br>Evnt'}</TH>";
     $htmlcontents .= "<TH".($usrProject eq "on" ? " rowspan=2></TH><TH colspan=3>":" rowspan=2 align=left>")."$__{'Project'}</TH>";
 }
-$htmlcontents .= "<TH colspan=3>$__{'Proc Parameters'}</TH>" if ($usrProcparam eq 'on');
+$htmlcontents .= "<TH rowspan=2></TH><TH colspan=3>$__{'Proc Parameters'}</TH>" if ($usrProcparam eq 'on');
 $htmlcontents .= "<TH rowspan=2></TH><TH colspan=".(@procTS).">$__{'Proc Graphs'}</TH>" if ($procOUTG);
 if ($overallStatus) {
     my @tsp = split(/,/,$GRID{"STATUSLIST"});
@@ -781,7 +781,7 @@ for (@{$GRID{NODESLIST}}) {
                     $htmltr .= "</TD>\n";
                 }
             } else {
-                $htmltr .= "<TD></TD><TD></TD>" if ($usrProject eq "on");
+                $htmltr .= "<TD></TD><TD></TD><TD></TD>" if ($usrProject eq "on");
                 $htmltr .= "<TD></TD>\n";
             }
         }
@@ -789,7 +789,7 @@ for (@{$GRID{NODESLIST}}) {
         # Node's proc parameters
         $NODE{RAWFORMAT} //= "";
         if ($usrProcparam eq 'on') {
-            $htmltr .= "<TD align=\"center\"><SPAN class=\"code\">".(($NODE{"$grid.FID"} // "") ? $NODE{"$grid.FID"} : $NODE{FID})."</SPAN></TD>\n"
+            $htmltr .= "<TD></TD><TD align=\"center\"><SPAN class=\"code\">".(($NODE{"$grid.FID"} // "") ? $NODE{"$grid.FID"} : $NODE{FID})."</SPAN></TD>\n"
               ."<TD align=\"center\">".(($NODE{"$grid.RAWFORMAT"} // "") ? $NODE{"$grid.RAWFORMAT"}
                 : ($NODE{RAWFORMAT} ne "" ? $NODE{RAWFORMAT} : $GRID{RAWFORMAT}))."</TD>\n"
               ."<TD align=\"center\">";
