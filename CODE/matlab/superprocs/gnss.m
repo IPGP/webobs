@@ -869,7 +869,7 @@ for r = 1:numel(P.GTABLE)
             end
             apos = get(gca,'Position');
             for n = 1:length(B)
-                ks = cat(1,B(n).kr,B(n).kn);
+                ks = cat(1,B(n).kr,B(n).kn(:));
                 [dlat,dlon] = ll2lim(geo(ks,1),geo(ks,2),0.5,1,0.1); % limits for square map, min 500m, 10% borders
                 lat0 = mean(dlat);
                 xylim = xyw2lim([mean(dlon),lat0,diff(dlon)],cosd(lat0));
