@@ -872,17 +872,18 @@ for r = 1:numel(P.GTABLE)
                 ks = cat(1,B(n).kr,B(n).kn(:));
                 [dlat,dlon] = ll2lim(geo(ks,1),geo(ks,2),0.5,1,0.1); % limits for square map, min 500m, 10% borders
                 lat0 = mean(dlat);
-                xylim = xyw2lim([mean(dlon),lat0,diff(dlon)],cosd(lat0));
-                DEM = loaddem(WO,xylim);
                 if mappos
                     spw = .9*apos(3)/length(B);
                     sph = .9*(apos(2)-.05);
                     axes('Position',[apos(1) + (n-1)*1.05*(apos(3)/length(B)),.02,spw,sph]);
+                    xylim = xyw2lim([mean(dlon),lat0,diff(dlon)],cosd(lat0));
                 else
                     spw = .9*(.98 - apos(1) - apos(3));
                     sph = .9*apos(4)/length(B);
                     axes('Position',[apos(1) + apos(3) + .02,apos(2) + apos(4) - sph - (n-1)*1.05*apos(4)/length(B),spw,sph]);
+                    xylim = xyw2lim([mean(dlon),lat0,diff(dlon)],1/cosd(lat0));
                 end
+                DEM = loaddem(WO,xylim,P);
                 dem(DEM.lon,DEM.lat,DEM.z,'latlon','fontsize',0,'borderwidth',0,baselines_demopt{:})
                 hold on
                 k1 = B(n).kr;

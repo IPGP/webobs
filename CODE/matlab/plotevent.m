@@ -55,6 +55,7 @@ if nargin > 1 & ~isempty(evtfile)
 			end
 		end
 	end
+    fprintf('\n');
 end
 
 if nargin > 2 && isstruct(evt)
@@ -139,7 +140,7 @@ for n = 1:numel(E)
 	end
 end
 if numel(E) > 0
-    fprintf(' %d events added to all time series axes.\n',numel(E));
+    wolog(' %d events added to all time series axes.\n',numel(E));
 end
 
 if nargout > 0
