@@ -445,8 +445,7 @@ PART1
     $htmlOutput .= $html;
     $htmlBrowser .= $html;
     $htmlMail .= $html;
-    $htmlOutput .= " <table><tr><td><a href=\"./graphs/BASELINES_01y.png\"><img src=\"./graphs/BASELINES_01y.png\" width=\"300\"/></a></td>";
-    $htmlOutput .= " <td><a href=\"./graphs/LocalisationBaselines.jpg\"><img src=\"./graphs/LocalisationBaselines.jpg\" height=\"245\"/></a></td><tr></table>";
+    $htmlOutput .= " <table><tr><td><a href=\"./graphs/BASELINES_01y.png\"><img src=\"./graphs/BASELINES_01y.png\" width=\"300\"/></a></td></tr></table>";
     $htmlBrowser .= "<table><tr><td><a href=\"http://195.83.188.56/OUTG/PROC.GIPSYX/graphs/BASELINES_01y.png\"><img src=\"http://195.83.188.56/OUTG/PROC.GIPSYX/graphs/BASELINES_01y.png\" width=\"300\"/></a></td></tr></table>";
     $html = "</p>";
     $htmlMail .= $html;
