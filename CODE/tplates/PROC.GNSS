@@ -215,7 +215,7 @@ BASELINES_TIMEZOOM|
 # adds side maps for each baseline reference: 'right' or 'bottom' (empty = no maps)
 BASELINES_MAPS|
 # options for the basemap (see dem.m)
-BASELINES_DEM_OPT|'watermark',1.5,'interp','saturation',0,'hlegend'
+BASELINES_DEM_OPT|'fontsize',0,'borderwidth',.5,'watermark',1.5,'interp','saturation',0,'hlegend'
 
 
 # --- STRAINMAP: baselines graph with map of strain

@@ -188,7 +188,7 @@ baselines_staoff = field2num(P,'BASELINES_STATION_OFFSET_M',0.01);
 baselines_timezoom = field2num(P,'BASELINES_TIMEZOOM',0);
 baselines_trend = isok(P,'BASELINES_PLOT_TREND');
 baselines_maps = field2str(P,'BASELINES_MAPS',{'','right','bottom'});
-baselines_demopt = field2cell(P,'BASELINES_DEM_OPT','watermark',1.5,'interp','saturation',0,'hlegend');
+baselines_demopt = field2cell(P,'BASELINES_DEM_OPT','fontsize',0,'borderwidth',.5,'watermark',1.5,'interp','saturation',0,'hlegend');
 
 % STRAINMAP parameters
 strainmap_title = field2str(P,'STRAINMAP_TITLE','{\fontsize{14}{\bf$name - Baselines} ($timescale)}');
@@ -884,7 +884,7 @@ for r = 1:numel(P.GTABLE)
                     xylim = xyw2lim([mean(dlon),lat0,diff(dlon)],1/cosd(lat0));
                 end
                 DEM = loaddem(WO,xylim,P);
-                dem(DEM.lon,DEM.lat,DEM.z,'latlon','fontsize',0,'borderwidth',0,baselines_demopt{:})
+                dem(DEM.lon,DEM.lat,DEM.z,'latlon',baselines_demopt{:})
                 hold on
                 k1 = B(n).kr;
                 for n2 = 1:length(B(n).kn)

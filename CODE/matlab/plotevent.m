@@ -17,7 +17,7 @@ function varargout=plotevent(tz,evtfile,evt)
 %
 %   Authors: F. Beauducel + D. Lafon + B. Taisne, WEBOBS/IPGP
 %   Created : 2004-07-21 (from ploterup.m)
-%   Updated : 2026-04-28
+%   Updated : 2026-08-31
 
 
 if isnan(tz) || ~isnumeric(tz)
@@ -51,11 +51,10 @@ if nargin > 1 & ~isempty(evtfile)
 				E(n).nam = data{5};
 				E(n).com = data{6};
 				E(n).out = false(size(data{1}));
-				wolog('%s imported...',f);
+				wolog('%s imported.\n',f);
 			end
 		end
 	end
-    fprintf('\n');
 end
 
 if nargin > 2 && isstruct(evt)
@@ -140,7 +139,7 @@ for n = 1:numel(E)
 	end
 end
 if numel(E) > 0
-    wolog(' %d events added to all time series axes.\n',numel(E));
+    wolog(' %d events added to all (%d) time series axes.\n',numel(E),numel(ha));
 end
 
 if nargout > 0
