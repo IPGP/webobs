@@ -32,7 +32,7 @@ function M=invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,opt)
 %
 %	Author: François Beauducel
 %	Created: 2010 in Paris (France)
-%	Updated: 2025-05-23
+%	Updated: 2026-08-31
 
 sz = size(xx);
 nn = length(xsta);
@@ -196,7 +196,7 @@ for m = 1:opt.multi
         M(m).uy(:) = 0;
         M(m).uz(:) = 0;
         M(m).pbest = nan(1,4);
-		fprintf('*** WARNING: Source #%d increases global misfit... solution rejected.\n',m)
+		fprintf('** WARNING: Source #%d rejected **',m)
     else
         M(m).mm = M(m).mm/m; % divides mm by m to reduce importance of secondary source (graphically)
 	end

@@ -11,11 +11,12 @@ function [dlat,dlon] = ll2lim(lat,lon,minkm,maxxy,border,xylim)
 %   the center at LON0,LAT0, the width (in degree) and adjusts height to have a
 %   XY aspect ratio of 1.
 %       
-% 	XYLIM=LL2LIM(...)
+% 	XYLIM=LL2LIM(...) returns the vector [LON1,LON2,LAT1,LAT2].
+%
 %
 %   Author: F. Beauducel, IPGP
 %   Created: 2019-05-29 in Yogyakarta (Indonesia)
-%   Updated: 2025-03-17
+%   Updated: 2026-08-31
 
 if nargin > 5 && numel(xylim)>2
     [dlon,dlat] = xyw2lim(xylim,1/cosd(xylim(2)));

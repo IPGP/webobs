@@ -160,10 +160,10 @@ for ii = 0:(tzoom+(zoompca<0))
 	ytick = get(gca,'YTick');
 	set(gca,'TickLength',[0.005,0.005]) % reduces tick length
 	hold on
-	xt = tlim(2) + .015*diff(tlim)*[1,2,2,1];
+	xt = tlim(2) + .01*diff(tlim)*[1,2,2,1];
 	yt = ytick(end-[1,1,0,0]);
 	plot(xt,yt,'k','LineWidth',1.5,'Clipping','off')
-	text(xt(2),mean(yt(2:3)),sprintf('{\\bf%g %s}',yscalefact*diff(ytick(1:2)),yscaleunit),'FontSize',fontsize*1.25, ...
+	text(xt(2),mean(yt(2:3)),sprintf('{\\bf%g %s}',yscalefact*diff(ytick(1:2)),yscaleunit),'FontSize',fontsize, ...
 		'HorizontalAlignment','center','VerticalAlignment','bottom','Rotation',90)
 
 	% indicates zoom
