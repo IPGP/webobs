@@ -210,7 +210,7 @@ function varargout=dem(x,y,z,varargin)
 %	Acknowledgments: Éric Gayer
 %
 %	Created: 2007-05-17 in Guadeloupe, French West Indies
-%	Updated: 2026-04-28
+%	Updated: 2026-08-31
 
 %	History:
 %	[2026-02-24] v3.3
@@ -994,8 +994,8 @@ if clines
 	[cs,h] = contour(x,y,z,[0,0,dz0],'-','Color',clrgb);
 	set(h,'LineWidth',1);
 	if ~isempty(dz0)% && clineslabel
-		clabel(cs,h,dz0,'Color',clrgb,'FontSize',fs/2,'FontWeight','bold', ...
-			'LabelSpacing',288,'Margin',fs)
+		clabel(cs,h,dz0,'Color',clrgb,'FontSize',6,'FontWeight','bold', ...
+			'LabelSpacing',288,'Margin',12)
 	end
 	hold off
 end
@@ -1009,6 +1009,11 @@ xsc = xlim(2) + wsc*2 + bwx;
 
 if scale || zlegend
 
+    if fs > 0
+        sfs = .75*fs;
+    else
+        sfs = 8;
+    end
 	% -- elevation scale (colorbar)
 	zscale = linspace(zmin,zmax,length(cmap))';
 	yscale = linspace(0,diff(ylim)/2,length(cmap));
@@ -1021,12 +1026,12 @@ if scale || zlegend
 	image(xsc + wsc*[-1,1]/2,ysc + yscale,repmat(rgbscale,1,2),'clipping','off');
 	patch(xsc + wsc*[-1,1,1,-1],ysc + yscale(end)*[0,0,1,1],'k','FaceColor','none','Clipping','off')
 	text(xsc + 2*wsc + zeros(size(ztick)),ysc + (ztick - zscale(1))*0.5*diff(ylim)/diff(zscale([1,end])),num2str(ztick'), ...
-		'HorizontalAlignment','left','VerticalAlignment','middle','FontSize',fs*.75)
+		'HorizontalAlignment','left','VerticalAlignment','middle','FontSize',sfs)
 	% indicates min and max Z values
 	text(xsc,ysc - bwy/2,sprintf('%g %s',roundsd(zlim(1),3),zunit),'FontWeight','bold', ...
-		'HorizontalAlignment','left','VerticalAlignment','top','FontSize',fs*.75)
+		'HorizontalAlignment','left','VerticalAlignment','top','FontSize',sfs)
 	text(xsc,ysc + .5*diff(ylim) + bwy/2,sprintf('%g %s',roundsd(zlim(2),3),zunit),'FontWeight','bold', ...
-		'HorizontalAlignment','left','VerticalAlignment','bottom','FontSize',fs*.75)
+		'HorizontalAlignment','left','VerticalAlignment','bottom','FontSize',sfs)
 
 	% frees axes only if not hold on
 	if ~holdon
@@ -1057,11 +1062,11 @@ if scale || hlegend || kmscale
 			patch(xsc + (n + [0,1,1,0])/fsc,ysc + wsc*[-1,-1,0,0],'k','FaceColor','k')
 		end
 		text(xsc + .5*dkm/fsc,ysc,skm,'HorizontalAlignment','center','VerticalAlignment','bottom', ...
-			'Color','k','FontWeight','bold','FontSize',fs)
+			'Color','k','FontWeight','bold','FontSize',8)
 	else
 		patch(xsc + wsc*[-1,-1,0,0],ysc + dkm*0.5*[-1,1,1,-1]/fsc,'k','FaceColor',grey,'clipping','off')
 		text(xsc,ysc,skm,'rotation',-90,'HorizontalAlignment','center','VerticalAlignment','bottom', ...
-			'Color',grey,'FontWeight','bold','FontSize',fs*.75)
+			'Color',grey,'FontWeight','bold','FontSize',8)
 	end
 end
 
