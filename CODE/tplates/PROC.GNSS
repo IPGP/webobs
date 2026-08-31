@@ -212,6 +212,11 @@ BASELINES_REF_OFFSET_M|0.01
 BASELINES_STATION_OFFSET_M|0.01
 # adds a secondary subplot time-zoomed for the most recent data (fraction of timescale)
 BASELINES_TIMEZOOM|
+# adds side maps for each baseline reference: 'right' or 'bottom' (empty = no maps)
+BASELINES_MAPS|
+# options for the basemap (see dem.m)
+BASELINES_DEM_OPT|'watermark',1.5,'interp','saturation',0,'hlegend'
+
 
 # --- STRAINMAP: baselines graph with map of strain
 STRAINMAP_TITLE|{\fontsize{14}{\bf$name - Baselines strain} ($timescale)}

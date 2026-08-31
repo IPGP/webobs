@@ -188,6 +188,7 @@ baselines_staoff = field2num(P,'BASELINES_STATION_OFFSET_M',0.01);
 baselines_timezoom = field2num(P,'BASELINES_TIMEZOOM',0);
 baselines_trend = isok(P,'BASELINES_PLOT_TREND');
 baselines_maps = field2str(P,'BASELINES_MAPS',{'','right','bottom'});
+baselines_demopt = field2cell(P,'BASELINES_DEM_OPT','watermark',1.5,'interp','saturation',0,'hlegend');
 
 % STRAINMAP parameters
 strainmap_title = field2str(P,'STRAINMAP_TITLE','{\fontsize{14}{\bf$name - Baselines} ($timescale)}');
@@ -763,6 +764,7 @@ for r = 1:numel(P.GTABLE)
 			for nn = 1:numel(kr)
 				B(nn).kr = kr(nn);
 				B(nn).kn = kn;
+                B(nn).kn(kn==kr(nn)) = [];
 			end
 		end
 
@@ -856,7 +858,45 @@ for r = 1:numel(P.GTABLE)
 		OPT.yscalefact = 1/siprefix(OPT.yscaleunit,'m');
         OPT = structmerge(OPT,P,'^TREND_');
 		smartplot(X,tlim,OPT);
-        extaxes(gca,[0.02,0,0.05,0]);
+
+        % optional maps showing baselines position
+        if ~isempty(regexp(baselines_maps,'^right|bottom$','once')) 
+            mappos = strcmpi(baselines_maps,'bottom'); % 1 = bottom, 0 = right
+            if mappos
+                extaxes(gca,[0.01,0,-0.2,0]);
+            else
+                extaxes(gca,[0.01,-.28,0.05,0]);
+            end
+            apos = get(gca,'Position');
+            for n = 1:length(B)
+                ks = cat(1,B(n).kr,B(n).kn);
+                [dlat,dlon] = ll2lim(geo(ks,1),geo(ks,2),0.5,1,0.1); % limits for square map, min 500m, 10% borders
+                lat0 = mean(dlat);
+                xylim = xyw2lim([mean(dlon),lat0,diff(dlon)],cosd(lat0));
+                DEM = loaddem(WO,xylim);
+                if mappos
+                    spw = .9*apos(3)/length(B);
+                    sph = .9*(apos(2)-.05);
+                    axes('Position',[apos(1) + (n-1)*1.05*(apos(3)/length(B)),.02,spw,sph]);
+                else
+                    spw = .9*(.98 - apos(1) - apos(3));
+                    sph = .9*apos(4)/length(B);
+                    axes('Position',[apos(1) + apos(3) + .02,apos(2) + apos(4) - sph - (n-1)*1.05*apos(4)/length(B),spw,sph]);
+                end
+                dem(DEM.lon,DEM.lat,DEM.z,'latlon','fontsize',0,'borderwidth',0,baselines_demopt{:})
+                hold on
+                k1 = B(n).kr;
+                for n2 = 1:length(B(n).kn)
+                    k2 = B(n).kn(n2);
+                    plot(geo([k1;k2],2),geo([k1;k2],1),'-','Color',scolor(k2),'LineWidth',3)
+                end
+                target(geo(ks,2),geo(ks,1),6,.2*ones(1,3))
+                smarttext(geo(ks,2),geo(ks,1),{N(ks).ALIAS},'lonlat','noframe','FontSize',8,'FontWeight','bold')
+                hold off
+            end
+        else
+            extaxes(gca,[0.01,0,0.05,0]);
+        end
 
 		if isok(P,'PLOT_GRID')
 			grid on
