@@ -40,7 +40,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2026-08-22
+%   Updated: 2026-09-01
 
 
 WO = readcfg;
@@ -55,9 +55,9 @@ merge = any(strcmpi(varargin,'merge'));
 % request mode: get GRIDS list and parameters
 if nargin > 1 && exist([outd '/REQUEST.rc'],'file')
 	P = readcfg(WO,[outd '/REQUEST.rc']);
-	grids = {''};
+	grids = [];
 	if isfield(P,'VIEW')
-		grids = strcat('VIEW.',fieldnames(P.VIEW));
+		grids = [grids;strcat('VIEW.',fieldnames(P.VIEW))];
 	end
 	if isfield(P,'PROC')
 		grids = [grids;strcat('PROC.',fieldnames(P.PROC))];

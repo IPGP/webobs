@@ -189,7 +189,7 @@ print "<form id=\"theform\" name=\"formulaire\" action=\"\">";
 
 print "<TABLE style=\"border:0\" width=\"100%\">";
 print "<TR>";
-print "<TD style=\"border:0;vertical-align:top;\" nowrap>";   # left column
+print "<TD style=\"border:0;vertical-align:top;\" nowrap rowspan=2>";   # left column
 
 # ---- Display list of grids that are eligible for requests
 print "<fieldset><legend>$__{'Available GRIDS'}</legend>";
@@ -218,10 +218,6 @@ print "<TD style=\"border:0;vertical-align:top\" nowrap>";   # right column
 
 print "<fieldset><legend>$__{'Date span (active NODES)'}</legend>";
 
-#    DATE1|  DATE2|
-print "<TABLE>";
-print "<TR>";
-print "<TD style=\"border:0;text-align:right\">";
 print "<div class=parform>";
 print "<B>$__{'Start date'}:</b> <select name=\"startY\" size=\"1\">";
 for (@yearList) { print "<option".(($_ eq $usrYearS)?" selected":"")." value=$_>$_</option>\n"; }
@@ -241,36 +237,30 @@ print "</select>";
 print " <select name=\"endD\" size=\"1\">";
 for (@dayList) { print "<option".(($_ eq $usrDayE)?" selected":"")." value=$_>$_</option>\n"; }
 print "</select>";
-print "</select>";
 print "</div></TD>";
-print "<TD style=\"border:0\">";
-print "<label for=\"inactive\">$__{'Plots inactive NODES:'}</label><INPUT type=\"checkbox\" name=\"inactive\" id=\"inactive\" value=\"0\">\n";
-print "</TD>";
-print "</TR>";
-print "</TABLE>\n";
+print "<TD style=\"border:0;vertical-align:top\">";
+print "<fieldset><legend>$__{'General parameters'}</legend>";
+print "<label for=\"inactive\">$__{'Plots inactive NODES:'}</label><INPUT type=\"checkbox\" name=\"inactive\" id=\"inactive\" value=\"0\"><BR>\n";
+print "<label for=\"merge\">$__{'Merging all maps:'}</label><INPUT type=\"checkbox\" name=\"merge\" id=\"merge\" value=\"1\" checked><BR>\n";
+print "<INPUT id=\"NAME\" name=\"NAME\" size=\"30\" value=\"$GRIDMAPS{NAME}\">\n";
 print "</fieldset>";
+print "</TD></TR>\n";
 
+print "<TR><TD style=\"border:0;vertical-align:top\">";
 print "<fieldset><legend>$__{'Basemap parameters'}</legend>";
-print "<TABLE>";
-print "<TR>";
-print "<TD style=\"border:0\">";
 foreach (sort keys(%GRIDMAPS)) {
-    if ($_ ne 'REQUEST_GRID_KEYLIST' && $_ !~ /^SUBMIT_/) {
+    if ($_ ne 'REQUEST_GRID_KEYLIST' && $_ ne 'NAME' && $_ !~ /^SUBMIT_/) {
         print "<LABEL style=\"width:200px\" for=\"$_\">$_:</LABEL>";
         if ($GRIDMAPS{$_} =~ /^(Y|N|YES|NO|OK|KO|ON|OFF)$/i) {
             print "<INPUT type=\"checkbox\" name=\"$_\" id=\"$_\" value=\"Y\" ".(isok($GRIDMAPS{$_}) ? "checked":"").">";
         } else {
-            print "<INPUT id=\"$_\" name=\"$_\" size=\"20\" value=\"$GRIDMAPS{$_}\">";
+            print "<INPUT id=\"$_\" name=\"$_\" size=\"15\" value=\"$GRIDMAPS{$_}\">";
         }
         print "<BR>\n";
     } else {
         print "<INPUT type=\"hidden\" id=\"$_\" name=\"$_\" value=\"$GRIDMAPS{$_}\">";
     }
 }
-print "</TD>";
-
-print "</TR>";
-print "</TABLE>\n";
 print "</fieldset>";
 print "</TD>\n";                                             # end right column
 
