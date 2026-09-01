@@ -214,7 +214,7 @@ for my $g (@gridlist) {
 print "</div>";
 print "</TD>\n";                                             # end left column
 
-print "<TD style=\"border:0;vertical-align:top\" nowrap>";   # right column
+print "<TD style=\"border:0;vertical-align:top;text-align:right\" nowrap width=\"250px\">";   # right column
 
 print "<fieldset><legend>$__{'Date span (active NODES)'}</legend>";
 
@@ -242,11 +242,11 @@ print "<TD style=\"border:0;vertical-align:top\">";
 print "<fieldset><legend>$__{'General parameters'}</legend>";
 print "<label for=\"inactive\">$__{'Plots inactive NODES:'}</label><INPUT type=\"checkbox\" name=\"inactive\" id=\"inactive\" value=\"0\"><BR>\n";
 print "<label for=\"merge\">$__{'Merging all maps:'}</label><INPUT type=\"checkbox\" name=\"merge\" id=\"merge\" value=\"1\" checked><BR>\n";
-print "<INPUT id=\"NAME\" name=\"NAME\" size=\"30\" value=\"$GRIDMAPS{NAME}\">\n";
+print "<label for=\"title\">$__{'Map title:'}</label><INPUT id=\"NAME\" name=\"NAME\" size=\"30\" value=\"$GRIDMAPS{NAME}\">\n";
 print "</fieldset>";
 print "</TD></TR>\n";
 
-print "<TR><TD style=\"border:0;vertical-align:top\">";
+print "<TR><TD style=\"border:0;vertical-align:top\" colspan=2>";
 print "<fieldset><legend>$__{'Basemap parameters'}</legend>";
 foreach (sort keys(%GRIDMAPS)) {
     if ($_ ne 'REQUEST_GRID_KEYLIST' && $_ ne 'NAME' && $_ !~ /^SUBMIT_/) {
