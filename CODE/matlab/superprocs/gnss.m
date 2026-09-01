@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel, Pierre Sakic / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-08-29
+%   Updated: 2026-09-01
 
 WO = readcfg;
 
@@ -366,13 +366,15 @@ for n = 1:numel(N)
 
 	% --- filters the data at once and adjust errors
 	if ~isempty(D(n).d)
+        aderr = zeros(1,3);
 		for c = 1:3
 			k = (isnan(D(n).e(:,c)) | D(n).e(:,c)<minerror(c));
 			D(n).e(k,c) = minerror(c);
-            if sum(k)
-                fprintf('---> %s: error for %d sample(s) of component %s adjusted to min value (%g m).\n',aliases{n},sum(k),enu{c},minerror(c));
-            end
+            aderr(c) = sum(k);
 		end
+        if any(aderr)
+            fprintf('---> %s: errors for %d/%d/%d sample(s) of components %s adjusted to the min value (%g m).\n',aliases{n},aderr,strjoin(enu,'/'),minerror(c));
+        end
 		for i = 1:numel(orbiterr)
 			k = find(D(n).d(:,4)>=i-1);
 			if ~isempty(k) && ~isempty(D(n).e) && orbiterr(i)>0
@@ -870,7 +872,7 @@ for r = 1:numel(P.GTABLE)
             apos = get(gca,'Position');
             for n = 1:length(B)
                 ks = cat(1,B(n).kr,B(n).kn(:));
-                [dlat,dlon] = ll2lim(geo(ks,1),geo(ks,2),0.5,1,0.1); % limits for square map, min 500m, 10% borders
+                [dlat,dlon] = ll2lim(geo(ks,1),geo(ks,2),0.5,1,0.15); % limits for square map, min 500m, 15% borders
                 lat0 = mean(dlat);
                 if mappos
                     spw = .9*apos(3)/length(B);
@@ -1123,7 +1125,7 @@ for r = 1:numel(P.GTABLE)
         % - ruler legend
         dy0 = roundsd(diff(ylim)/4,[1,2,5]); % a quarter of Y-interval rounded to 1/2/5
         x0 = tlim(1) - .02*diff(tlim);
-        y0 = ylim(2) - 1.5*dy0;
+        y0 = ylim(2) - .6*dy0;
         plot(x0 + [0,0],y0 - .5*dy0*[-1,1],'-k','LineWidth',2,'Clipping','off')
         if ~strcmpi(strainmap_timeseries_type,'displacement')
             txt = sprintf('%g %cstr',dy0,char(181));
@@ -1134,6 +1136,10 @@ for r = 1:numel(P.GTABLE)
             'Rotation',90,'HorizontalAlignment','center')
 		plot(tvel,ylim(2)+0.01*diff(ylim)*[1,1],'-','LineWidth',2,'Color',.7*ones(1,3),'Clipping','off') % window for parameters
         hold off
+        if strainmap_timeseries_mavr > 1
+            text(tlim(1),ylim(1),{ sprintf(' Moving average: {\\bf %d} samples',strainmap_timeseries_mavr),'',''}, ...
+                'FontSize',7,'Rotation',90,'HorizontalAlignment','left','VerticalAlignment','middle')
+        end
         set(gca,'XLim',tlim,'YLim',ylim,'YTick',[],'FontSize',fontsize);
 		datetick2('x',P.GTABLE(r).DATESTR)
 		tlabel(tlim,P.TZ,'FontSize',fontsize)
@@ -1421,8 +1427,8 @@ for r = 1:numel(P.GTABLE)
 
 		% adds subplot horizontal amplitude vs distance
 		if ~isempty(targetll)
-			pos = get(gca,'position');
-			axes('Position',[.5,.05,.45,pos(2)-0.02])
+            pos = plotboxpos(gca);
+			axes('Position',[.5,.07,.45,pos(2)])
 			plot(0,0)
 			hold on
 			sta_dist = greatcircle(targetll(1),targetll(2),geo(knv,1),geo(knv,2));

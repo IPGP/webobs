@@ -27,7 +27,7 @@ function DEM = loaddem(WO,xylim,OPT)
 %
 %	Author: F. Beauducel, WEBOBS/IPGP
 %	Created: 2014-07-16
-%	Updated: 2026-04-28
+%	Updated: 2026-09-01
 
 
 dlon = xylim(1:2);
@@ -60,10 +60,9 @@ setenv('LD_LIBRARY_PATH', '');
 userdem = 0;
 if nargin > 2 && isfield(OPT,'DEM_FILE')
 	f = OPT.DEM_FILE;
-	wolog('loading user DEM file "%s"... ',f);
+	wolog('loading user''s DEM file... ');
 	if exist(f,'file')
 		[x,y,z] = igrd(f);
-		fprintf('done.\n');
 		forced = isok(OPT,'DEM_FORCED');
 		if isfield(OPT,'DEM_TYPE') && strcmp(OPT.DEM_TYPE,'UTM')
 			wolog('converting user''s DEM from UTM to lat/lon... ');

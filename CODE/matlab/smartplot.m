@@ -45,7 +45,7 @@ function [lre,V] = smartplot(X,tlim,OPT)
 %
 %	Author: F. Beauducel / WEBOBS
 %	Created: 2019-05-14
-%	Updated: 2026-01-19
+%	Updated: 2026-09-01
 
 tz = field2num(OPT,'tz',0);
 datefmt = field2num(OPT,'datefmt',-1);
@@ -165,6 +165,12 @@ for ii = 0:(tzoom+(zoompca<0))
 	plot(xt,yt,'k','LineWidth',1.5,'Clipping','off')
 	text(xt(2),mean(yt(2:3)),sprintf('{\\bf%g %s}',yscalefact*diff(ytick(1:2)),yscaleunit),'FontSize',fontsize, ...
 		'HorizontalAlignment','center','VerticalAlignment','bottom','Rotation',90)
+    
+    % indicates moving average
+    if movavr > 1
+        text(tlim(2),ylim(1),{'','',sprintf(' Moving average: {\\bf %d} samples',movavr)}, ...
+            'FontSize',7,'Rotation',90,'HorizontalAlignment','left','VerticalAlignment','middle')
+    end
 
 	% indicates zoom
 	if tzoom && ii==0

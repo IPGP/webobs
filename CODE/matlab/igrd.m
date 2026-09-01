@@ -19,13 +19,13 @@ function varargout = igrd(fn,crop)
 %
 %	Author: François Beauducel, IPG Paris.
 %	Created: 1996
-%	Updated: 2022-05-23
+%	Updated: 2026-09-01
 %
 %	References:
 %	   Golden Software Surfer, http://www.goldensoftware.com/
 %	   GMT (Generic Mapping Tools), http://gmt.soest.hawaii.edu
 
-%	Copyright (c) 1996-2022, François Beauducel, covered by BSD License.
+%	Copyright (c) 1996-2026, François Beauducel, covered by BSD License.
 %	All rights reserved.
 %
 %	Redistribution and use in source and binary forms, with or without
@@ -73,7 +73,7 @@ if regexpi(line,'^DSAA')
 	xm = fscanf(fid, '%f', 2);
 	ym = fscanf(fid, '%f', 2);
 	zm = fscanf(fid, '%f', 2);
-    fprintf('--> found GS/Surfer ascii grid: %dx%d, xlim = [%g %g], ylim = [%g %g], zlim = [%g %g] ...',sz,xm,ym,zm);
+    fprintf('---> found GS/Surfer ascii grid: %dx%d, xlim = [%g %g], ylim = [%g %g], zlim = [%g %g] ...',sz,xm,ym,zm);
 	z = fscanf(fid, '%f', sz)';
     fprintf(' done.\n');
 
@@ -86,7 +86,7 @@ elseif regexpi(line,'^DSBB')
 	xm = fread(fid,2,'float64')';
 	ym = fread(fid,2,'float64')';
 	zm = fread(fid,2,'float64')';
-    fprintf('--> found GS/Surfer binary grid: %dx%d, xlim = [%g %g], ylim = [%g %g], zlim = [%g %g] ...',sz,xm,ym,zm);
+    fprintf('---> found GS/Surfer binary grid: %dx%d, xlim = [%g %g], ylim = [%g %g], zlim = [%g %g] ...',sz,xm,ym,zm);
 	z = reshape(fread(fid,'float32'),sz)';
     fprintf(' done.\n');
 
@@ -148,7 +148,7 @@ elseif regexpi(line,'^ncols')
     % applies half cell size if corner origin
     xm = xm + dx2*csx/2;
     ym = ym - dy2*csy/2;
-    fprintf('--> found ESRI/ArcInfo ascii grid: %dx%d, xlim = [%g %g], ylim = [%g %g] ...',sz,xm,ym);
+    fprintf('---> found ESRI/ArcInfo ascii grid: %dx%d, xlim = [%g %g], ylim = [%g %g] ...',sz,xm,ym);
 	z = flipud(fscanf(fid, '%f', sz)');	% transform needed because Z values are sorted rowwise
     fprintf(' done.\n');
 

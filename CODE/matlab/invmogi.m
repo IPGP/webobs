@@ -196,7 +196,7 @@ for m = 1:opt.multi
         M(m).uy(:) = 0;
         M(m).uz(:) = 0;
         M(m).pbest = nan(1,4);
-		fprintf('** WARNING: Source #%d rejected **',m)
+		fprintf(' #%d rejected ',m)
     else
         M(m).mm = M(m).mm/m; % divides mm by m to reduce importance of secondary source (graphically)
 	end
