@@ -136,6 +136,12 @@ print "Content-type: text/html; charset=utf-8
 <script language=\"javascript\" type=\"text/javascript\" src=\"/js/jquery.js\"></script>
 <script type=\"text/javascript\">
 
+function selMerge(grid) {
+    obj = \"#mergeopt\";
+    //toggle to show/hide
+    \$(obj).find('input').each( function(){ \$(this).prop('disabled',!\$(this).prop('disabled')) });
+}
+
 function selGrid(grid) {
     obj = \"#pkeysdrawer\"+grid;
     //toggle to show/hide; prop(disabled) to (not)serialize in post
@@ -214,12 +220,12 @@ for my $g (@gridlist) {
 print "</div>";
 print "</TD>\n";                                             # end left column
 
-print "<TD style=\"border:0;vertical-align:top;text-align:right\" nowrap width=\"250px\">";   # right column
+print "<TD style=\"border:0;vertical-align:top\" nowrap>";   # right column
 
 print "<fieldset><legend>$__{'Date span (active NODES)'}</legend>";
 
-print "<div class=parform>";
-print "<B>$__{'Start date'}:</b> <select name=\"startY\" size=\"1\">";
+print "<LABEL style=\"width:200px\" for=\"date1\">$__{'Start date:'}</LABEL><DIV class=parform>";
+print "<select name=\"startY\" size=\"1\">";
 for (@yearList) { print "<option".(($_ eq $usrYearS)?" selected":"")." value=$_>$_</option>\n"; }
 print "</select>";
 print " <select name=\"startM\" size=\"1\">";
@@ -227,8 +233,10 @@ for (@monthList) { print "<option".(($_ eq $usrMonthS)?" selected":"")." value=$
 print "</select>";
 print " <select name=\"startD\" size=\"1\">";
 for (@dayList) {     print "<option".(($_ eq $usrDayS)?" selected":"")." value=$_>$_</option>\n"; }
-print "</select><BR>";
-print "<b>$__{'End date'}:</b> <select name=\"endY\" size=\"1\">";
+print "</select></DIV>";
+
+print "<LABEL style=\"width:200px\" for=\"date2\">$__{'End date:'}</LABEL><DIV class=parform>";
+print "<select name=\"endY\" size=\"1\">";
 for (@yearList) { print "<option".(($_ eq $usrYearE)?" selected":"")." value=$_>$_</option>\n"; }
 print "</select>";
 print " <select name=\"endM\" size=\"1\">";
@@ -237,16 +245,17 @@ print "</select>";
 print " <select name=\"endD\" size=\"1\">";
 for (@dayList) { print "<option".(($_ eq $usrDayE)?" selected":"")." value=$_>$_</option>\n"; }
 print "</select>";
-print "</div></TD>";
-print "<TD style=\"border:0;vertical-align:top\">";
-print "<fieldset><legend>$__{'General parameters'}</legend>";
-print "<label for=\"inactive\">$__{'Plots inactive NODES:'}</label><INPUT type=\"checkbox\" name=\"inactive\" id=\"inactive\" value=\"0\"><BR>\n";
-print "<label for=\"merge\">$__{'Merging all maps:'}</label><INPUT type=\"checkbox\" name=\"merge\" id=\"merge\" value=\"1\" checked><BR>\n";
-print "<label for=\"title\">$__{'Map title:'}</label><INPUT id=\"NAME\" name=\"NAME\" size=\"30\" value=\"$GRIDMAPS{NAME}\">\n";
-print "</fieldset>";
-print "</TD></TR>\n";
+print "</DIV></fieldset><BR>";
 
-print "<TR><TD style=\"border:0;vertical-align:top\" colspan=2>";
+print "<fieldset><legend>$__{'General parameters'}</legend>";
+print "<label style=\"width:200px\" for=\"inactive\">$__{'Plots inactive NODES:'}</label><INPUT type=\"checkbox\" name=\"inactive\" id=\"inactive\" value=\"Y\"><BR>\n";
+print "<label style=\"width:200px\" for=\"merge\">$__{'Merging all maps:'}</label><INPUT type=\"checkbox\" name=\"merge\" id=\"merge\" value=\"Y\" checked onClick=\"selMerge()\")><BR>\n";
+print "<DIV id=\"mergeopt\">";
+print "<label style=\"width:200px\" for=\"title\">$__{'Map title:'}</label><INPUT id=\"title\" name=\"NAME\" size=\"40\" value=\"$GRIDMAPS{NAME}\"><BR>\n";
+print "<label style=\"width:200px\" for=\"plotnodename\">$__{'Plots NODE\' names:'}</label><INPUT type=\"checkbox\" name=\"plotnodename\" id=\"plotnodename\" value=\"Y\"><BR>\n";
+print "</DIV>";
+print "</fieldset><BR>";
+
 print "<fieldset><legend>$__{'Basemap parameters'}</legend>";
 foreach (sort keys(%GRIDMAPS)) {
     if ($_ ne 'REQUEST_GRID_KEYLIST' && $_ ne 'NAME' && $_ !~ /^SUBMIT_/) {
@@ -262,15 +271,15 @@ foreach (sort keys(%GRIDMAPS)) {
     }
 }
 print "</fieldset>";
-print "</TD>\n";                                             # end right column
-
-print "</TR></TABLE>\n";
 print "<P align=center>";
 print "<input type=\"button\" name=lien value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
 print "<input type=\"button\" value=\"$__{'Submit'}\" onClick=\"checkForm();\" style=\"font-weight:bold\">";
 print "<input type=\"hidden\" id=\"origin\" name=\"origin\" value=\"\">";
 print "</P>";
 
+print "</TD>\n";                                             # end right column
+
+print "</TR></TABLE>\n";
 print "</form>";
 
 # ---- end HTML

@@ -149,12 +149,13 @@ if ( (open REQ, ">$reqfn") ) {
     print REQ "DATE1|$datestart\n";
     print REQ "DATE2|$dateend\n";
     print REQ "INACTIVE_NODE|".$QryParm->{'inactive'}."\n";
+    print REQ "MERGE|".$QryParm->{'merge'}."\n";
     foreach (sort keys(%GRIDMAPS)) {
         print REQ "$_|".$QryParm->{$_}."\n";
     }
     print REQ "ORIGIN|".$QryParm->{'origin'}."\n";
     print REQ "UID|".$USERS{$CLIENT}{UID}."\n";
-    foreach (grep { /^PROC.|^VIEW./ } keys(%$QryParm)) { print REQ "$_|".u2l($QryParm->{$_})."\n" }
+    foreach (grep { /^(PROC|VIEW|FORM|SEFRAN)\./ } keys(%$QryParm)) { print REQ "$_|".u2l($QryParm->{$_})."\n" }
     close REQ;
 } else {  htmlMsg("$__{'Request aborted'}: $__{'Failed creating '} $reqfn") }
 
@@ -232,11 +233,11 @@ __END__
 
 =head1 AUTHOR(S)
 
-Francois Beauducel, Didier Lafon
+François Beauducel, based on postREQ.pl
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2014 - Institut de Physique du Globe Paris
+WebObs - 2012-2026 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

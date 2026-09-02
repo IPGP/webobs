@@ -1813,7 +1813,7 @@ msgstr "Job"
 msgid "Archive"
 msgstr "Archive"
 
-# --- formGRIDMAP.pl
+# --- formGRIDMAPS.pl
 
 msgid "GRIDMAPS Request"
 msgstr "Requête de GRIDMAPS"
@@ -1824,8 +1824,23 @@ msgstr "GRIDS disponibles"
 msgid "Date span (active NODES)"
 msgstr "Intervalle de temps (nodes actifs)"
 
+msgid "Start date:"
+msgstr "Date début :"
+
+msgid "End date:"
+msgstr "Date fin :"
+
+msgid "General parameters"
+msgstr "Paramètres généraux"
+
 msgid "Plots inactive NODES:"
 msgstr "Afficher les nodes inactifs :"
+
+msgid "Merging all maps:"
+msgstr "Fusionner toutes les cartes :"
+
+msgid "Map title:"
+msgstr "Titre de la carte :"
 
 msgid "Basemap parameters"
 msgstr "Paramètres du fond de carte"
