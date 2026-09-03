@@ -40,7 +40,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2026-09-01
+%   Updated: 2026-09-03
 
 
 WO = readcfg;
@@ -68,7 +68,7 @@ if nargin > 1 && exist([outd '/REQUEST.rc'],'file')
 	if isfield(P,'SEFRAN')
 		grids = [grids;strcat('SEFRAN.',fieldnames(P.SEFRAN))];
 	end
-	merge = 1;
+	merge = isok(P,'MERGE');
 	request = 1;
 else
 	P = readcfg(WO,WO.GRIDMAPS);
@@ -158,7 +158,7 @@ end
 demoptions = {'Interp','Lake','LakeZmin',0,'ZCut',zcut,'Azimuth',laz, ...
 	'Contrast',lct,'LandColor',cmap,'SeaColor',sea,'Watermark',feclair, ...
 	'Saturation',csat,'latlon','shading',shading,'legend','axisequal','manual'};
-if isok(P,'DECIMAL_DEGREES')
+if isok(P,'DECIMAL_DEGREE')
     demoptions = [demoptions,{'cartesian'}];
 end
 
@@ -180,10 +180,10 @@ for g = 1:length(grids)
 		geo = [cat(1,N.LAT_WGS84),cat(1,N.LON_WGS84)];
 		dte1 = cat(1,N.INSTALL_DATE);
 		dte2 = cat(1,N.END_DATE);
-		act = (dte1 <= datenum(P.DATE2) | isnan(dte1)) & (dte2 >= datenum(P.DATE1) | isnan(dte2));
+		NN(g).act = (dte1 <= datenum(P.DATE2) | isnan(dte1)) & (dte2 >= datenum(P.DATE1) | isnan(dte2));
 		NN(g).kn = find(all(~isnan(geo),2) & ~all(geo==0,2));
-		NN(g).ka = find(all(~isnan(geo),2) & ~all(geo==0,2) & act);
-		NN(g).k0 = find(all(~isnan(geo),2) & ~all(geo==0,2) & ~act & ~inactivenode);
+		NN(g).ka = find(all(~isnan(geo),2) & ~all(geo==0,2) & NN(g).act);
+		NN(g).k0 = find(all(~isnan(geo),2) & ~all(geo==0,2) & ~NN(g).act & inactivenode);
 		NN(g).geo = geo;
 		NN(g).id = cat(1,{N.ID});
 		NN(g).alias = cat(1,{N.ALIAS});
@@ -223,7 +223,8 @@ NN = NN(outdated ~= 0);
 % merging case: computes the map limits from all nodes
 if merge
 	geo = cat(1,NN.geo);
-	kn = find(all(~isnan(geo),2) & ~all(geo==0,2));
+	act = cat(1,NN.act);
+	kn = find(all(~isnan(geo),2) & ~all(geo==0,2) & (act | inactivenode));
 	if isempty(kn)
 		error('No NODES to plot. Cannot computes merged map limits.')
 	else
@@ -257,7 +258,7 @@ for g = 1:length(grids)
 	nodetype = field2str(G,'NODE_MARKER','o','notempty');
 	nodesize = field2num(G,'NODE_SIZE',15,'notempty');
 	nodecolor = field2num(G,'NODE_RGB',[1,0,0],'notempty');
-	nodefont = field2num(G,'NODE_FONTSIZE',0,'notempty');
+	nodefont = field2num(G,'NODE_FONTSIZE',0,'notempty')*(~merge || isok(P,'MERGE_NODENAME')); % fontsize set to 0 for merged map && MERGE_NODENAME = NO
 	nodesubmapalias = isok(G,'NODE_SUBMAP_ALIAS');
 
 	% looks for supplementary maps (MAP*_XYLIM|LON1,LON2,LAT1,LAT2 keys)
@@ -316,7 +317,12 @@ for g = 1:length(grids)
 			end
 
 			if isempty(maps{m,2})
-				[dlat,dlon] = ll2lim(geo(kn,1),geo(kn,2),minkm,maxxy,border);
+                if inactivenode
+                    k = kn;
+                else
+                    k = ka;
+                end
+				[dlat,dlon] = ll2lim(geo(k,1),geo(k,2),minkm,maxxy,border);
 				maps{m,2} = [dlon,dlat];
 			else
 				dlon = maps{m,2}(1:2);
@@ -402,7 +408,7 @@ for g = 1:length(grids)
 
 			% plots inactive nodes first
 			k0m = [];
-			if ~isempty(k0)
+			if ~isempty(k0) && ~inactivenode
 				k0m = k0(isinto(geo(k0,2),dlon) & isinto(geo(k0,1),dlat));
 				target(geo(k0m,2),geo(k0m,1),nodesize,col(k0m,:),nodetype,2)
 			end
@@ -416,7 +422,7 @@ for g = 1:length(grids)
 
 			% writes node names for current map but excluded other maps
 			if nodefont > 0
-				k = isinto(geo(kn,2),dlon) & isinto(geo(kn,1),dlat);
+				k = isinto(geo(kn,2),dlon) & isinto(geo(kn,1),dlat) & (~inactivenode | ismember(kn,ka)) ;
 				if any(k) && ~nodesubmapalias
 					for mm = (m+1):size(maps,1)
 						k = k & ~(isinto(geo(kn,2),maps{mm,2}(1:2)) & isinto(geo(kn,1),maps{mm,2}(3:4)));
@@ -431,13 +437,11 @@ for g = 1:length(grids)
 
 				% title
 				if merge
-					titre = field2str(P,'NAME');
+					txt = field2str(P,'NAME');
 				else
-					titre = G.NAME;
+					txt = G.NAME;
 				end
-				title(titre,'FontSize',20,'FontWeight','bold')
-
-				pos = get(gca,'Position');
+				title(txt,'FontSize',20,'FontWeight','bold')
 
 				% gets figure and axes properties
 				set(gca,'Units','normalized');

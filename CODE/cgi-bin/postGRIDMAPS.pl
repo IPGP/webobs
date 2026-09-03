@@ -150,6 +150,7 @@ if ( (open REQ, ">$reqfn") ) {
     print REQ "DATE2|$dateend\n";
     print REQ "INACTIVE_NODE|".$QryParm->{'inactive'}."\n";
     print REQ "MERGE|".$QryParm->{'merge'}."\n";
+    print REQ "MERGE_NODENAME|".$QryParm->{'mergenodename'}."\n";
     foreach (sort keys(%GRIDMAPS)) {
         print REQ "$_|".$QryParm->{$_}."\n";
     }
