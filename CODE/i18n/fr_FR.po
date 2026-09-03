@@ -1839,6 +1839,21 @@ msgstr "Afficher les nodes inactifs :"
 msgid "Merging all maps:"
 msgstr "Fusionner toutes les cartes :"
 
+msgid "Plot node names:"
+msgstr "Afficher les noms de nodes :"
+
+msgid "Legend"
+msgstr "Légende"
+
+msgid "Height (fraction):"
+msgstr "Hauteur (en fraction) :"
+
+msgid "Table rows,columns:"
+msgstr "Lignes,Colonnes du tableau :"
+
+msgid "Font size:"
+msgstr "Taille de la police :"
+
 msgid "Map title:"
 msgstr "Titre de la carte :"
 

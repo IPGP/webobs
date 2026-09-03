@@ -89,6 +89,18 @@ my $year = strftime('%Y',@tod);
 my @yearList = reverse($WEBOBS{BIG_BANG}..$year+1);
 my @monthList = ('01'..'12');
 my @dayList = ('01'..'31');
+my @markerList = ('o','s','d','^','v','>','<','p','h'); 
+my %markerOptions = (
+    'o' => "&cir; circle",
+    's' => "&squ; square",
+    'd' => "&loz; diamond",
+    '^' => "&utri; upward-pointing triangle",
+    'v' => "&dtri; downward-pointing triangle",
+    '>' => "&rtri; right-pointing triangle",
+    '<' => "&ltri; left-pointing triangle",
+    'p' => "&star; pentagram",
+    'h' => "&sext; hexagram",
+);
 
 # content edition is allowed only if the user has edit authorization for ALL grids (views, forms and procs)
 my $editOK = ( WebObs::Users::clientHasEdit(type=>"authprocs",name=>"*") 
@@ -121,6 +133,9 @@ if (scalar(@gridlist)==0) { die "$__{'No GRID eligible for this user. Please ask
 # ---- form fields used for request.rc creation
 my %GRIDMAPS = readCfg($WEBOBS{GRIDMAPS});
 
+my @markersizeList = split(/,/,$GRIDMAPS{REQ_MARKERSIZE_LIST});
+my @fontsizeList = ('',split(/,/,$GRIDMAPS{REQ_FONTSIZE_LIST}));
+
 # ---- passed all checkings above ...
 # ---- build/process the form HTML page
 #
@@ -148,6 +163,7 @@ function selGrid(grid) {
     //all inputs of a grd must start as  display:none AND disabled
     \$(obj).toggle();
     \$(obj).find('input').each( function(){ \$(this).prop('disabled',!\$(this).prop('disabled')) });
+    \$(obj).find('select').each( function(){ \$(this).prop('disabled',!\$(this).prop('disabled')) });
 }
 
 function checkForm()
@@ -248,17 +264,24 @@ print "</select>";
 print "</DIV></fieldset><BR>";
 
 print "<fieldset><legend>$__{'General parameters'}</legend>";
-print "<label style=\"width:200px\" for=\"inactive\">$__{'Plots inactive NODES:'}</label><INPUT type=\"checkbox\" name=\"inactive\" id=\"inactive\" value=\"Y\"><BR>\n";
+print "<label style=\"width:200px\" for=\"inactive\">$__{'Plots inactive NODES:'}</label><INPUT type=\"checkbox\" name=\"inactive\" id=\"inactive\" value=\"Y\"".(isok($GRIDMAPS{INACTIVE_NODE}) ? " checked":"")."><BR>\n";
 print "<label style=\"width:200px\" for=\"merge\">$__{'Merging all maps:'}</label><INPUT type=\"checkbox\" name=\"merge\" id=\"merge\" value=\"Y\" checked onClick=\"selMerge()\")><BR>\n";
 print "<DIV id=\"mergeopt\">";
-print "<label style=\"width:200px\" for=\"title\">$__{'Map title:'}</label><INPUT id=\"title\" name=\"NAME\" size=\"40\" value=\"$GRIDMAPS{NAME}\"><BR>\n";
-print "<label style=\"width:200px\" for=\"plotnodename\">$__{'Plots NODE\' names:'}</label><INPUT type=\"checkbox\" name=\"plotnodename\" id=\"plotnodename\" value=\"Y\"><BR>\n";
+print "<fieldset><legend>$__{'Map'}</legend>";
+print "<label style=\"width:200px\" for=\"title\">$__{'Map title:'}</label><INPUT id=\"title\" name=\"NAME\" size=\"40\" value=\"$GRIDMAPS{NAME} (\${DATE1} - \${DATE2})\"><BR>\n";
+print "<label style=\"width:200px\" for=\"plotnodename\">$__{'Plot node names:'}</label><INPUT type=\"checkbox\" name=\"plotnodename\" id=\"plotnodename\" value=\"Y\"><BR>\n";
+print "</fieldset>\n";
+print "<fieldset><legend>$__{'Legend'}</legend>";
+print "<label style=\"width:200px\" for=\"title\">$__{'Height (fraction):'}</label><INPUT id=\"title\" name=\"MERGE_LEGEND_HEIGHT\" size=\"10\" value=\"$GRIDMAPS{MERGE_LEGEND_HEIGHT}\"><BR>\n";
+print "<label style=\"width:200px\" for=\"title\">$__{'Table rows,columns:'}</label><INPUT id=\"title\" name=\"MERGE_LEGEND_ROWCOL\" size=\"10\" value=\"$GRIDMAPS{MERGE_LEGEND_ROWCOL}\"><BR>\n";
+print "<label style=\"width:200px\" for=\"title\">$__{'Font size:'}</label><INPUT id=\"title\" name=\"MERGE_LEGEND_FONTSIZE\" size=\"10\" value=\"$GRIDMAPS{MERGE_LEGEND_FONTSIZE}\"><BR>\n";
+print "</fieldset>\n";
 print "</DIV>";
 print "</fieldset><BR>";
 
 print "<fieldset><legend>$__{'Basemap parameters'}</legend>";
 foreach (sort keys(%GRIDMAPS)) {
-    if ($_ ne 'REQUEST_GRID_KEYLIST' && $_ ne 'NAME' && $_ !~ /^SUBMIT_/) {
+    if ($_ ne 'REQUEST_GRID_KEYLIST' && $_ ne 'NAME' && $_ !~ /^(SUBMIT|MERGE|REQ)_/) {
         print "<LABEL style=\"width:200px\" for=\"$_\">$_:</LABEL>";
         if ($GRIDMAPS{$_} =~ /^(Y|N|YES|NO|OK|KO|ON|OFF)$/i) {
             print "<INPUT type=\"checkbox\" name=\"$_\" id=\"$_\" value=\"Y\" ".(isok($GRIDMAPS{$_}) ? "checked":"").">";
@@ -296,7 +319,24 @@ sub pkeys {
         foreach (split(/,/,$GRIDMAPS{REQUEST_GRID_KEYLIST})) {
             s/^\s+|\s+$//g;
             $div .= sprintf("<label for='%s.%s'>%s:</label>",$g,$_,$_);
-            $div .= sprintf("<input disabled id='%s.%s' name='%s.%s' maxlength='200' size='20' value='%s'><br>",$g,$_,$g,$_,defined($GG->{$_})?$GG->{$_}:"");
+            if ($_ =~ /_SIZE$/) {
+                my $k = $_;
+                $div .= sprintf("<select disabled id='%s.%s' name='%s.%s'>",$g,$k,$g,$k);
+                $div .= join('', map { "<option value='$_'".($GG->{$k} eq $_ ? " selected":"").">$_</option>" } @markersizeList);
+                $div .= "</select><br>";
+            } elsif ($_ =~ /_FONTSIZE$/) {
+                my $k = $_;
+                $div .= sprintf("<select disabled id='%s.%s' name='%s.%s'>",$g,$k,$g,$k);
+                $div .= join('', map { "<option value='$_'".($GG->{$k} eq $_ ? " selected":"").">$_</option>" } @fontsizeList);
+                $div .= "</select><br>";
+            } elsif ($_ =~ /_MARKER$/) {
+                my $k = $_;
+                $div .= sprintf("<select disabled id='%s.%s' name='%s.%s'>",$g,$k,$g,$k);
+                $div .= join('', map { "<option style='color:red' value='$_'".($GG->{$k} eq $_ ? " selected":"").">$markerOptions{$_}</option>" } @markerList);
+                $div .= "</select><br>";
+            } else {
+                $div .= sprintf("<input disabled id='%s.%s' name='%s.%s' maxlength='200' size='20' value='%s'><br>",$g,$_,$g,$_,defined($GG->{$_})?$GG->{$_}:"");
+            }
         }
         $div .= "</div>";
         return $div;

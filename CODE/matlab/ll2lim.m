@@ -36,7 +36,7 @@ else
     % adjusts the maximum XY ratio
     xyratio = diff(dlon)*cosd(lat0)/diff(dlat);
     if xyratio < 1/maxxy
-        dlon = dlon + [-.5,.5]*(diff(dlat)/maxxy - diff(dlon)*cosd(lat0));
+        dlon = dlon + [-.5,.5]*(diff(dlat)/maxxy - diff(dlon)*cosd(lat0))/cosd(lat0);
     end
     if xyratio > maxxy
         dlat = dlat + [-.5,.5]*(diff(dlon)*cosd(lat0) - maxxy*diff(dlat));

@@ -52,21 +52,17 @@ timelog(procmsg,1)
 % merges all grids into a single map
 merge = any(strcmpi(varargin,'merge'));
 
+% grid types
+gtypes = {'VIEW','PROC','FORM','SEFRAN'};
+
 % request mode: get GRIDS list and parameters
 if nargin > 1 && exist([outd '/REQUEST.rc'],'file')
 	P = readcfg(WO,[outd '/REQUEST.rc']);
 	grids = [];
-	if isfield(P,'VIEW')
-		grids = [grids;strcat('VIEW.',fieldnames(P.VIEW))];
-	end
-	if isfield(P,'PROC')
-		grids = [grids;strcat('PROC.',fieldnames(P.PROC))];
-	end
-	if isfield(P,'FORM')
-		grids = [grids;strcat('FORM.',fieldnames(P.FORM))];
-	end
-	if isfield(P,'SEFRAN')
-		grids = [grids;strcat('SEFRAN.',fieldnames(P.SEFRAN))];
+    for i = 1:length(gtypes)
+        if isfield(P,gtypes{i})
+            grids = [grids;strcat([gtypes{i},'.'],fieldnames(P.(gtypes{i})))];
+        end
 	end
 	merge = isok(P,'MERGE');
 	request = 1;
@@ -86,28 +82,20 @@ trans = isok(P,'PLOT_TRANSMISSION');
 % gets all VIEWS, PROCS, FORMS, and SEFRANS looks inside the GRIDS directories avoiding . .. and non-directory files
 if ~request && (nargin < 1 || isempty(grids))
     allgrids = true;
-	VIEWS = dir(sprintf('%s/*',WO.PATH_VIEWS));
-	PROCS = dir(sprintf('%s/*',WO.PATH_PROCS));
-	FORMS = dir(sprintf('%s/*',WO.PATH_FORMS));
-	SEFRANS = dir(sprintf('%s/*',WO.PATH_SEFRANS));
-    vl = {VIEWS(~strncmp({VIEWS.name},{'.'},1) & cat(2,VIEWS.isdir)).name};
-    pl = {PROCS(~strncmp({PROCS.name},{'.'},1) & cat(2,PROCS.isdir)).name};
-    fl = {FORMS(~strncmp({FORMS.name},{'.'},1) & cat(2,FORMS.isdir)).name};
-    sl = {SEFRANS(~strncmp({SEFRANS.name},{'.'},1) & cat(2,SEFRANS.isdir)).name};
     grids = {};
-    if ~isempty(vl), grids = [grids,strcat('VIEW.',vl)]; end
-    if ~isempty(pl), grids = [grids,strcat('PROC.',pl)]; end
-    if ~isempty(fl), grids = [grids,strcat('FORM.',fl)]; end
-    if ~isempty(sl), grids = [grids,strcat('SEFRAN.',sl)]; end
+    for i = 1:length(gtypes)
+        G = dir(sprintf('%s/*',WO.(sprintf('PATH_%sS',gtypes{i}))));
+        gl = {G(~strncmp({G.name},{'.'},1) & cat(2,G.isdir)).name};
+        if ~isempty(gl)
+            grids = [grids,strcat(sprintf('%s.',gtypes{i}),gl)];
+        end
+    end
 else
     allgrids = false;
 	if ~iscell(grids)
 		grids = cellstr(grids);
 	end
 end
-
-%fprintf('%d grids to process:\n',length(grids));
-%disp(grids)
 
 if nargin < 2 || isempty(outd)
 	outd = WO.ROOT_OUTG;
@@ -122,8 +110,11 @@ ptmp = WO.PATH_TMP_WEBOBS;
 wosystem(sprintf('mkdir -p %s',ptmp));
 
 inactivenode = isok(P,'INACTIVE_NODE');
+legendheight = field2num(P,'MERGE_LEGEND_HEIGHT',0.25);
+legendfontsize = field2num(P,'MERGE_LEGEND_FONTSIZE',12,'notempty');
+legendrc = field2num(P,'MERGE_LEGEND_ROWCOL',[6,2]);
 minkm = field2num(P,'MIN_SIZE_KM',2);
-maxxy = field2num(P,'MAX_XYRATIO',2);
+maxxy = field2num(P,'MAX_XYRATIO',1);
 border = field2num(P,'BORDER_ADD',.1);
 papersize = field2num(P,'PAPERSIZE_INCHES',10,'notempty');
 thumbnailheight = field2num(P,'THUMBNAIL_HEIGHT',112);
@@ -234,16 +225,16 @@ end
 
 for g = 1:length(grids)
 
+	s = split(grids{g},'.');
+	G = GRIDS.(s{1}).(s{2});
 	if merge
 		if g == 1
-			wolog('Making map of merged grids ');
+			wolog('Making map of %d merged grids...\n',length(grids));
 		end
-		fprintf('%s... ',grids{g});
+		fprintf('---> %s (%d nodes)\n',grids{g},length(NN(g).kn));
 	else
 		wolog('* %s: Making the map(s)...\n',grids{g});
 	end
-	s = split(grids{g},'.');
-	G = GRIDS.(s{1}).(s{2});
 	% GRIDMAPS.rc SRTM1 option applies only if not defined in the PROC's configuration
 	if isok(P,'DEM_SRTM1') && (~isfield(G,'DEM_SRTM1') || merge)
 		G.DEM_SRTM1 = 'Y';
@@ -254,6 +245,7 @@ for g = 1:length(grids)
 		end
 	end
 	griddemopt = field2cell(G,'GRIDMAPS_DEM_OPT');
+    gridtitle = field2str(G,'NAME');
 	nodename = field2str(G,'NODE_NAME','node','notempty');
 	nodetype = field2str(G,'NODE_MARKER','o','notempty');
 	nodesize = field2num(G,'NODE_SIZE',15,'notempty');
@@ -264,6 +256,12 @@ for g = 1:length(grids)
 	% looks for supplementary maps (MAP*_XYLIM|LON1,LON2,LAT1,LAT2 keys)
 	if merge
 		maps = {'MAP',mmaplim};
+        % for future legend
+        GG(g).title = gridtitle;
+        GG(g).nodename = nodename;
+        GG(g).nodetype = nodetype;
+        GG(g).nodesize = nodesize;
+        GG(g).nodecolor = nodecolor;
 	else
 		fd = fieldnames(G);
 		k = find(~cellfun(@isempty,regexp(fd,'^MAP\d+_XYLIM$')));
@@ -322,7 +320,11 @@ for g = 1:length(grids)
                 else
                     k = ka;
                 end
-				[dlat,dlon] = ll2lim(geo(k,1),geo(k,2),minkm,maxxy,border);
+                if ~isempty(k)
+                    [dlat,dlon] = ll2lim(geo(k,1),geo(k,2),minkm,maxxy,border);
+                else
+                    [dlat,dlon] = ll2lim(geo(kn,1),geo(kn,2),minkm,maxxy,border);
+                end
 				maps{m,2} = [dlon,dlat];
 			else
 				dlon = maps{m,2}(1:2);
@@ -338,9 +340,13 @@ for g = 1:length(grids)
 				z = DEM.z;
 				demcopyright = DEM.COPYRIGHT;
 
-                % adjusts paper height from the basemap aspect ratio
-                rxy = max(1,0.9*diff(minmax(x))*cosd(mean(y))/diff(minmax(y)));
-                psz = 72*papersize*[1,1/rxy];
+                if ~merge
+                    % adjusts paper height from the basemap aspect ratio
+                    rxy = max(1,0.9*diff(minmax(x))*cosd(mean(y))/diff(minmax(y)));
+                    psz = 72*papersize*[1,1/rxy];
+                else
+                    psz = 72*papersize*[1,1 + legendheight];
+                end
 
 				figure
 
@@ -348,7 +354,11 @@ for g = 1:length(grids)
 				set(gcf,'PaperUnits','points','PaperSize',psz);
 				set(gcf,'PaperPosition',[0,0,psz],'Position',[0,0,psz])
 
-				subplot(1,1,1); extaxes(gca,[.04,.08]);
+                if ~merge
+                    set(gca,'Position',[.04,.11,.88,.815]);
+                else
+                    set(gca,'Position',[.04,legendheight,.92,.95-legendheight]);
+                end
 
 				% plots DEM basemap
 				if merge
@@ -439,7 +449,7 @@ for g = 1:length(grids)
 				if merge
 					txt = field2str(P,'NAME');
 				else
-					txt = G.NAME;
+					txt = gridtitle;
 				end
 				title(txt,'FontSize',20,'FontWeight','bold')
 
@@ -460,8 +470,9 @@ for g = 1:length(grids)
 				axis([0,1,0,1]); axis off
 				text(.5,0,copyright,'Color',.4*[1,1,1],'FontSize',9,'HorizontalAlignment','center','VerticalAlignment','bottom')
 
-				% nodes legend
+				% legend
 				if ~merge
+                    % individual maps: node legend
 					xl = [.1,.4,.7];
 					yl = .5;
                     if size(col,1) > 1
@@ -478,6 +489,15 @@ for g = 1:length(grids)
 						sprintf('    active ({\\bf%d}/%d)',length(kam),nm), ...
 						repmat(sprintf('    inactive ({\\bf%d}/%d)',length(k0m),nm),~isempty(k0m))}, ...
 						'FontSize',14,'HorizontalAlignment','left')
+                else
+                    % merged map: grid legend [NOTE: this part only reached for the last grid]
+                    ng = length(grids);
+                    for i = 1:ng
+                        xl = .05 + floor((i-1)/legendrc(1))/legendrc(2);
+                        yl = .8 - .75*mod(i-1,legendrc(1))/legendrc(1);
+                        target(xl,yl,GG(i).nodesize,GG(i).nodecolor,GG(i).nodetype)
+                        text(xl,yl,sprintf('    %s',GG(i).title),'FontSize',legendfontsize,'VerticalAlignment','middle')
+                    end
 				end
 
 				% prints the map (PostScript, PNG and JPG)

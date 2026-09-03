@@ -1,6 +1,10 @@
 =key|value
 
 NAME|Networks
+
+# displays inactive nodes
+INACTIVE_NODE|Y
+
 # --- basemap options
 # paper size (maximum width/height)
 PAPERSIZE_INCHES|10
@@ -47,7 +51,18 @@ CONTOURLINES_LABEL|Y
 # adds transmission lines between NODES (if defined)
 PLOT_TRANSMISSION|Y
 
+# merged map (request)
+MERGE_NODENAME|N
+MERGE_LEGEND_HEIGHT|0.15
+MERGE_LEGEND_ROWCOL|6,2
+MERGE_LEGEND_FONTSIZE|12
+
 # list of GRID keys available for edit in request
 REQUEST_GRID_KEYLIST|NAME,NODE_SIZE,NODE_RGB,NODE_FONTSIZE,NODE_MARKER
 SUBMIT_COMMAND|$WEBOBS{JOB_MCC} gridmaps -
 SUBMIT_RESOURCE|gridmaps
+
+# request marker size list
+REQ_MARKERSIZE_LIST|1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30
+# request font size list
+REQ_FONTSIZE_LIST|4,5,6,7,8,9,10,11,12,13,14,15,16,18,20,22,24,26,28,32,36,40,44,48,56,64,72,80,88,96
