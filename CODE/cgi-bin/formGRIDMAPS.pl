@@ -101,6 +101,41 @@ my %markerOptions = (
     'p' => "&star; pentagram",
     'h' => "&sext; hexagram",
 );
+my @colorList = (
+    '#000000',   # Noir
+    '#404040',   # Gris foncé
+    '#808080',   # Gris
+    '#C0C0C0',   # Gris clair
+    '#FFFFFF',   # Blanc
+    '#800000',   # Bordeaux
+    '#FF0000',   # Rouge
+    '#FF8000',   # Orange
+    '#FFFF00',   # Jaune
+    '#808000',   # Olive
+    '#00FF00',   # Vert vif
+    '#008000',   # Vert
+    '#00FFFF',   # Cyan
+    '#008080',   # Sarcelle
+    '#0000FF',   # Bleu
+    '#000080',   # Bleu marine
+    '#8000FF',   # Violet
+    '#800080',   # Pourpre
+    '#FF00FF',   # Magenta
+    '#FFC0C0',   # Rose clair
+    '#FF8080',   # Rouge clair
+    '#FFBF80',   # Orange clair
+    '#FFFF80',   # Jaune clair
+    '#80FF80',   # Vert clair
+    '#80FFFF',   # Cyan clair
+    '#80BFFF',   # Bleu clair
+    '#8080FF',   # Bleu lavande
+    '#BF80FF',   # Violet clair
+    '#800040',   # Prune
+    '#804000',   # Brun
+    '#408000',   # Vert olive clair
+    '#004080',   # Bleu pétrole
+    '#400080',   # Indigo
+);
 
 # content edition is allowed only if the user has edit authorization for ALL grids (views, forms and procs)
 my $editOK = ( WebObs::Users::clientHasEdit(type=>"authprocs",name=>"*") 
@@ -305,6 +340,22 @@ print "</TD>\n";                                             # end right column
 print "</TR></TABLE>\n";
 print "</form>";
 
+# additional js script for color selection (must be at the end of the page)
+print "<script type=\"text/javascript\">
+document.querySelectorAll('[id^=\"colorPalette_\"]').forEach(function(palette) {
+    palette.querySelectorAll('.colorBox').forEach(function(box) {
+        box.addEventListener('click', function() {
+            palette.querySelectorAll('.colorBox').forEach(function(b) {
+                    b.classList.remove('selected');
+            });
+            box.classList.add('selected');
+            var id = palette.id.replace('colorPalette_', 'selectedColor_');
+            document.getElementById(id).value = box.dataset.color;
+        });
+    });
+});
+</script>\n";
+
 # ---- end HTML
 #
 print "\n</BODY>\n</HTML>\n";
@@ -321,19 +372,30 @@ sub pkeys {
             $div .= sprintf("<label for='%s.%s'>%s:</label>",$g,$_,$_);
             if ($_ =~ /_SIZE$/) {
                 my $k = $_;
-                $div .= sprintf("<select disabled id='%s.%s' name='%s.%s'>",$g,$k,$g,$k);
+                $div .= "<select disabled id='$g.$k' name='$g.$k'>";
                 $div .= join('', map { "<option value='$_'".($GG->{$k} eq $_ ? " selected":"").">$_</option>" } @markersizeList);
                 $div .= "</select><br>";
             } elsif ($_ =~ /_FONTSIZE$/) {
                 my $k = $_;
-                $div .= sprintf("<select disabled id='%s.%s' name='%s.%s'>",$g,$k,$g,$k);
+                $div .= "<select disabled id='$g.$k' name='$g.$k'>";
                 $div .= join('', map { "<option value='$_'".($GG->{$k} eq $_ ? " selected":"").">$_</option>" } @fontsizeList);
                 $div .= "</select><br>";
             } elsif ($_ =~ /_MARKER$/) {
                 my $k = $_;
-                $div .= sprintf("<select disabled id='%s.%s' name='%s.%s'>",$g,$k,$g,$k);
+                $div .= "<select disabled id='$g.$k' name='$g.$k'>";
                 $div .= join('', map { "<option style='color:red' value='$_'".($GG->{$k} eq $_ ? " selected":"").">$markerOptions{$_}</option>" } @markerList);
                 $div .= "</select><br>";
+            } elsif ($_ =~ /_RGB$/) {
+                my $k = $_;
+                my @col = @colorList;
+                my $sel = rgb2hex($GG->{$k});
+                if ($sel ne "" && !grep(/$sel/,@colorList)) {
+                    push(@col,$sel);
+                }
+                $div .= "<div id='colorPalette_$g.$k' class='colorPalette'>";
+                $div .= join('', map { "<span class='colorBox".($sel eq $_ ? " selected":"")."' style='background-color:$_' data-color='$_'></span>" } @col);
+                $div .= '</div><br>';
+                $div .= "<input disabled type='hidden' name='$g.$k' id='selectedColor_$g.$k' value='$GG->{$k}'>";
             } else {
                 $div .= sprintf("<input disabled id='%s.%s' name='%s.%s' maxlength='200' size='20' value='%s'><br>",$g,$_,$g,$_,defined($GG->{$_})?$GG->{$_}:"");
             }

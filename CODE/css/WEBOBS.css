@@ -910,3 +910,22 @@ tr.tableSplit td{
 td.udateRow {
     border: none;
 }
+
+.colorPalette {
+    display: grid;
+    grid-template-columns: repeat(34, 11px);
+    gap: 2px;
+}
+.colorBox {
+    display: block;
+    width: 10px;
+    height: 12px;
+    box-sizing: border-box;
+    border: 1px solid #888;
+    cursor: pointer;
+    transform: translateY(4px);
+}
+.colorBox.selected {
+    outline: 2px solid #000;
+    outline-offset: 1px;
+}

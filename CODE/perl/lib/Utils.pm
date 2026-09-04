@@ -27,7 +27,7 @@ require Exporter;
 @ISA     = qw(Exporter);
 @EXPORT  = qw(htmlspecialchars getImageInfo makeThumbnail trim ltrim
   rtrim tri_date_avec_id datediffdays timescale_name isok romanx pga2msk attenuation num2roman txt2htm tex2utf
-  roundsd htm2frac qrcode url2target checkParam sort_clb mean median std);
+  roundsd htm2frac qrcode url2target checkParam sort_clb mean median std rgb2hex);
 $VERSION = "1.00";
 
 =pod
@@ -273,6 +273,20 @@ sub isok ($)
 {
     my $ok = shift // "";
     return ($ok =~ /^(Y|YES|OK|ON|1|TRUE)/i ? 1:0);
+}
+
+#--------------------------------------------------------------------------------------------------------------------------------------
+sub rgb2hex ($)
+
+  # Input: string with 'R,G,B' values between 0 and 1
+  # Output: string of hexadecimal color '#RRGGBB'
+  # Matlab/Octave equivalent: matlab/rgb2hex.m
+{
+    my $col = shift;
+    my @rgb = split(/,|\s+/,$col);
+    my $hex = "";
+    $hex = sprintf("#%02X%02X%02X", map { int($_*255) } @rgb) if (@rgb == 3);
+    return $hex;
 }
 
 #--------------------------------------------------------------------------------------------------------------------------------------
