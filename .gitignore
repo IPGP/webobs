@@ -2,6 +2,7 @@ Releases
 CODE/bin
 CODE/matlab/bin
 CODE/matlab/*.mex*
+CODE/python/downflowgo/src
 CODE/i18n/locales/*/LC_MESSAGES/*.mo
 DOC/user-manual/*
 !DOC/user-manual/*.tex

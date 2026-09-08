@@ -47,16 +47,26 @@ else:
     exit()
 
 config_dict = {}
-keys = ["CONFIG_GENERAL", "PATHS", "DOWNFLOW", "PYFLOWGO", "MAPPING", "LANGUAGE"]
+keys = [
+    "CONFIG_GENERAL",
+    "PATHS",
+    "DOWNFLOW",
+    "PYFLOWGO",
+    "GRID_PARAMETERS",
+    "MAPPING",
+    "LANGUAGE",
+]
+keys.sort(key=len, reverse=True)
 
 for k, v in conf.items():
-    k = k.replace("PROC." + procname + ".", "")
-    if "_" in k and any(k.startswith(key) for key in keys):
-        section, item = k.lower().split("_", 1)
-        section = section.replace("--", "_")
-        if section not in config_dict:
-            config_dict[section] = {}
-        config_dict[section][item] = v
+    for key in keys:
+        if k.startswith(key):
+            section = key.lower()
+            item = k.replace(key + "_", "").lower()
+            if section not in config_dict:
+                config_dict[section] = {}
+            config_dict[section][item] = v
+            break
 
 config_dict["config_general"]["use_gui"] = "no"
 config_dict["config_general"]["mapping_display"] = "no"
