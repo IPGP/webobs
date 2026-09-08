@@ -38,7 +38,7 @@ use Locale::TextDomain('webobs');
 set_message(\&webobs_cgi_msg);
 my %GRID;
 my %G; my %P;
-my $GRIDType = my $GRIDName = my $RESOURCE = my $OUTG = "";
+my $RESOURCE = my $OUTG = "";
 my @GRIDList;
 my @OUTGList;
 
@@ -46,6 +46,13 @@ my $QryParm   = $cgi->Vars;
 my $OUTR;
 my $OUTDIR = trim($QryParm->{'dir'});
 my ($date,$time,$host,$user) = split(/_/,$OUTDIR);
+my $grid = trim($QryParm->{'grid'});
+my ($GRIDType, $GRIDName) = split(/[\.\/]/, $grid);
+# for GRIDMAPS
+if ($GRIDType eq "GRIDMAPS") {
+    $GRIDName = $GRIDType;
+    $QryParm->{'g'} = "map";
+}
 
 # ---- check authorization: request owner or administrator
 if ($user ne $CLIENT && !clientHasAdm(type=>"authprocs",name=>"*")) {
@@ -53,7 +60,7 @@ if ($user ne $CLIENT && !clientHasAdm(type=>"authprocs",name=>"*")) {
 }
 
 # ---- what grids do we have to process ?
-my @GL = qx(find $WEBOBS{ROOT_OUTR}/$OUTDIR -type d \\( -name "PROC.*" -o -name "VIEW.*" -o -name "GRIDMAPS" \\) -maxdepth 1);
+my @GL = qx(find $WEBOBS{ROOT_OUTR}/$OUTDIR -type d \\( -name "PROC.*" -o -name "VIEW.*" -o -name "FORM.*" -o -name "SEFRAN.*" -o -name "GRIDMAPS" \\) -maxdepth 1);
 chomp(@GL);
 foreach (@GL) {
     my $g = $_;
@@ -63,20 +70,17 @@ foreach (@GL) {
 
 $QryParm->{'g'}  ||= '';
 $QryParm->{'grid'}  ||= $GRIDList[0];
-($GRIDType, $GRIDName) = split(/[\.\/]/, trim($QryParm->{'grid'}));
-if (-d "$WEBOBS{ROOT_OUTR}/$OUTDIR/$GRIDType.$GRIDName" ) {
-    $OUTR = "$WEBOBS{ROOT_OUTR}/$OUTDIR/$GRIDType.$GRIDName";
-} else { die "$__{'No outputs for'} $GRIDType.$GRIDName" }
+if (-d "$WEBOBS{ROOT_OUTR}/$OUTDIR/$grid" ) {
+    $OUTR = "$WEBOBS{ROOT_OUTR}/$OUTDIR/$grid";
+} else { die "$__{'No outputs for'} $grid" }
 
-if     (uc($GRIDType) eq 'VIEW') { %G = readView($GRIDName) }
-elsif  (uc($GRIDType) eq 'PROC') { %G = readProc($GRIDName) }
-%GRID = %{$G{$GRIDName}} ;
+%GRID = readGrid($grid);
 
 # ---- good, we now have a grid defined and outputs to show
 
 # ---- get the list of nodes currently belonging to grid
 # ---- and the list of possible summary grid's summary filenames
-my %DefinedNodes = listGridNodes(grid=>"$GRIDType.$GRIDName");
+my %DefinedNodes = listGridNodes(grid=>$grid);
 my @SummaryList  = split(/,/,$GRID{SUMMARYLIST});
 
 # ---- Start HTML page
@@ -99,7 +103,12 @@ my $go2top = "<A href=\"#MYTOP\"><img src=\"/icons/go2top.png\"></A>";
 # 1st line for GRID selection
 # 2nd line for output selection
 print "<DIV id='selbanner' style='background-color: beige; padding: 5px; margin-bottom:10px;'>";
-print "<B>»»</B> [ <A href=\"/cgi-bin/showGRID.pl?grid=$GRIDType.$GRIDName\"><B>".ucfirst(lc($GRIDType))."</B></A>";
+print "<B>»»</B> [ ";
+if ($GRIDType eq "GRIDMAPS") {
+    print "<A href=\"/cgi-bin/listGRIDS.pl\"><B>Grids</B></A>";
+} else {
+    print "<A href=\"/cgi-bin/showGRID.pl?grid=$grid\"><B>".ucfirst(lc($GRIDType))."</B></A>";
+}
 foreach (@GRIDList) {
     if ($QryParm->{'grid'} eq $_ ) {
         print " | <B>$_</B>";
@@ -110,22 +119,23 @@ foreach (@GRIDList) {
 print " ]\n";
 
 # build $elist = the list of available .eps graphs
-my (@elist) = glob "$OUTR/$WEBOBS{PATH_OUTG_GRAPHS}/*_.eps";
+my @elist = glob "$OUTR/$WEBOBS{PATH_OUTG_GRAPHS}/*_.eps $OUTR/$WEBOBS{PATH_OUTG_MAPS}/*_map.eps";
 
 # build $plist = the list of available .pdf graphs
-my (@plist) = glob "$OUTR/$WEBOBS{PATH_OUTG_GRAPHS}/*_.pdf";
+my @plist = glob "$OUTR/$WEBOBS{PATH_OUTG_GRAPHS}/*_.pdf $OUTR/$WEBOBS{PATH_OUTG_MAPS}/*_map.pdf";
 
-# build $dlist = the list of available data/**.* for timescale $tslist[$tsSelected]
-my (@dlist) = glob "$OUTR/$WEBOBS{PATH_OUTG_EXPORT}/*_.*";
+# build $dlist = the list of available data/**.*
+my @dlist = glob "$OUTR/$WEBOBS{PATH_OUTG_EXPORT}/*_.*";
 
-# build $glist = the list of available .png graphs for timescale $tslist[$tsSelected]
+# build $glist = the list of available .png graphs
 # $glistHtml is the corresponding string of html hrefs to these graphs
 # with each nodenames replaced with their alias if it is defined
-my (@glist) = glob "$OUTR/$WEBOBS{PATH_OUTG_GRAPHS}/*_.png";
+my @glist = glob "$OUTR/$WEBOBS{PATH_OUTG_GRAPHS}/*_.png $OUTR/$WEBOBS{PATH_OUTG_MAPS}/*_map.png";
 my $glistHtml = "";
 for my $fpath (@glist) {
     my $short = $fpath;
     $short =~ s/^$OUTR\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
+    $short =~ s/^$OUTR\/$WEBOBS{PATH_OUTG_MAPS}\/_map.*$/map/;
     $short =~ s/^$/$GRIDName/;
     my $shorter = ($short eq $GRIDName ? "Summary":$short);
     if ($short ne $GRIDName && !(grep( /^$short$/i, @SummaryList)) ) {
@@ -137,7 +147,7 @@ for my $fpath (@glist) {
     if ($QryParm->{'g'} eq $short) {
         $glistHtml .= " $shorter |";
     } else {
-        $glistHtml .= " <A href=\"/cgi-bin/showOUTR.pl?dir=$QryParm->{'dir'}&grid=$GRIDType.$GRIDName&g=$short\"> $shorter</A> |";
+        $glistHtml .= " <A href=\"/cgi-bin/showOUTR.pl?dir=$QryParm->{'dir'}&grid=$grid&g=$short\"> $shorter</A> |";
     }
 }
 chop($glistHtml);
@@ -160,6 +170,7 @@ for my $i (0..$#elist) {
     if (-f $elist[$i]) {
         (my $surn = $elist[$i]) =~ s/$WEBOBS{ROOT_OUTR}/$WEBOBS{URN_OUTR}/g;
         $elist[$i] =~ s/^$OUTR\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
+        $elist[$i] =~ s/^$OUTR\/$WEBOBS{PATH_OUTG_MAPS}\/_map.*$/map/;
         $elist[$i] =~ s/^$/$GRIDName/;
         if ($elist[$i] eq $QryParm->{'g'}) {
             $addlinks .= " <A href=\"$surn\"><IMG alt=\"$QryParm->{'g'}.eps\" src=\"/icons/feps.png\"></A> ";
@@ -170,6 +181,7 @@ for my $i (0..$#plist) {
     if (-f $plist[$i]) {
         (my $surn = $plist[$i]) =~ s/$WEBOBS{ROOT_OUTR}/$WEBOBS{URN_OUTR}/g;
         $plist[$i] =~ s/^$OUTR\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
+        $plist[$i] =~ s/^$OUTR\/$WEBOBS{PATH_OUTG_MAPS}\/_map.*$/map/;
         $plist[$i] =~ s/^$/$GRIDName/;
         if ($plist[$i] eq $QryParm->{'g'}) {
             $addlinks .= " <A href=\"$surn\"><IMG alt=\"$QryParm->{'g'}.pdf\" src=\"/icons/fpdf.png\"></A> ";
@@ -180,6 +192,7 @@ for my $i (0..$#dlist) {
     if (-f $dlist[$i]) {
         (my $surn = $dlist[$i]) =~ s/$WEBOBS{ROOT_OUTR}/$WEBOBS{URN_OUTR}/g;
         $dlist[$i] =~ s/^$OUTR\/$WEBOBS{PATH_OUTG_EXPORT}\/(.*)_.*$/$1/;
+        $dlist[$i] =~ s/^$OUTR\/$WEBOBS{PATH_OUTG_MAPS}\/_map.*$/map/;
         $dlist[$i] =~ s/^$/$GRIDName/;
         ##if ($dlist[$i] eq $QryParm->{'g'}) {
         if ( ($dlist[$i]=~m/$QryParm->{'g'}/i) ) {
@@ -187,14 +200,16 @@ for my $i (0..$#dlist) {
         }
     }
 }
-if ($QryParm->{'g'} ne $GRIDName && !(grep( /^$QryParm->{'g'}$/i, @SummaryList)) ) {
+if ($QryParm->{'g'} ne $GRIDName && $GRIDType ne "GRIDMAPS" && !(grep( /^$QryParm->{'g'}$/i, @SummaryList)) ) {
     my $ucg = uc($QryParm->{'g'});
     $addlinks .= " <A href=\"/cgi-bin/$NODES{CGI_SHOW}?node=PROC.$GRIDName.$ucg\"><IMG alt=\"$QryParm->{'g'}\" src=\"/icons/fnode.png\"></A> ";
 }
-for my $g (@glist) {
+for (@glist) {
+    my $g = $_;
     (my $map = $g) =~ s/\.png/\.map/;
     (my $urn  = $g) =~ s/$WEBOBS{ROOT_OUTR}/$WEBOBS{URN_OUTR}/g;
     $g =~ s/^$OUTR\/$WEBOBS{PATH_OUTG_GRAPHS}\/(.*)_.*$/$1/;
+    $g =~ s/^$OUTR\/$WEBOBS{PATH_OUTG_MAPS}\/_map.*$/map/;
     $g =~ s/^$/$GRIDName/;
     if ($g eq $QryParm->{'g'}) {
         print "$addlinks<BR>";
@@ -207,6 +222,16 @@ for my $g (@glist) {
 }
 
 print "<BR>$go2top</BR>";
+
+if ($QryParm->{'debug'}) {
+    print "<H2>DEBUG</H2>\n";
+    print "<P><B>ENV{TZ}</B> = $ENV{TZ}</P>\n";
+    print "<P><B>GRIDName</B> = $GRIDName</P>\n";
+    print "<P><B>OUTR</B> = $OUTR</P>\n";
+    print "<P><B>glist</B> (length=$#glist) = ".join(", ", @glist)."</P>\n";
+    print "<P><B>plist</B> (length=$#plist) = ".join(", ", @plist)."</P>\n";
+    print "<P><B>vlist</B> (length=$#glist) = ".join(", ", @glist)."</P>\n";
+}
 
 # ---- We're done !
 print "</BODY>\n</HTML>\n";
@@ -221,7 +246,7 @@ François Beauducel, Didier Lafon
 
 =head1 COPYRIGHT
 
-Webobs - 2012-2014 - Institut de Physique du Globe Paris
+WebObs - 2012-2026 - Institut de physique du globe Paris / Université Paris Cité
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

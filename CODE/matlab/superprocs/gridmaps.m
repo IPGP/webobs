@@ -40,7 +40,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2026-09-03
+%   Updated: 2026-09-08
 
 
 WO = readcfg;
@@ -99,10 +99,8 @@ end
 
 if nargin < 2 || isempty(outd)
 	outd = WO.ROOT_OUTG;
-	fext = 'map';
 	html = 0;
 else
-	fext = 'htm';
 	html = 1;
 end
 
@@ -517,10 +515,11 @@ for g = 1:length(grids)
 				close
 
 				% makes the HTML mapping
-				wolog('updating %s/%s.%s ... ',pimg,fimg,fext);
-				fid = fopen(sprintf('%s.%s',ftmp,fext),'w','n','UTF-8');
+				wolog('updating %s/%s.* ... ',pimg,fimg);
+				fid = fopen(sprintf('%s.map',ftmp),'w','n','UTF-8');
 				if html
-					fprintf(fid,'<HTML><HEAD><TITLE></TITLE></HEAD><BODY>\n<IMG src="%s.png" usemap="#map">\n<MAP name="map">\n',fimg);
+                    fidhtm = fopen(sprintf('%s.htm',ftmp),'w','n','UTF-8');
+					fprintf(fidhtm,'<HTML><HEAD><TITLE></TITLE></HEAD><BODY>\n<IMG src="%s.png" usemap="#map">\n<MAP name="map">\n',fimg);
 				end
 				if merge
 					glist = 1:length(grids);
@@ -540,14 +539,13 @@ for g = 1:length(grids)
 						end
 						if html
 							txt = regexprep(sprintf('%s: %s',NN(gg).alias{knn},NN(gg).name{knn}),'"','');
-							fprintf(fid,'<AREA href="%s" title="%s" shape=circle coords="%d,%d,%d">\n',lnk,txt,x,y,r);
-						else
-							cap = NN(gg).id{knn};
-							txt = regexprep(sprintf('<b>%s</b>: %s',NN(gg).alias{knn},NN(gg).name{knn}),'"','');
-							txt = regexprep(char(txt),'''','\\''');
-							txt = sprintf('<AREA href="%s" onMouseOut="nd()" onMouseOver="overlib(''%s'',CAPTION,''%s'')" shape=circle coords="%d,%d,%d">\n',lnk,txt,cap,x,y,r);
-							fwrite(fid,txt,'char');
-						end
+							fprintf(fidhtm,'<AREA href="%s" title="%s" shape=circle coords="%d,%d,%d">\n',lnk,txt,x,y,r);
+                        end
+                        cap = NN(gg).id{knn};
+                        txt = regexprep(sprintf('<b>%s</b>: %s',NN(gg).alias{knn},NN(gg).name{knn}),'"','');
+                        txt = regexprep(char(txt),'''','\\''');
+                        txt = sprintf('<AREA href="%s" onMouseOut="nd()" onMouseOver="overlib(''%s'',CAPTION,''%s'')" shape=circle coords="%d,%d,%d">\n',lnk,txt,cap,x,y,r);
+                        fwrite(fid,txt,'char');
 					end
 				end
 				% plots other maps limits
@@ -558,19 +556,22 @@ for g = 1:length(grids)
 						lnk = sprintf('/cgi-bin/showGRID.pl?grid=%s&map=%s#MAPS',grids{gg},repmat(num2str(smap-1),1,smap>1));
 						txt = sprintf('click to zoom on %s',maps{smap,1});
 						if html
-							fprintf(fid,'<AREA href="%s" title="%s" shape=rect coords="%d,%d,%d,%d">\n',lnk,txt,x(1),y(1),x(2),y(2));
-						else
-							fprintf(fid,'<AREA href="%s" onMouseOut="nd()" onMouseOver="overlib(''%s'')" shape=rect coords="%d,%d,%d,%d">\n',lnk,txt,x(1),y(1),x(2),y(2));
+							fprintf(fidhtm,'<AREA href="%s" title="%s" shape=rect coords="%d,%d,%d,%d">\n',lnk,txt,x(1),y(1),x(2),y(2));
 						end
+                        fprintf(fid,'<AREA href="%s" onMouseOut="nd()" onMouseOver="overlib(''%s'')" shape=rect coords="%d,%d,%d,%d">\n',lnk,txt,x(1),y(1),x(2),y(2));
 					end
 				end
 				fprintf(fid,'<AREA nohref shape=rect coords="0,0,%d,%d">\n',ims);
 
 				if html
-					fprintf(fid,'</MAP>\n</BODY></HTML>');
+					fprintf(fidhtm,'</MAP>\n</BODY></HTML>');
+                    fclose(fidhtm);
 				end
 				fclose(fid);
-				wosystem(sprintf('mv -f %s.%s %s',ftmp,fext,pimg));
+				wosystem(sprintf('mv -f %s.map %s/',ftmp,pimg));
+                if html
+                    wosystem(sprintf('mv -f %s.htm %s/',ftmp,pimg));
+                end
 				fprintf('done.\n');
 
 			end
