@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel, Pierre Sakic / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-09-01
+%   Updated: 2026-09-07
 
 WO = readcfg;
 
@@ -189,6 +189,7 @@ baselines_timezoom = field2num(P,'BASELINES_TIMEZOOM',0);
 baselines_trend = isok(P,'BASELINES_PLOT_TREND');
 baselines_maps = field2str(P,'BASELINES_MAPS',{'','right','bottom'});
 baselines_demopt = field2cell(P,'BASELINES_DEM_OPT','fontsize',0,'borderwidth',.5,'watermark',1.5,'interp','saturation',0,'hlegend');
+baselines_maps_limits = field2str(P,'BASELINES_MAPS_LIMITS');
 
 % STRAINMAP parameters
 strainmap_title = field2str(P,'STRAINMAP_TITLE','{\fontsize{14}{\bf$name - Baselines} ($timescale)}');
@@ -740,7 +741,7 @@ for r = 1:numel(P.GTABLE)
 			pairgraphs = strtrim(split(P.BASELINES_NODEPAIRS,';'));
 			np = 0;
 			for nn = 1:numel(pairgraphs)
-				pairs = strtrim(split(pairgraphs{nn},','));
+				pairs = strtrim(split(pairgraphs{nn},','))';
 				if numel(pairs)>1
 					kr = find(ismemberlist({N.FID},pairs(1)));
 					kn = find(ismemberlist({N.FID},pairs(2:end)));
@@ -864,6 +865,9 @@ for r = 1:numel(P.GTABLE)
         % optional maps showing baselines position
         if ~isempty(regexp(baselines_maps,'^right|bottom$','once')) 
             mappos = strcmpi(baselines_maps,'bottom'); % 1 = bottom, 0 = right
+            % baselines_maps_limits might be 'all', or 'ref' (default), or triples lon1,lat1,wid1;lon2,lat2,wid2;...
+            xyw = str2num(baselines_maps_limits); % empty or Nx3 matrix
+            kall = cat(2,B.kr,B.kn);
             if mappos
                 extaxes(gca,[0.01,0,-0.2,0]);
             else
@@ -872,18 +876,26 @@ for r = 1:numel(P.GTABLE)
             apos = get(gca,'Position');
             for n = 1:length(B)
                 ks = cat(1,B(n).kr,B(n).kn(:));
-                [dlat,dlon] = ll2lim(geo(ks,1),geo(ks,2),0.5,1,0.15); % limits for square map, min 500m, 15% borders
-                lat0 = mean(dlat);
+                if size(xyw,2)==3
+                    i = 1 + (n-1)*(size(xyw,1)==length(B));
+                    xylim = xyw2lim(xyw(i,:),1/cosd(xyw(i,2)));
+                else
+                    if regexp(baselines_maps_limits,'^all$','once')
+                        [dlat,dlon] = ll2lim(geo(kall,1),geo(kall,2),1,1,0.15); % limits for square map, min 1km, 15% borders
+                    else
+                        [dlat,dlon] = ll2lim(geo(ks,1),geo(ks,2),1,1,0.15); % limits for square map, min 500m, 15% borders
+                    end
+                    lat0 = mean(dlat);
+                    xylim = xyw2lim([mean(dlon),lat0,diff(dlon)],1/cosd(lat0));
+                end
                 if mappos
                     spw = .9*apos(3)/length(B);
                     sph = .9*(apos(2)-.05);
                     axes('Position',[apos(1) + (n-1)*1.05*(apos(3)/length(B)),.02,spw,sph]);
-                    xylim = xyw2lim([mean(dlon),lat0,diff(dlon)],cosd(lat0));
                 else
                     spw = .9*(.98 - apos(1) - apos(3));
                     sph = .9*apos(4)/length(B);
                     axes('Position',[apos(1) + apos(3) + .02,apos(2) + apos(4) - sph - (n-1)*1.05*apos(4)/length(B),spw,sph]);
-                    xylim = xyw2lim([mean(dlon),lat0,diff(dlon)],1/cosd(lat0));
                 end
                 DEM = loaddem(WO,xylim,P);
                 dem(DEM.lon,DEM.lat,DEM.z,'latlon',baselines_demopt{:})
@@ -891,10 +903,11 @@ for r = 1:numel(P.GTABLE)
                 k1 = B(n).kr;
                 for n2 = 1:length(B(n).kn)
                     k2 = B(n).kn(n2);
-                    plot(geo([k1;k2],2),geo([k1;k2],1),'-','Color',scolor(k2),'LineWidth',3)
+                    h = plot(geo([k1;k2],2),geo([k1;k2],1),'-','Color',scolor(k2),'LineWidth',3);
+                    set(h,'Clipping','on')
                 end
-                target(geo(ks,2),geo(ks,1),6,.2*ones(1,3))
-                smarttext(geo(ks,2),geo(ks,1),{N(ks).ALIAS},'lonlat','noframe','FontSize',8,'FontWeight','bold')
+                target(geo(ks,2),geo(ks,1),6,.2*ones(1,3),'o',1,'Clipping','on')
+                smarttext(geo(ks,2),geo(ks,1),{N(ks).ALIAS},'lonlat','noframe','FontSize',8,'FontWeight','bold','Clipping','on')
                 hold off
             end
         else

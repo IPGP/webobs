@@ -13,7 +13,7 @@ function varargout=target(x,y,s,c,m,w,varargin)
 %
 %	Author: F. Beauducel <beauducel@ipgp.fr>
 %	Created: 2003
-%	Updated: 2025-12-20
+%	Updated: 2026-09-07
 
 blank = .99*[1,1,1];
 
@@ -51,21 +51,21 @@ if ~isempty(x) && all(size(x)==size(y))
 		yy = y(:) + repmat([0,0],numel(x),1);
 		plot(xx,yy,m,'Color',blank,'Linewidth',2);
         if onecolor
-            plot(xx,yy,m,'Color',c(1,:),'Linewidth',1.5);
+            plot(xx,yy,m,'Color',c(1,:),'Linewidth',1.5,varargin{:});
         else
             for i = 1:size(c,1)
-                plot(xx(i),yy(i),m,'Color',c(i,:),'Linewidth',1.5);
+                plot(xx(i),yy(i),m,'Color',c(i,:),'Linewidth',1.5,varargin{:});
             end
         end
 	else
         if onecolor
-            plot(x,y,m,'MarkerSize',s,'MarkerFaceColor',c(1,:),'MarkerEdgeColor',b,'Linewidth',s/5);
+            plot(x,y,m,'MarkerSize',s,'MarkerFaceColor',c(1,:),'MarkerEdgeColor',b,'Linewidth',s/5,varargin{:});
         else
             for i = 1:size(c,1)
-                plot(x(i),y(i),m,'MarkerSize',s,'MarkerFaceColor',c(i,:),'MarkerEdgeColor',b,'Linewidth',s/5);
+                plot(x(i),y(i),m,'MarkerSize',s,'MarkerFaceColor',c(i,:),'MarkerEdgeColor',b,'Linewidth',s/5,varargin{:});
             end
         end
-		plot(x,y,m,'MarkerSize',s + 2,'MarkerEdgeColor',blank,'MarkerFaceColor','none');
+		plot(x,y,m,'MarkerSize',s + 2,'MarkerEdgeColor',blank,'MarkerFaceColor','none',varargin{:});
 	end
 	if ~hold_status
 		hold off
