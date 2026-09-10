@@ -156,7 +156,11 @@ if ( (open REQ, ">$reqfn") ) {
     }
     print REQ "ORIGIN|".$QryParm->{'origin'}."\n";
     print REQ "UID|".$USERS{$CLIENT}{UID}."\n";
-    foreach (grep { /^(PROC|VIEW|FORM|SEFRAN)\./ } keys(%$QryParm)) { print REQ "$_|".u2l($QryParm->{$_})."\n" }
+    foreach (grep { /^(PROC|VIEW|FORM|SEFRAN)\./ } keys(%$QryParm)) {
+        my $val = $QryParm->{$_};
+        $val =~ s/#/\\#/g;
+        print REQ "$_|".u2l($val)."\n"
+    }
     close REQ;
 } else {  htmlMsg("$__{'Request aborted'}: $__{'Failed creating '} $reqfn") }
 
