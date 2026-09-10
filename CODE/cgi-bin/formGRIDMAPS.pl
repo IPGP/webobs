@@ -316,7 +316,7 @@ print "</fieldset><BR>";
 
 print "<fieldset><legend>$__{'Basemap parameters'}</legend>";
 foreach (sort keys(%GRIDMAPS)) {
-    if ($_ ne 'REQUEST_GRID_KEYLIST' && $_ ne 'NAME' && $_ !~ /^(SUBMIT|MERGE|REQ)_/) {
+    if ($_ !~ /^(REQUEST_GRID_KEYLIST|NAME|INACTIVE_NODE)$/ && $_ !~ /^(SUBMIT|MERGE|REQ)_/) {
         print "<LABEL style=\"width:200px\" for=\"$_\">$_:</LABEL>";
         if ($GRIDMAPS{$_} =~ /^(Y|N|YES|NO|OK|KO|ON|OFF)$/i) {
             print "<INPUT type=\"checkbox\" name=\"$_\" id=\"$_\" value=\"Y\" ".(isok($GRIDMAPS{$_}) ? "checked":"").">";
@@ -324,8 +324,6 @@ foreach (sort keys(%GRIDMAPS)) {
             print "<INPUT id=\"$_\" name=\"$_\" size=\"15\" value=\"$GRIDMAPS{$_}\">";
         }
         print "<BR>\n";
-    } else {
-        print "<INPUT type=\"hidden\" id=\"$_\" name=\"$_\" value=\"$GRIDMAPS{$_}\">";
     }
 }
 print "</fieldset>";
