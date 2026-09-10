@@ -339,8 +339,7 @@ my $pagetitle = "";
 my @lines;
 my $today = new Time::Piece;
 my $name = my $version = "";
-$date = $time = $titre = $contents = "";
-$contents = "";
+#$date = $time = $titre = $contents = "";
 my $parents = WebObs::Events::parents($evbase, $evpath);
 my $featwanted = isok($NODES{EVENTNODE_FEATURE_MANDATORY});
 my $nofeatconfirm = isok($NODES{EVENTNODE_NOFEATURE_CONFIRM});
@@ -366,7 +365,7 @@ if ($action =~ /new/i ) {
         $date2 = $today->strftime('%Y-%m-%d');
         $time2 = $today->strftime('%H:%M');
         $pagetitle = "$__{'Create a new project'}";
-        $contents = "**$__{'Project created on'} $date2 $time2 $__{'by'} $USERS{$CLIENT}{FULLNAME} [$USERS{$CLIENT}{UID}]**\n\n";
+        $contents = "**$__{'Project created on'} $date2 $time2 $__{'by'} $USERS{$CLIENT}{FULLNAME} [$USERS{$CLIENT}{UID}]**\n\n".$contents;
     }
     $meta = "WebObs: created by vedit\n\n";         # add MMD
 }
