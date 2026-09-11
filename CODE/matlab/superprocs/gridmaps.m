@@ -40,7 +40,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2026-09-08
+%   Updated: 2026-09-11
 
 
 WO = readcfg;
@@ -238,9 +238,8 @@ for g = 1:length(grids)
 		G.DEM_SRTM1 = 'Y';
 	end
 	if request
-		for key = split(P.REQUEST_GRID_KEYLIST,',')
-			G.(key{:}) = field2str(P.(s{1}).(s{2}),key{:},field2str(G,key{:}),'notempty');
-		end
+        % overwrites all fields of the grid defined in struct P.grid.(gridname)
+        G = structmerge(G,P.(s{1}).(s{2}));
 	end
 	griddemopt = field2cell(G,'GRIDMAPS_DEM_OPT');
     gridtitle = field2str(G,'NAME');
