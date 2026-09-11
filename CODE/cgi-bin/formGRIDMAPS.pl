@@ -203,13 +203,13 @@ function selGrid(grid) {
 
 function checkForm()
 {
-    var d1 = document.formulaire.startY.value.concat(document.formulaire.startM.value,document.formulaire.startD.value);
-    var d2 = document.formulaire.endY.value.concat(document.formulaire.endM.value,document.formulaire.endD.value);
+    var d1 = document.form.startY.value.concat(document.form.startM.value,document.form.startD.value);
+    var d2 = document.form.endY.value.concat(document.form.endM.value,document.form.endD.value);
     if (d1 >= d2) {
         alert(\"End date must not be before Start date!\");
         return false;
     }
-    var checkboxes = document.formulaire.querySelectorAll(\"input[type=checkbox]\");
+    var checkboxes = document.form.querySelectorAll(\"input[type=checkbox]\");
     var requestgrids = 0;
     for (index = 0; index < checkboxes.length; ++index) {
         if (checkboxes[index].name.substring(0, 2) == \"g_\" && checkboxes[index].checked) {
@@ -230,7 +230,7 @@ function postIt()
 }
 </script>
 </HEAD>
-<BODY onLoad=\"document.formulaire.origin.value=window.location.protocol + '//' + window.location.hostname + (window.location.port ? (':' + window.location.port) : '');\">
+<BODY onLoad=\"document.form.origin.value=window.location.protocol + '//' + window.location.hostname + (window.location.port ? (':' + window.location.port) : '');\">
 <script type=\"text/javascript\" src=\"/js/jquery.js\"></script>
 <!-- overLIB (c) Erik Bosrup -->
 <script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>
@@ -242,7 +242,7 @@ print "<P class=\"subMenu\"> <b>&raquo;&raquo;</b> [ <a href=\"/cgi-bin/showREQ.
 # ---- Objectives (aka 'Purpose', 'description' of subsetType)
 printdesc('Description','DESCRIPTION','GRIDS','GRIDMAPSREQUEST','',0,$editOK);
 
-print "<form id=\"theform\" name=\"formulaire\" action=\"\">";
+print "<form id=\"theform\" name=\"form\" action=\"\">";
 
 print "<TABLE style=\"border:0\" width=\"100%\">";
 print "<TR>";

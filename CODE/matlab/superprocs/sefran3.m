@@ -20,7 +20,7 @@ function sefran3(name,fdate)
 %	Authors: Francois Beauducel, Didier Lafon, Alexis Bosson, Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2012-02-09 in Paris, France
 %	         (based on legacy sefran.m, 2002 and sefran2.m, 2007)
-%	Updated: 2024-07-10
+%	Updated: 2026-09-11
 
 WO = readcfg;
 
@@ -120,11 +120,7 @@ gris1 = .8*[1,1,1]; % light gray
 %gris2 = .2*[1,1,1]; % dark gray
 
 % external programs
-if isfield(WO,'CONVERT_COLORSPACE')
-        convert = sprintf('%s %s',WO.PRGM_CONVERT,WO.CONVERT_COLORSPACE);
-else
-        convert = sprintf('%s -colorspace sRGB',WO.PRGM_CONVERT);
-end
+convert = sprintf('%s %s',field2prog(WO,'PRGM_CONVERT'),field2str(WO,'CONVERT_COLORSPACE','-colorspace sRGB'));
 pngquant = field2prog(WO,'PRGM_PNGQUANT');
 if isempty(pngquant)
 	wolog('** WARNING ** you should install pngquant as it will reduce file size by 75%%!\n');
