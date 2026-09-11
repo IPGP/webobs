@@ -395,7 +395,7 @@ sub pkeys {
                 $div .= '</div><br>';
                 $div .= "<input disabled type='hidden' name='$g.$k' id='selectedColor_$g.$k' value='$GG->{$k}'>";
             } else {
-                $div .= sprintf("<input disabled id='%s.%s' name='%s.%s' maxlength='200' size='20' value='%s'><br>",$g,$_,$g,$_,defined($GG->{$_})?$GG->{$_}:"");
+                $div .= "<input disabled id='$g.$_' name='$g.$_' maxlength='200' size='20' value='".(defined($GG->{$_}) ? htmlspecialchars($GG->{$_}):"")."'><br>";
             }
         }
         $div .= "</div>";
