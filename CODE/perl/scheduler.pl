@@ -422,11 +422,8 @@ if (!$SOCK)  {
 
 # ---- system load averages access+interpretation setups
 # -----------------------------------------------------------------------------
-if (open FILE, "< /proc/cpuinfo") {
-    $ncpus = scalar grep(/^processor\s+:/,<FILE>);
-    close FILE;
-}
-our ($avg1,$avg5,$avg15) = 0;         # work-vars for sys load averages
+$ncpus = `nproc 2>/dev/null` + 0 || 1;
+our ($avg1,$avg5,$avg15) = (0,0,0);         # work-vars for sys load averages
 
 # --- directory for daily backups of scheduler.log
 # -----------------------------------------------------------------------------
