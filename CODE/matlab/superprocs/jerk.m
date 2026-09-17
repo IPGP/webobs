@@ -36,7 +36,7 @@ function DOUT=jerk(varargin)
 %
 %   Authors: F. Beauducel + G. Roult + V. Ferrazzini, WEBOBS/IPGP
 %   Created: 2014-04-14 at OVPF, La Réunion, Indian Ocean
-%   Updated: 2026-03-29
+%   Updated: 2026-09-17
 
 WO = readcfg;
 wofun = sprintf('WEBOBS{%s}',mfilename);
@@ -241,12 +241,15 @@ for n = 1:length(N)
 				plot(tk,dk(:,i) - dk(:,i+3),'-','LineWidth',P.GTABLE(r).LINEWIDTH,'Color',scolor(3))
 				hold off
 			end
-            ylim = minmax(dk(:,i));
-			set(gca,'XLim',xlim,'YLim',ylim,'FontSize',8)
+			set(gca,'XLim',xlim,'FontSize',8)
 			datetick2('x',P.GTABLE(r).DATESTR)
 			ylabel(sprintf('%s (%s)',C.nm{i},C.un{i}))
 			if isempty(d) || all(isnan(d(k,i)))
 				nodata(xlim)
+                ylim = get(gca,'YLim');
+            else
+                ylim = minmax(dk(:,i));
+                set(gca,'YLim',ylim)
 			end
             if i==1
                 topt = {'HorizontalAlignment','center','FontWeight','bold'};
