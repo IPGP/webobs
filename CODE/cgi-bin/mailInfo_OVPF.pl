@@ -445,12 +445,12 @@ PART1
     $htmlOutput .= $html;
     $htmlBrowser .= $html;
     $htmlMail .= $html;
-    $htmlOutput .= " <table><tr><td><a href=\"./graphs/BASELINES_01y.png\"><img src=\"./graphs/BASELINES_01y.png\" width=\"300\"/></a></td></tr></table>";
-    $htmlBrowser .= "<table><tr><td><a href=\"http://195.83.188.56/OUTG/PROC.GIPSYX/graphs/BASELINES_01y.png\"><img src=\"http://195.83.188.56/OUTG/PROC.GIPSYX/graphs/BASELINES_01y.png\" width=\"300\"/></a></td></tr></table>";
+    $htmlOutput .= " <table><tr><td><a href=\"./graphs/BASELINES_06m.png\"><img src=\"./graphs/BASELINES_06m.png\" width=\"300\"/></a></td></tr></table>";
+    $htmlBrowser .= "<table><tr><td><a href=\"http://195.83.188.56/OUTG/PROC.GIPSYX/graphs/BASELINES_06m.png\"><img src=\"http://195.83.188.56/OUTG/PROC.GIPSYX/graphs/BASELINES_06m.png\" width=\"300\"/></a></td></tr></table>";
     $html = "</p>";
     $htmlMail .= $html;
     $html .= "<p id=legend>";
-    $html .= "Illustration de la d&eacute;formation sur 1 an. Sont ici repr&eacute;sent&eacute;es des lignes de base (variation de distance entre deux r&eacute;cepteurs GNSS) traversant l'&eacute;difice du Piton de la Fournaise, au sommet (en haut), &agrave; la base du c&ocirc;ne terminal (au milieu) et en champ lointain (en bas) (cf. localisation sur les cartes associ&eacute;es). Une hausse est synonyme d'élongation et donc de gonflement du volcan ; inversement une diminution est synonyme de contraction et donc de d&eacute;gonflement du volcan. Les &eacute;ventuelles p&eacute;riodes colori&eacute;es en rose clair correspondent aux &eacute;ruptions.";
+    $html .= "Illustration de la d&eacute;formation sur 6 mois. Sont ici repr&eacute;sent&eacute;es des lignes de base (variation de distance entre deux r&eacute;cepteurs GNSS) traversant l'&eacute;difice du Piton de la Fournaise, au sommet (en haut), &agrave; la base du c&ocirc;ne terminal (au milieu) et en champ lointain (en bas) (cf. localisation sur les cartes associ&eacute;es). Une hausse est synonyme d'élongation et donc de gonflement du volcan ; inversement une diminution est synonyme de contraction et donc de d&eacute;gonflement du volcan. Les &eacute;ventuelles p&eacute;riodes colori&eacute;es en rose clair correspondent aux &eacute;ruptions.";
     $html .= "</p>";
     $html .= '    <hr>';
     $htmlOutput .= $html;
