@@ -18,14 +18,12 @@ function locastat(sta)
 
 %   Author: F. Beauducel/WEBOBS, IPGP
 %   Created: 2007-05-15
-%   Updated: 2026-08-06
+%   Updated: 2026-09-20
 
 % this will force update of all maps older than this date
 forceupdate = datenum(2019,7,23);
 
 WO = readcfg;
-
-wofun = sprintf('WEBOBS{%s}',mfilename);
 
 procmsg = sprintf(' %s',mfilename);
 timelog(procmsg,1)
@@ -110,7 +108,7 @@ if isfield(P,'FRAME3_DEM_FILE')
 	f = P.FRAME3_DEM_FILE;
 	if exist(f,'file')
 		[xdem,ydem,zdem] = igrd(f);
-		fprintf('%s: DEM file %s loaded...\n',wofun,f);
+		wolog('DEM file %s loaded...\n',f);
 		f3dem = 1;
 		if isfield(P,'FRAME3_DEM_TYPE') & strcmp(P.FRAME3_DEM_TYPE,'LATLON')
 			[xdem,ydem,zdem] = latlon2utm(ydem,xdem,zdem,r3);
@@ -128,6 +126,7 @@ grids = [strcat('VIEW.',{GV(~strncmp({GV.name},{'.'},1) & cat(2,GV.isdir)).name}
 
 % loads all existing and valid NODES in existing grids
 N = readnodes(WO,grids);
+wolog('ok. End of all nodes data import! -----------------------------\n');
 
 geo = [cat(1,N.LAT_WGS84),cat(1,N.LON_WGS84)];
 alt = cat(1,N.ALTITUDE);
@@ -137,8 +136,10 @@ k = find(all(~isnan(geo),2) & any(geo,2));
 
 for i = 1:length(k)
 	ki = k(i);
-	p = sprintf('%s/%s',NODES.PATH_NODES,N(ki).ID);
-	f = sprintf('%s_map',N(ki).ID);
+    id = N(ki).ID;
+    nodename = sprintf('[%s] %s: %s',id,N(ki).ALIAS,N(ki).NAME);
+	p = sprintf('%s/%s',NODES.PATH_NODES,id);
+	f = sprintf('%s_map',id);
 	fimg = sprintf('%s/%s.png',p,f);
 	if exist(fimg,'file')
 		IM = dir(fimg);
@@ -155,8 +156,8 @@ for i = 1:length(k)
 	%	- STA='*' (forced)
 
 	if (nargin < 1 && (~exist(fimg,'file') || timg <= N(ki).TIMESTAMP) || timg < forceupdate) ...
-	   || any(ismember(upper(sta),N(ki).ID)) || any(strcmp(sta,'*'))
-		fprintf('%s: Updating location map for %s: %s [%s] ... ',wofun,N(ki).ALIAS,N(ki).NAME,N(ki).ID)
+	   || any(ismember(upper(sta),id)) || any(strcmp(sta,'*'))
+		wolog('--> updating location map for %s ...\n',nodename)
 
 		lonkm = degkm(geo(ki,1));	% valeur du degr� de longitude � cette latitude (en km)
 
@@ -444,7 +445,7 @@ for i = 1:length(k)
 		hold off
 
 		% ---- copyright (cartouche bas)
-		message = sprintf(' {\\bf%s}  \\copyright %s, %s - %s / %s ',N(ki).ID,num2roman(str2double(datestr(now,'yyyy'))), ...
+		message = sprintf(' {\\bf%s}  \\copyright %s, %s - %s / %s ',id,num2roman(str2double(datestr(now,'yyyy'))), ...
 			WO.COPYRIGHT,demcopyright,datestr(now,0));
 		axes('Position',[0,0,1,pcart/(1+pcart)]); axis([0,1,0,1]); axis off
 		text(0,.5,message,'FontSize',9,'HorizontalAlignment','left')
@@ -461,14 +462,13 @@ for i = 1:length(k)
 		print(sprintf('%s.eps',ftmp),'-depsc','-loose','-painters');
 		wosystem(sprintf('%s %s -density %dx%d %s.eps %s.png',WO.PRGM_CONVERT,convertopt,dpi,dpi,ftmp,ftmp));
 		wosystem(sprintf('mv -f %s.png %s',ftmp,fimg));
-
-		fprintf('done.\n');
+        wolog('%s created.\n',fimg);
 
 		close
 
 	else
 		if nargin < 1
-			fprintf('%s: "%s" is up to date.\n',wofun,fimg);
+			wolog('%s is up to date.\n',nodename);
 		end
 	end
 end
