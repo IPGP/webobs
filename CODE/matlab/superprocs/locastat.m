@@ -1,4 +1,4 @@
-function locastat(sta)
+function locastat(sta,forceupdate)
 %LOCSTAT Detailed location maps for WebObs nodes.
 %   LOCASTAT updates (if necessary) the single location maps of
 %	georeferenced nodes. The condition for map automatic update is one of
@@ -20,9 +20,6 @@ function locastat(sta)
 %   Created: 2007-05-15
 %   Updated: 2026-09-20
 
-% this will force update of all maps older than this date
-forceupdate = datenum(2019,7,23);
-
 WO = readcfg;
 
 procmsg = sprintf(' %s',mfilename);
@@ -35,6 +32,15 @@ elseif ischar(sta)
 end
 
 P = readcfg(WO,WO.LOCASTAT);
+
+% this will force update of all maps older than this date
+if nargin < 2
+    forceupdate = field2num(P,'FORCE_UPDATE_DATE',datenum(2019,7,23));
+else
+    if ischar(forceupdate)
+        forceupdate = datenum(forceupdate);
+    end
+end
 
 NODES = readcfg(WO,WO.CONF_NODES);
 

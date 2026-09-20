@@ -1,5 +1,8 @@
 =key|value
 
+# forces update for any images older than this date (release)
+FORCE_UPDATE_DATE|2019-07-23
+
 # --- wide-scale left frame
 FRAME0_WIDTH_KM|100
 
