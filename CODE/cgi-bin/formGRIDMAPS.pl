@@ -174,7 +174,7 @@ my @fontsizeList = ('',split(/,/,$GRIDMAPS{REQ_FONTSIZE_LIST}));
 # ---- passed all checkings above ...
 # ---- build/process the form HTML page
 #
-my $pagetitle = "$__{'GRIDMAPS Request'} (under development)";
+my $pagetitle = "$__{'GRIDMAPS Request'}";
 
 print "Content-type: text/html; charset=utf-8
 
@@ -226,6 +226,9 @@ function postIt()
 {
     \$.post(\"/cgi-bin/postGRIDMAPS.pl\", \$(\"#theform\").serialize(), function(data) {
         alert(data);
+        if (!document.form.replay.checked) {
+            location.href = \"/cgi-bin/showREQ.pl\";
+        }
     });
 }
 </script>
@@ -252,7 +255,8 @@ print "<TD style=\"border:0;vertical-align:top;\" nowrap rowspan=2>";   # left c
 print "<fieldset><legend>$__{'Available GRIDS'}</legend>";
 print "<div style=\"overflow-y: scroll\">";
 my %gridtypeflag;
-for my $g (@gridlist) {
+for (@gridlist) {
+    my $g = $_;
     my ($gt,$gn) = split(/\./,$g);
     if (! defined($gridtypeflag{$gt})) {
         print "<P style=\"font-size:10pt;color:$gridColor{$gt};border-bottom: 1px solid $gridColor{$gt};margin-bottom: 5px\"><B><I>$gt</I></B></P>\n";
@@ -262,9 +266,9 @@ for my $g (@gridlist) {
     my $ovl = " onMouseOut=\"nd()\" onMouseOver=\"overlib('".$G{DESCRIPTION}."',CAPTION,'$g',BGCOLOR, '$gridColor{$gt}',FGCOLOR,'white')\")\"";
     my $nn = @{$G{NODESLIST}};
     (my $gg = $g) =~ s/\./_/g;
-    if ($nn > 0) {
+    if ((grep { $_ ne "" } @{$G{BOUNDINGBOX}}) || $gt eq 'SEFRAN') {
         print "<INPUT type=\"checkbox\" name=\"g_$g\" title=\"$g\" onclick=\"selGrid('$gg')\" value=\"0\"$ovl>",
-              " <B>$G{NAME}</B> (<B>$nn</B> $G{NODE_NAME}".($nn>1?"s":"").")<BR>\n";
+              " <B>$G{NAME}</B> (<B>$nn</B> ".($G{NODE_NAME} ? $G{NODE_NAME}:"node").($nn>1?"s":"").")<BR>\n";
         print pkeys($g,\%G);
     }
 }
@@ -330,6 +334,7 @@ print "</fieldset>";
 print "<P align=center>";
 print "<input type=\"button\" name=lien value=\"$__{'Cancel'}\" onClick=\"history.go(-1)\" style=\"font-weight:normal\">";
 print "<input type=\"button\" value=\"$__{'Submit'}\" onClick=\"checkForm();\" style=\"font-weight:bold\">";
+print "<INPUT type=\"checkbox\" name=\"replay\">&nbsp;$__{'Continue with this window'} (Replay!)\n";
 print "<input type=\"hidden\" id=\"origin\" name=\"origin\" value=\"\">";
 print "</P>";
 

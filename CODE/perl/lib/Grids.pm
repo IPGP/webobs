@@ -281,7 +281,8 @@ sub readView {
 Reads one single 'grid' configuration into a hash. Argument must be GridType.GridName.
 Unlike readProc, readView, readForm and readSefran that return a HoH, readGrid returns a simple hash.
 Adds supplementary hash keys:
-    - NODESLIST = reference of array to associated NODES ID
+    - NODESLIST = array reference to associated NODES ID
+    - BOUNDINGBOX = array reference to all nodes bounding box (lon1,lat1,lon2,lat2)
     - NODESPROJECT = number of projects in nodes
     - DOMAIN = associated domain code from grids2domains db
 
@@ -293,6 +294,7 @@ sub readGrid {
     my ($gt,$gn) = split(/\./,$f);
     my $z = "PATH_${gt}S";
     %tmp = readCfg("$WEBOBS{$z}/$gn/$gn.conf");
+    my @bbox;
     # gets the list of associated nodes
     if ($gt ne 'SEFRAN') {
         opendir(DIR, "$WEBOBS{PATH_GRIDS2NODES}");
@@ -304,7 +306,20 @@ sub readGrid {
         # counting the number of projects in nodes
         my $proj = 0;
         for (@l) {
-            $proj += 1 if (-s "$WEBOBS{PATH_NODES}/$_/$NODES{SPATH_INTERVENTIONS}/".$_."_Projet.txt");
+            my $id = $_;
+            my %N = readNode($id);
+            $proj += 1 if ($N{$id}{PROJECT});
+            # adjusting the bounding box
+            my $x = $N{$id}{LON_WGS84};
+            my $y = $N{$id}{LAT_WGS84};
+            if (!@bbox) {
+                @bbox = ($x,$y,$x,$y);
+            } else {
+                $bbox[0] = $x if ($x < $bbox[0]);
+                $bbox[1] = $y if ($y < $bbox[1]);
+                $bbox[2] = $x if ($x > $bbox[2]);
+                $bbox[3] = $y if ($y > $bbox[3]);
+            }
         }
         $tmp{'NODESPROJECT'} = $proj;
         my $proj = "$WEBOBS{PATH_GRIDS}/$gt/$gn/$GRIDS{SPATH_INTERVENTIONS}/".$gn."_Projet.txt";
@@ -321,6 +336,8 @@ sub readGrid {
         $tmp{'NODESPROJECT'} = 0;
         $tmp{'PROJECT'} = "";
     }
+    $tmp{'BOUNDINGBOX'} = \@bbox;
+
     # gets the domain
     my @qx = qx(sqlite3 $WEBOBS{SQL_DOMAINS} "select DCODE from $WEBOBS{SQL_TABLE_GRIDS} where TYPE = '$gt' and NAME = '$gn'");
     chomp(@qx);
