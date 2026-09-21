@@ -1698,6 +1698,9 @@ msgstr "intervalle début/fin"
 msgid "Access to form data"
 msgstr "Accéder au données du form"
 
+msgid "Bounding box (lon1,lat1,lon2,lat2):"
+msgstr "Boîte englobante (lon1,lat1,lon2,lat2) :"
+
 # ---- formREQ.pl
 
 msgid "No PROCS eligible for requests submission."

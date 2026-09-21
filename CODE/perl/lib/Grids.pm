@@ -290,7 +290,8 @@ Adds supplementary hash keys:
 
 sub readGrid {
     my %tmp;
-    my $f = $_[0];
+    my @nodes;
+    my $f = shift;
     my ($gt,$gn) = split(/\./,$f);
     my $z = "PATH_${gt}S";
     %tmp = readCfg("$WEBOBS{$z}/$gn/$gn.conf");
@@ -298,17 +299,15 @@ sub readGrid {
     # gets the list of associated nodes
     if ($gt ne 'SEFRAN') {
         opendir(DIR, "$WEBOBS{PATH_GRIDS2NODES}");
-        my @l = grep {/^$f\./ && -l $WEBOBS{PATH_GRIDS2NODES}."/".$_} readdir(DIR);
+        @nodes = grep { /^$f\./ && -l $WEBOBS{PATH_GRIDS2NODES}."/".$_ } readdir(DIR);
         closedir(DIR);
-        foreach (@l) {s/^$f\.//g};
-        @l =  sort {$a cmp $b} @l ;
-        $tmp{'NODESLIST'} = \@l;
-        # counting the number of projects in nodes
-        my $proj = 0;
-        for (@l) {
-            my $id = $_;
+        foreach (@nodes) { s/^$f\.//g };
+        $tmp{'NODESLIST'} = \@nodes;
+        my $nbproj = 0;
+        for my $id (@nodes) {
             my %N = readNode($id);
-            $proj += 1 if ($N{$id}{PROJECT});
+            # counting the number of projects in nodes
+            $nbproj += 1 if ($N{$id}{PROJECT});
             # adjusting the bounding box
             my $x = $N{$id}{LON_WGS84};
             my $y = $N{$id}{LAT_WGS84};
@@ -321,7 +320,8 @@ sub readGrid {
                 $bbox[3] = $y if ($y > $bbox[3]);
             }
         }
-        $tmp{'NODESPROJECT'} = $proj;
+        print STDERR "{debug} nodes after loop:  ", join("|", @nodes), "\n";
+        $tmp{'NODESPROJECT'} = $nbproj;
         my $proj = "$WEBOBS{PATH_GRIDS}/$gt/$gn/$GRIDS{SPATH_INTERVENTIONS}/".$gn."_Projet.txt";
         if (-s $proj) {
             my @file = readFile($proj);

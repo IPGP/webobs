@@ -152,6 +152,9 @@ input[type="submit"]:hover {
     color: #006600;
     cursor: pointer;
 }
+input {
+    vertical-align: middle;
+}
 
 .inputNoEdit {
     color: #555555;

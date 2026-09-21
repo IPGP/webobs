@@ -403,6 +403,8 @@ sub pkeys {
                 $div .= "<input disabled id='$g.$_' name='$g.$_' maxlength='200' size='20' value='".(defined($GG->{$_}) ? htmlspecialchars($GG->{$_}):"")."'><br>";
             }
         }
+        my $k = 'BOUNDINGBOX';
+        $div .= "<label for='$g.$k'>$k:</label><span style='display: inline-block;line-height:20px;vertical-align:middle'>".join(', ',@{$GG->{$k}})."</span><br>";
         $div .= "</div>";
         return $div;
     }

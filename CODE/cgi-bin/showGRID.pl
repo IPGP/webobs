@@ -104,6 +104,7 @@ my $editOK   = 0;       # 1 if the user is allowed to edit the grid
 my $admOK    = 0;       # 1 if the user has admin rights in the grid
 my $GRIDType = "";      # grid type ("PROC" or "VIEW")
 my $GRIDName = "";      # name of the grid
+my $grid;
 my %GRID;               # structure describing the grid
 my $theiaAuth = isok($WEBOBS{THEIA_USER_FLAG});
 
@@ -126,12 +127,9 @@ my $usrInvalid = checkParam($cgi->param('invalid'), qr/^(on|off)?$/, 'invalid') 
 
 if (scalar(@GID) == 2) {
     ($GRIDType, $GRIDName) = @GID;
-    my %G;
-    if     (uc($GRIDType) eq 'VIEW') { %G = readView($GRIDName) }
-    elsif  (uc($GRIDType) eq 'PROC') { %G = readProc($GRIDName) }
-    elsif  (uc($GRIDType) eq 'FORM') { %G = readForm($GRIDName) }
-    if (%G) {
-        %GRID = %{$G{$GRIDName}} ;
+    $grid = "$GRIDType.$GRIDName";
+    %GRID = readGrid($grid);
+    if (%GRID) {
         if ( WebObs::Users::clientHasRead(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")) {
             if ( WebObs::Users::clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")) {
                 $editOK = 1;
@@ -145,7 +143,6 @@ if (scalar(@GID) == 2) {
 
 # ---- good, passed all checkings above
 #
-my $grid = "$GRIDType.$GRIDName";
 my $isProc = ($GRIDType eq "PROC" ? '1':'0');
 my $isForm = ($GRIDType eq "FORM" ? '1':'0');
 my @procTS = ();
@@ -314,7 +311,12 @@ if (defined $GRID{DEM_FILE} && $GRID{DEM_FILE} ne "") {
     $txt = "<B>$GRID{DEM_FILE}</B>".(-e "$GRID{DEM_FILE}" ? "":" <I>($__{'check file!'})</I>");
 }
 $htmlcontents .= "<LI>$__{'DEM:'} $txt</LI>\n";
-    
+
+# -----------
+if (grep { $_ ne "" } @{$GRID{BOUNDINGBOX}}) {
+    $htmlcontents .= "<LI>$__{'Bounding box (lon1,lat1,lon2,lat2):'} <B>".join('</B>, <B>',@{$GRID{BOUNDINGBOX}})."</B></LI>\n";
+}
+
 $GRID{RAWFORMAT} //= "";
 $GRID{URNDATA}   //= "";
     
