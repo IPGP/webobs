@@ -96,13 +96,14 @@ for (reverse sort @reqlist) {
     my ($date,$time,$host,$user) = split(/_/,$reqdir);
     my $date1 = qx(grep -a "^DATE1|" $dir/REQUEST.rc | sed -e "s/DATE1|//");
     my $date2 = qx(grep -a "^DATE2|" $dir/REQUEST.rc | sed -e "s/DATE2|//");
-    my (@procs) = grep {-d} glob("$dir/{PROC.*,GRIDMAPS}"); # first list of procs from output directories
-    $_ =~ s|$dir/|| for @procs; # keeps only the PROC.NAME part
-    my @procreq = qx(grep -a "^PROC\." $dir/REQUEST.rc | sed -e "s/\.[^.]*|.*//"); # second list of procs from the request parameters
+    my $gridmaps = qx(grep -a "^SUBMIT_COMMAND|.* gridmaps" $dir/REQUEST.rc);
+    my (@grids) = grep {-d} glob("$dir/*"); # first list of grids in output directories
+    $_ =~ s|$dir/|| for @grids; # keeps only the GRID.NAME part
+    my @procreq = qx(grep -a "^(PROC|VIEW|FORM|SEFRAN)\." $dir/REQUEST.rc | sed -e "s/\.[^.]*|.*//"); # second list of grids from the request parameters
     chomp(@procreq);
-    push(@procs,@procreq); # merging output directories and request parameters
-    @procs = do { my %seen; grep { !$seen{$_}++ } @procs }; # uniq
-    my $rowspan = scalar(@procs);
+    push(@grids,@procreq); # merging output directories and request parameters
+    @grids = do { my %seen; grep { !$seen{$_}++ } @grids }; # uniq
+    my $rowspan = ($gridmaps ne "" ? 1:scalar(@grids));
     if ($user eq $CLIENT || (WebObs::Users::clientHasAdm(type=>"authprocs",name=>"$_") && $QryParm->{'usr'} eq "all")) {
         if (length($date)==8 && length($time)==6) {
             $date = substr($date,0,4)."-".substr($date,4,2)."-".substr($date,6,2);
@@ -114,10 +115,10 @@ for (reverse sort @reqlist) {
           ."<TD rowspan='$rowspan' align=center>$user</TD>"
           ."<TD rowspan='$rowspan' align=center>$date1 - $date2</TD>"
           ."<TD rowspan='$rowspan' align=center><A href='$WEBOBS{URN_OUTR}/$reqdir/REQUEST.rc'><IMG src='/icons/params.png'></A></TD>";
-        for (@procs) {
-            (my $proc = $_) =~ s/PROC\.//;
-            if (WebObs::Users::clientHasRead(type=>"authprocs",name=>"$proc") || $_ eq "GRIDMAPS") {
-                my $rreq = qx(sqlite3 $SCHED{SQL_DB_JOBS} "SELECT cmd,stdpath,rc FROM runs WHERE jid<0 AND cmd LIKE '%$reqdir%' AND cmd LIKE '%$proc%';");
+        for (@grids) {
+            my ($type,$grid) = split(/\./, $_);
+            if (WebObs::Users::clientHasRead(type=>"auth".$type."s",name=>"$grid") || $_ eq "GRIDMAPS") {
+                my $rreq = qx(sqlite3 $SCHED{SQL_DB_JOBS} "SELECT cmd,stdpath,rc FROM runs WHERE jid<0 AND cmd LIKE '%$reqdir%' AND cmd LIKE '%$grid%';");
                 chomp($rreq);
                 if ($rreq eq "") {
                     $table .= ("<TD></TD>" x 2);
@@ -171,7 +172,7 @@ François Beauducel, Baptiste Camus
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2024 - Institut de Physique du Globe Paris
+WebObs - 2012-2026 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
