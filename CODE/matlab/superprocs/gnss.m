@@ -189,7 +189,7 @@ baselines_timezoom = field2num(P,'BASELINES_TIMEZOOM',0);
 baselines_trend = isok(P,'BASELINES_PLOT_TREND');
 baselines_maps = field2str(P,'BASELINES_MAPS',{'','right','bottom'});
 baselines_demopt = field2cell(P,'BASELINES_DEM_OPT','fontsize',0,'borderwidth',.5,'watermark',1.5,'interp','saturation',0,'hlegend');
-baselines_maps_limits = field2str(P,'BASELINES_MAPS_LIMITS');
+baselines_maps_limits = field2str(P,'BASELINES_MAPS_LIMITS','');
 
 % STRAINMAP parameters
 strainmap_title = field2str(P,'STRAINMAP_TITLE','{\fontsize{14}{\bf$name - Baselines} ($timescale)}');
