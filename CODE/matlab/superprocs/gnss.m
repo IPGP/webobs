@@ -1624,7 +1624,7 @@ for r = 1:numel(P.GTABLE)
 		for nn = 1:numel(knv)
 			n = knv(nn);
 			k = isinto(D(n).t,tlim);
-			if sum(k)
+			if sum(k) > 1
 				X(nn).t = D(n).t(k);
 				X(nn).d = mavr(rf(D(n).d(k,5:7)),motion_filter);
 			else
