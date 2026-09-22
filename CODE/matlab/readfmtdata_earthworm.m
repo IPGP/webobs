@@ -22,28 +22,25 @@ function D = readfmtdata_earthworm(WO,P,N,F)
 %
 %	Authors: François Beauducel, WEBOBS/IPGP
 %	Created: 2017-06-10, in Yogyakarta (Indonesia)
-%	Updated: 2023-08-30
-
-
-wofun = sprintf('WEBOBS{%s}',mfilename);
+%	Updated: 2026-09-22
 
 
 % checks correct definition of codes and calibration for the node N
 if isempty(N.FDSN_NETWORK_CODE)
-	error('%s: no FDSN code defined for node %s !\n',wofun,N.ID);
+	error('no FDSN code defined for node %s !\n',N.ID);
 end
 if isempty(N.FID)
-	error('%s: no FID code defined for node %s !\n',wofun,N.FID);
+	error('no FID code defined for node %s !\n',N.FID);
 end
 if N.CLB.nx == 0
-	error('%s: no CLB file for node %s. Cannot import data.',wofun,N.ID);
+	error('no CLB file for node %s. Cannot import data.',N.ID);
 end
 
 winstonjar = field2str(WO,'WINSTON_JAVA',sprintf('%s/bin/java/winston-bin.jar',WO.ROOT_CODE));
 if exist(winstonjar,'file')
 	javaaddpath(winstonjar);
 else
-	printf('%s: ** WARNING ** cannot find the Java Winston class ("%s"). Please check WINSTON_JAVA parameter in WEBOBS.rc.\n',wofun,winstonjar);
+	wolog('** WARNING ** cannot find the Java Winston class ("%s"). Please check WINSTON_JAVA parameter in WEBOBS.rc.\n',winstonjar);
 end
 
 % adjusts time limit with data delay
@@ -61,14 +58,14 @@ switch F.fmt
 case 'winston'
 
 	if ~exist('gov.usgs.winston.server.WWSClient','class')
-		error('%s: cannot find the needed class to read Winston data... Abort.\n',wofun);
+		error('cannot find the needed class to read Winston data... Abort.\n');
 	end
 
 	ws = split(F.raw{1},':');
 	if length(ws) < 2
-		error('%s: RAWDATA (%s) must be in the form host:port.\n',wofun,F.raw{1});
+		error('RAWDATA (%s) must be in the form host:port.\n',F.raw{1});
 	end
-	fprintf('\n%s: connect to Winston Wave Server %s ...\n',wofun,F.raw{1});
+	wolog('connect to Winston Wave Server %s ...\n',F.raw{1});
 	WWS = gov.usgs.winston.server.WWSClient(ws{1},str2num(ws{2}));
 	WWS.setTimeout(field2num(P,'DATALINK_TIMEOUT',10000));
 
@@ -89,7 +86,7 @@ case 'winston'
 				else
 					t2 = min(dt(kc(ii+1)),F.datelim(2));
 				end
-				fprintf('%s: requesting %s.%s.%s.%s from %s to %s ...',wofun,N.FID,N.CLB.cd{kc(ii)},N.FDSN_NETWORK_CODE,N.CLB.lc{kc(ii)},datestr(t1),datestr(t2));
+				wolog('requesting %s.%s.%s.%s from %s to %s ...',N.FID,N.CLB.cd{kc(ii)},N.FDSN_NETWORK_CODE,N.CLB.lc{kc(ii)},datestr(t1),datestr(t2));
 				dd = WWS.getRawData(N.FID,N.CLB.cd{kc(ii)},N.FDSN_NETWORK_CODE,N.CLB.lc{kc(ii)}, ...
 					(t1 - datenum(1970,1,1))*86400, ...
 					(t2 - datenum(1970,1,1))*86400);

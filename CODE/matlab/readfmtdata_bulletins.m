@@ -28,9 +28,7 @@ function [D,P] = readfmtdata_bulletins(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2017-01-30, in Paris (France)
-%	Updated: 2017-08-02
-
-wofun = sprintf('WEBOBS{%s}',mfilename);
+%	Updated: 2026-09-22
 
 % filters
 for fn = {'LAT','LON','MAG','DEP','GAP','RMS','ERH','ERZ','NPH'}
@@ -327,7 +325,7 @@ case 'scevtlog-xml-bulletin'
 	end
 
 otherwise
-	fprintf('%s: ** WARNING ** unknown format "%s" for node %s!\n',wofun,F.fmt,N.ID);
+	wolog('** WARNING ** unknown format "%s" for node %s!\n',F.fmt,N.ID);
 end
 
 % =============================================================================
@@ -344,13 +342,13 @@ if ~isempty(extypes) || ~isempty(exstatus)
 	if isok(P,'PURGE_EXCLUDED_EVENT')
 		k = find(ismemberlist(c(:,3),extypes) | ismemberlist(c(:,5),exstatus));
 		if ~isempty(k)
-			fprintf('%s: ** WARNING ** %d excluded events have been tagged for purge.\n',wofun,length(k));
+			wolog('** WARNING ** %d excluded events have been tagged for purge.\n',length(k));
 			e(k) = -1;
 		end
 	else
 		k = find(~ismemberlist(c(:,3),extypes) & ~ismemberlist(c(:,5),exstatus));
 		if length(t) ~= length(k)
-			fprintf('%s: ** WARNING ** %d events have been excluded.\n',wofun,length(t)-length(k));
+			wolog('** WARNING ** %d events have been excluded.\n',length(t)-length(k));
 			t = t(k,1);
 			d = d(k,:);
 			c = c(k,:);
@@ -373,7 +371,7 @@ if isfield(N,'FID_MC3') && ~isempty(N.FID_MC3) && ~isempty(t)
 	s = wosystem(sprintf('sed ''/^$/d'' %s/{%d..%d}/files/%s??????.txt > %s',MC3.ROOT,tv([1,end],1),MC3.FILE_PREFIX,fdat),P);
 	if s==0
 		mc3 = readdatafile(fdat,17,'CommentStyle',''); % reads all events (trash included)
-		fprintf('%s: associating %s event types and images ...',wofun,N.FID_MC3);
+		wolog('associating %s event types and images ...',N.FID_MC3);
 		nsc3 = 0;
 		nh71 = 0;
 		nmc3 = 0;

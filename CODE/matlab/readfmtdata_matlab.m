@@ -20,9 +20,7 @@ function D = readfmtdata_matlab(WO,P,N,F)
 %
 %	Authors: François Beauducel, WEBOBS/IPGP
 %	Created: 2017-10-14 in Bali, Indonesia
-%	Updated: 2024-02-29
-
-wofun = sprintf('WEBOBS{%s}',mfilename);
+%	Updated: 2026-09-22
 
 
 fdat = F.raw{1};

@@ -102,9 +102,7 @@ function D = readfmtdata_gnss(WO,P,N,F)
 %
 %	Authors: François Beauducel, Jean-Bernard de Chabalier, Pierre Sakic, WEBOBS/IPGP
 %	Created: 2016-07-10, in Yogyakarta (Indonesia)
-%	Updated: 2026-08-18
-
-wofun = sprintf('WEBOBS{%s}',mfilename);
+%	Updated: 2026-09-22
 
 % minimum decent error is 0.1 mm (!)
 min_error = 1e-4;
@@ -136,7 +134,7 @@ case 'globkval'
 			wosystem(sprintf('paste %s/%s_?.dat >> %s',F.ptmp,nfid,fdat),P);
 		end
 	else
-		fprintf('%s: ** WARNING ** Raw data file %s not found.\n',wofun,fraw);
+		wolog('** WARNING ** Raw data file %s not found.\n',fraw);
 	end
 
 	% load the file
@@ -188,7 +186,7 @@ case 'gamit-pos'
 			s = wosystem(sprintf('cat %s | %s',fraw,cmd0),P);
 		end
 		if s ~= 0
-			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+			wolog('** WARNING ** Raw data "%s" not found.\n',fraw);
 		end
 	end
 
@@ -229,7 +227,7 @@ case 'pbogps-pos'
 			s = wosystem(sprintf('cat %s >> %s',fraw,fdat),P);
 		end
 		if s ~= 0
-			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+			wolog('** WARNING ** Raw data "%s" not found.\n',fraw);
 		end
 	end
 
@@ -301,7 +299,7 @@ case {'gipsy','gipsy-tdp','gipsyx'}
 		%s = wosystem(sprintf('paste %s/%s.{X,Y,Z} >> %s',F.ptmp,nfid,fdat),P);
 		s = wosystem(sprintf('paste %s/%s.? >> %s',F.ptmp,nfid,fdat),P);
 		if s
-			fprintf('%s: ** WARNING ** no data found!\n',wofun);
+			wolog('** WARNING ** no data found!\n');
 		end
 	end
 
@@ -381,9 +379,9 @@ case 'spotgins-enu'
 	
 	if isempty(format_version)
 		format_version = 'v2';  % default fallback
-		fprintf('%s: ** INFO ** Could not detect SPOTGINS format version, assuming v2.\n',wofun);
+		wolog('** INFO ** Could not detect SPOTGINS format version, assuming v2.\n');
 	else
-		fprintf('%s: ** INFO ** Detected SPOTGINS format %s.\n',wofun,format_version);
+		wolog('** INFO ** Detected SPOTGINS format %s.\n',format_version);
 	end
 	
 	for a = 1:length(F.raw)
@@ -398,7 +396,7 @@ case 'spotgins-enu'
 			s = wosystem(sprintf('cat %s | %s',fraw,cmd0),P);
 		end
 		if s ~= 0
-			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+			wolog('** WARNING ** Raw data "%s" not found.\n',fraw);
 		end
 	end
 	
@@ -455,7 +453,7 @@ case 'spotgins-ippp'
 			s = wosystem(sprintf('cat %s | %s',fraw,cmd0),P);
 		end
 		if s ~= 0
-			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+			wolog('** WARNING ** Raw data "%s" not found.\n',fraw);
 		end
 	end
 
@@ -500,7 +498,7 @@ case 'ngl-tenv3'
 			s = wosystem(sprintf('cat %s | %s',fraw,cmd0),P);
 		end
 		if s ~= 0
-			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+			wolog('** WARNING ** Raw data "%s" not found.\n',fraw);
 		end
 	end
 
@@ -543,7 +541,7 @@ case 'usgs-rneu'
 			% extracts necessary data and replaces orbit with 0 (rrr) and 1 (ppp)
 			wosystem(sprintf('awk ''{print $1,$3,$4,$5,$6,$7,$8,$9}'' %s | sed -e ''s/rrr/0/g;s/ppp/1/g'' >> %s',fraw,fdat),P);
 		else
-			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+			wolog('** WARNING ** Raw data "%s" not found.\n',fraw);
 		end
 	end
 
@@ -589,7 +587,7 @@ case 'ies-neu'
 			% extracts necessary data
 			wosystem(sprintf('cat %s | %s',fraw,cmd0),P);
 		else
-			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+			wolog('** WARNING ** Raw data "%s" not found.\n',fraw);
 		end
 	end
 
@@ -632,7 +630,7 @@ case 'ogc-neu'
 			s = wosystem(sprintf('cat %s | %s',fraw,cmd0),P);
 		end
 		if s ~= 0
-			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+			wolog('** WARNING ** Raw data "%s" not found.\n',fraw);
 		end
 	end
 
@@ -679,7 +677,7 @@ case 'ingv-gps'
 				s = wosystem(sprintf('cat %s | %s',fraw,cmd0),P);
 			end
 			if s ~= 0
-				fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+				wolog('** WARNING ** Raw data "%s" not found.\n',fraw);
 			end
 		end
 	end
@@ -731,7 +729,7 @@ case 'rtklib'
 			initype = 'FLH';
 		end
 	end
-	fprintf('%s: ** INFO ** RTKLIB coordinate type: %s\n',wofun,initype);
+	wolog('** INFO ** RTKLIB coordinate type: %s\n',initype);
 
 	% extract data: convert 'yyyy/mm/dd HH:MM:SS.sss' date/time to 6 numeric columns
 	% resulting columns: y m d H M S a b c Q ns s_a s_b s_c sdAB sdBC sdAC age ratio
@@ -748,7 +746,7 @@ case 'rtklib'
 			s = wosystem(sprintf('cat "%s" | %s',fraw,cmd0),P);
 		end
 		if s ~= 0
-			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+			wolog('** WARNING ** Raw data "%s" not found.\n',fraw);
 		end
 	end
 
@@ -803,7 +801,7 @@ case 'sbe37-ascii'
 		if exist(fraw,'file')
 			wosystem(sprintf('cat %s | sed -E "s/([0-9])\\-/\\1 /g;s/:/ /g" >> %s',fraw,fdat),P);
 		else
-			fprintf('%s: ** WARNING ** Raw data "%s" not found.\n',wofun,fraw);
+			wolog('** WARNING ** Raw data "%s" not found.\n',fraw);
 		end
 	end
 	dataerror = field2num(N,'FID_DATA_ERROR',0,'notempty');
@@ -836,7 +834,7 @@ case 'sbe37-ascii'
 
 % -----------------------------------------------------------------------------
 otherwise
-	fprintf('%s: ** WARNING ** unknown format "%s" for node %s!\n',wofun,F.fmt,N.ID);
+	wolog('** WARNING ** unknown format "%s" for node %s!\n',F.fmt,N.ID);
 end
 
 % NODE's data timestamp converted in UT

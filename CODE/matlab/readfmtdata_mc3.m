@@ -19,9 +19,7 @@ function [D,P] = readfmtdata_mc3(WO,P,N,F)
 %
 %	Authors: François Beauducel and Jean-Marie Saurel, WEBOBS/IPGP
 %	Created: 2019-01-21, in Paris (France)
-%	Updated: 2026-03-05
-
-wofun = sprintf('WEBOBS{%s}',mfilename);
+%	Updated: 2026-09-22
 
 % filters
 for fn = {'LAT','LON','DEP','MAG'}
@@ -59,7 +57,7 @@ conf = sprintf('/etc/webobs.d/%s.conf',N.FID);
 if exist(conf,'file')
 	MC3 = readcfg(WO,conf);
 else
-	error('%s: MC3 configuration file {%s:FID} "%s" does not exists.',wofun,N.ID,N.FID);
+	error('MC3 configuration file {%s:FID} "%s" does not exists.',N.ID,N.FID);
 end
 MC3TYPES = readcfg(WO,MC3.EVENT_CODES_CONF);
 % durations conf is a former file format without '=key' header: it cannot be read with readcfg
@@ -146,13 +144,13 @@ if ~isempty(X) && X.bytes > 0
     end
     c(:,1) = mc3(:,4);
 else
-    fprintf('%s: *WARNING* No data found.\n',wofun);
+    wolog('**WARNING** No data found.\n');
 end
 
 % =============================================================================
 % reads scevtlog-xml catalog format
 % search entries matching scevetlog-xml format
-fprintf('%s: reads associated scevtlog-xml catalog... ',wofun);
+wolog('reads associated scevtlog-xml catalog... ');
 x = 0;
 k = find(~cellfun(@isempty,regexp(mc3(:,14),'[0-9]{4}/[0-9]{2}/[0-9]{2}/.+')));
 if ~isempty(k)
@@ -181,7 +179,7 @@ fprintf('done (%d events found).\n',x);
 % =============================================================================
 % reads fdsnws-event catalog format
 % search entries matching fdsnws-event format
-fprintf('%s: reads associated fdsnws-event catalog... ',wofun);
+wolog('reads associated fdsnws-event catalog... ');
 x = 0;
 k = find(~cellfun(@isempty,regexp(mc3(:,14),'://')));
 if ~isempty(k)
@@ -227,9 +225,9 @@ e = double(	isinto(d(:,5),P.LATLIM) ...
 % select on MC event type
 if ~isempty(incMCtypes)
     k = find(ismemberlist(c(:,1),incMCtypes));
-    fprintf('%s: selecting only MCeventTypes "%s"...\n',wofun,strjoin(incMCtypes,', '));
+    wolog('selecting only MCeventTypes "%s"...\n',strjoin(incMCtypes,', '));
     if length(t) ~= length(k)
-        fprintf('%s: ** WARNING ** %d events have been selected from MC EventType.\n',wofun,length(k));
+        wolog('** WARNING ** %d events have been selected from MC EventType.\n',length(k));
         t = t(k,1);
         d = d(k,:);
         c = c(k,:);
@@ -240,10 +238,10 @@ end
 % remove catalog values for invalid event types or status
 if ~isempty(extypes) || ~isempty(exstatus)
     k = find(~ismemberlist(c(:,4),extypes) & ~ismemberlist(c(:,6),exstatus));
-    fprintf('%s: filtering event types "%s"...\n',wofun,strjoin(extypes,', '));
-    fprintf('%s: filtering event status "%s"...\n',wofun,strjoin(exstatus,', '));
+    wolog('filtering event types "%s"...\n',strjoin(extypes,', '));
+    wolog('filtering event status "%s"...\n',strjoin(exstatus,', '));
     if length(t) ~= length(k)
-        fprintf('%s: ** WARNING ** %d events have been excluded from type and status.\n',wofun,length(t)-length(k));
+        wolog('** WARNING ** %d events have been excluded from type and status.\n',length(t)-length(k));
         d(k,5:16) = NaN;
         c(k,2:7) = cell(length(k),6);
         e = e(k,1);

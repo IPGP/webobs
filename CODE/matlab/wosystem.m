@@ -26,43 +26,36 @@ function varargout = wosystem(cmd,varargin)
 %
 %	Author: F. Beauducel, WEBOBS
 %	Created: 2017-02-02 in Yogyakarta, Indonesia
-%	Updated: 2026-03-05
+%	Updated: 2026-09-22
 
 if nargin < 1
 	error('Not enough input argument.');
 end
 
-ST = dbstack;
-if length(ST) < 2
-	wofun = '';
-else
-	wofun = sprintf('\nWEBOBS{%s}: ',ST(2).name);
-end
-
 debug = (nargin > 1 && isok(varargin{1},'DEBUG'));
 cmd = strcat('export LD_LIBRARY_PATH=;', cmd);
-msg = sprintf('\n%s%s\n',wofun,cmd);
 
 if debug
     [s,w] = system('echo $SHELL');
     if ~s && ~isempty(w)
-        fprintf('\nWEBOBS{wosystem}: $SHELL = %s',w);
+        wolog('$SHELL = %s',w);
     end
 end
 
 [s,w] = system(cmd);
 
 if s || any(strcmpi(varargin,'debug')) || debug
-	display(regexprep(msg,'\\','\\\'));
+    msg = sprintf('%s\n',cmd);
+	wolog(regexprep(msg,'\\','\\\'));
 end
 
 % if unsuccessful, displays the result
 if s
 	% ERROR mode: will stop with error if command unsuccessful
 	if (nargout == 0 || any(strcmpi(varargin,'error'))) && ~any(strcmpi(varargin,'warning'))
-		error('%s command unsuccessful [rc = %d]: %s',wofun,s,w);
+		error('command unsuccessful [rc = %d]: %s',s,w);
 	else
-		fprintf('%s** WARNING ** command unsuccessful [exit status = %d]:\n%s',wofun,s,w);
+		wolog('** WARNING ** command unsuccessful [exit status = %d]:\n%s',s,w);
 	end
 end
 

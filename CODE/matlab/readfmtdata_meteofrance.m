@@ -14,9 +14,7 @@ function D = readfmtdata_meteofrance(WO,P,N,F)
 %
 %	Authors: Alexis Bosson, François Beauducel, WEBOBS/IPGP
 %	Created: 2016-08-05, in Guadeloupe
-%	Updated: 2023-08-30
-
-wofun = sprintf('WEBOBS{%s}',mfilename);
+%	Updated: 2026-09-22
 
 % makes a single file containing rectangular table of numbers, from the raw data
 

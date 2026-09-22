@@ -10,7 +10,7 @@ function rc = notify(WO,evt,sid,msg)
 %
 %   Authors: D. Lafon, F. Beauducel, WEBOBS/IPGP
 %   Created: 2014-04-25
-%   Updated: 2017-08-02
+%   Updated: 2026-09-22
 
 
 if nargin == 4
@@ -22,7 +22,7 @@ if nargin == 4
 				fprintf(fid,'%d|%s|%s|%s\n',ts,evt,sid,msg);
 				fclose(fid);
 				rc = 0;
-				fprintf('WEBOBS{notify}: message sent to postboard event "%s".\n',evt);
+				wolog('message sent to postboard event "%s".\n',evt);
 			else
 				rc = 96; % can't open fifo
 			end

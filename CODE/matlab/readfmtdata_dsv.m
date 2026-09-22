@@ -35,9 +35,7 @@ function D = readfmtdata_dsv(WO,P,N,F)
 %
 %	Authors: François Beauducel, Xavier Béguin
 %	Created: 2016-07-11, in Yogyakarta (Indonesia)
-%	Updated: 2024-12-02
-
-wofun = sprintf('WEBOBS{%s}',mfilename);
+%	Updated: 2026-0922
 
 debug = isok(P,'DEBUG');
 
@@ -145,11 +143,11 @@ if exist(fdat,'file')
 		nx = size(dd,2); % number of data columns
 		% extracts the time columns
 		if ~any(isnan(timecols)) && nx <= max(timecols)
-			error('%s: only %d columns found in data while need %d columns for date and time.', ...
-				wofun,nx,length(timecols));
+			error('only %d columns found in data while need %d columns for date and time.', ...
+				nx,length(timecols));
 		end
 		if any(isnan(timecols))
-            fprintf('%s: FID_TIMECOLS empty... try to guess order of the first 6 colums.\n',wofun)
+            wolog('FID_TIMECOLS empty... try to guess order of the first 6 colums.\n')
 			t = smartdatenum(dd(:,1:6));
 			timecols = 1:6;
 		else
@@ -157,15 +155,15 @@ if exist(fdat,'file')
 		end
 		% extracts the data columns
 		if any(~isnan(datacols)) && nx < max(datacols)
-			error('%s: FID_DATACOLS must indicate valid data columns!',wofun);
+			error('FID_DATACOLS must indicate valid data columns!');
 		end
 		% extracts the error columns
 		if any(~isnan(errorcols)) && nx < max(errorcols)
-			error('%s: FID_ERRORCOLS must indicate valid data columns!',wofun);
+			error('FID_ERRORCOLS must indicate valid data columns!');
 		end
 		% extracts the flag column
 		if any(~isnan(flagcol)) && nx < flagcol
-			error('%s: FID_FLAGCOL must indicate valid data columns!',wofun);
+			error('FID_FLAGCOL must indicate valid data columns!');
 		end
 
 		[t,k] = unique(t);
@@ -220,7 +218,7 @@ if N.CLB.nx == 0
 			D.CLB.nm = hdr{1}(2:end)';
 		end
 	else
-		fprintf('%s: ** Warning ** no calibration file for node %s!\n',wofun,N.ID);
+		wolog('** Warning ** no calibration file for node %s!\n',N.ID);
 	end
 else
 	[D.d,D.CLB] = calib(D.t,D.d,N.CLB);

@@ -30,9 +30,8 @@ function D = readfmtdata_campbell(WO,P,N,F)
 %
 %	Authors: François Beauducel, WEBOBS/IPGP
 %	Created: 2016-07-11, in Yogyakarta (Indonesia)
-%	Updated: 2024-05-09
+%	Updated: 2026-09-22
 
-wofun = sprintf('WEBOBS{%s}',mfilename);
 
 debug = isok(P,'DEBUG');
 
