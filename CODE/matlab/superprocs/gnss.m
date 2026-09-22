@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel, Pierre Sakic / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-09-21
+%   Updated: 2026-09-22
 
 WO = readcfg;
 
@@ -1056,15 +1056,16 @@ for r = 1:numel(P.GTABLE)
                 if ~strcmpi(strainmap_timeseries_type,'displacement')
                     lin = 1e3*lin/B(n).length;
                 end
+                if ~strcmpi(strainmap_timeseries_type,'displacement')
+                    B(n).std = rstd(1e3*B(n).d(k)/B(n).length - polyval(lin,B(n).t(k)));
+                else
+                    B(n).std = rstd(B(n).d(k) - polyval(lin,B(n).t(k)));
+                end
             else
                 lin = [NaN,0];
+                B(n).std = NaN;
             end
             B(n).lin = lin(1);
-            if ~strcmpi(strainmap_timeseries_type,'displacement')
-                B(n).std = rstd(1e3*B(n).d(k)/B(n).length - polyval(lin,B(n).t(k)));
-            else
-                B(n).std = rstd(B(n).d(k) - polyval(lin,B(n).t(k)));
-            end
             fprintf('   velocity %s = %+g mm/yr, total displacement = %+g mm, total deformation = %+g µstrain\n', ...
                 B(n).name,roundsd([B(n).vel,B(n).dis,B(n).def],4));
 
