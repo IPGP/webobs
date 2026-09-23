@@ -77,8 +77,10 @@ my $table_udate = "udate";
 my @columns_geoloc = ("latitude", "northern_error", "longitude", "eastern_error", "elevation", "elevation_error");
 my @columns_udate = ("date", "date_min", "yce", "yce_min");
 
-my $title = ($FORM{NAME} ? $FORM{NAME}:$FORM{DESCRIPTION});
-my $sort = (isok($FORM{SORT_ASCENDING}) ? "ASC":"DESC");
+my $title = $FORM{NAME} ? $FORM{NAME}:$FORM{DESCRIPTION};
+my $sort = isok($FORM{SORT_ASCENDING}) ? "ASC":"DESC";
+my $comp_color = $FORM{COMPLETION_COLOR} ? $FORM{COMPLETION_COLOR}:"#339933";
+my $comp_width = $FORM{COMPLETION_WIDTH} ? $FORM{COMPLETION_WIDTH}:"5px";
 
 # ---- DateTime inits ----------------------------------------
 my $Ctod  = time();  my @tod  = localtime($Ctod);
@@ -308,6 +310,7 @@ $dbh->disconnect();
 #
 my @fieldsets;
 my $max_columns = count_columns(keys %FORM);
+my $max_inputs = count_inputs(keys %FORM);
 foreach (map { sprintf("COLUMN%02d_LIST", $_) } (1..$max_columns)) {
     push(@fieldsets, split(/,/, $FORM{$_}));
 }
@@ -504,9 +507,11 @@ for (my $j = 0; $j <= $#rows; $j++) {
     # makes a hash of all fields values (input and output)
     my %fields;
 
-    # stores input db rows
+    # stores input db rows and comptutes the completion
+    my $comp = 0;
     for (my $i = 8; $i <= $#{$rows[$j]}; $i++) {
         $fields{$rownames[$i]} = $rows[$j][$i];
+        $comp += 1 if ($rownames[$i] =~ /^input/ && $rows[$j][$i] ne "");
     }
 
     # adds duration
@@ -581,6 +586,8 @@ for (my $j = 0; $j <= $#rows; $j++) {
     if ($clientAuth > 1) {
         $text .= "<TH nowrap>$edit</TH>";
     }
+    # completion of data
+    $text .= "<TD style='background-color:color-mix(in srgb, $comp_color ".100*$comp/$max_inputs."%, white 0%)' onMouseOut=\"nd()\" onMouseOver=\"overlib('$comp/$max_inputs inputs',CAPTION,'Data completion')\"></TD>";
     if ($starting_date) {
         my $dur_str = ($dur[0] ne $dur[1] ? "$dur[0] $__{'to_num'} $dur[1]" : $dur[0]);
         $text .= "<TD nowrap>$sdate</TD><TD nowrap>$edate</TD><TD class=\"tdResult\">$dur_str</TD>";
@@ -736,6 +743,7 @@ if ($clientAuth > 1) {
     $form_url->query_form('form' => $form, 'site' => $QryParm->{'node'}, 'return_url' => $return_url, 'action' => 'new');
     $header .= "<TH rowspan=2><A href=\"$form_url\"><IMG src=\"/icons/new.png\" border=\"0\" title=\"$__{'Enter a new record'}\"></A></TH>\n";
 }
+$header .= "<TH rowspan=2 width='${comp_width}px'></TH>";
 $header .= "<TH ".($starting_date ? "colspan=3>$__{'Sampling Interval'}" : "rowspan=2>$__{'Sampling Date'}")." <I>(UTC".sprintf("%+03d",$FORM{TZ}).")</I></TH>";
 $header .= "<TH rowspan=2>$__{'Site'}</TH><TH rowspan=2>$__{'Oper'}</TH>";
 foreach(@colnam) {

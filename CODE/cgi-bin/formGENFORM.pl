@@ -428,6 +428,13 @@ foreach (@thresh) {
 }
 
 print qq[
+    var percent = 0;
+    for (var i=1; i<=$max_inputs; i++) {
+        inp = 'input' + String(i).padStart(2, '0');
+        if (form[inp].value != '') percent++;
+    }
+    percent = 100*percent/$max_inputs;
+    progress.style.setProperty('--progress', percent + '%');
 }
 
 function suppress(level)
@@ -996,7 +1003,7 @@ print qq(</TD>
   </tr>
   <tr>
     <td style="border:0" colspan="$max_columns">
-      <HR>
+      <DIV id="progress" class="progress"></DIV> 
       <P style="margin-top: 20px; text-align: center">
         <input type="button" name=lien value="$__{'Cancel'}"
          onClick="document.location=') . $cgi->param('return_url') . qq('" style="font-weight: normal">

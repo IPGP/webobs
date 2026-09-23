@@ -932,3 +932,14 @@ td.udateRow {
     outline: 2px solid #000;
     outline-offset: 1px;
 }
+.progress {
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(
+        to right,
+        #339933 0%,
+        #339933 var(--progress, 0%),
+        #ccc var(--progress, 0%),
+        #ccc 100%
+    );
+}
