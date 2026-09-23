@@ -334,8 +334,28 @@ while (1) {
                 if (not @$allAddrs) {
                     logit("error: recipient uid/gid '$oneMAIL[0]' "
                           ."not found in database, aborting mailing.");
+                    next;
+                }
+
+                my @validAddrs;
+                foreach my $row (@$allAddrs) {
+                    my $email = $row->[0];
+                    my $uid = $row->[1];
+                    my $login = $row->[2];
+                    my $valid = WebObs::Users::userIsValid(user=>$login) // '';
+                    if ($valid) {
+                        push @validAddrs, [$email, $login];
+                    } else {
+                        logit("error: recipient uid/gid '$oneMAIL[0]' "
+                              ." skip invalid user $login (UID: $uid, EMAIL: $email)");
+                    }
+                }
+
+                if (not @validAddrs) {
+                    logit("error: recipient uid/gid '$oneMAIL[0]' "
+                          ."no valid user found in database, aborting mailing.");
                 } else {
-                    my $addrlist = join(' ', map { $_->[0] } @$allAddrs);
+                    my $addrlist = join(' ', map { $_->[0] } @validAddrs);
                     if (not $addrlist) {
                         logit("warning: no email address defined for recipient"
                               ." uid/gid '$oneMAIL[0]', aborting mailing.");
@@ -490,7 +510,7 @@ sub fetch_email_addrs {
 
     # Return the list of email addresses for a user or a group
     my $id = shift;  # user or group id
-    my $q = "SELECT email FROM $WEBOBS{SQL_TABLE_USERS}"
+    my $q = "SELECT email, uid, login FROM $WEBOBS{SQL_TABLE_USERS}"
       ." WHERE uid = '$id'"
       ." OR uid IN (SELECT uid FROM groups WHERE gid='$id')";
 
