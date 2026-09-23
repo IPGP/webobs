@@ -94,16 +94,16 @@ for (reverse sort @reqlist) {
     my $dir = my $reqdir = $_;
     $reqdir =~ s|$WEBOBS{ROOT_OUTR}/||;
     my ($date,$time,$host,$user) = split(/_/,$reqdir);
-    my $date1 = qx(grep -a "^DATE1|" $dir/REQUEST.rc | sed -e "s/DATE1|//");
-    my $date2 = qx(grep -a "^DATE2|" $dir/REQUEST.rc | sed -e "s/DATE2|//");
-    my $gridmaps = qx(grep -a "^SUBMIT_COMMAND|.* gridmaps" $dir/REQUEST.rc);
-    my (@grids) = grep {-d} glob("$dir/*"); # first list of grids in output directories
+    my %REQ = readCfg("$dir/REQUEST.rc");
+    my $date1 = $REQ{DATE1};
+    my $date2 = $REQ{DATE2};
+    my $command = $REQ{SUBMIT_COMMAND};
+    my @grids = grep {-d} glob("$dir/*"); # first list of grids in output directories
     $_ =~ s|$dir/|| for @grids; # keeps only the GRID.NAME part
-    my @procreq = qx(grep -a "^(PROC|VIEW|FORM|SEFRAN)\." $dir/REQUEST.rc | sed -e "s/\.[^.]*|.*//"); # second list of grids from the request parameters
-    chomp(@procreq);
+    my @procreq = map { s/\.[^.]*// } grep /^(PROC|VIEW|FORM|SEFRAN)\./, keys(%REQ); # second list of grids from the request parameters
     push(@grids,@procreq); # merging output directories and request parameters
     @grids = do { my %seen; grep { !$seen{$_}++ } @grids }; # uniq
-    my $rowspan = ($gridmaps ne "" ? 1:scalar(@grids));
+    my $rowspan = scalar(@grids) > 1 ? scalar(@grids):1;
     if ($user eq $CLIENT || (WebObs::Users::clientHasAdm(type=>"authprocs",name=>"$_") && $QryParm->{'usr'} eq "all")) {
         if (length($date)==8 && length($time)==6) {
             $date = substr($date,0,4)."-".substr($date,4,2)."-".substr($date,6,2);
@@ -121,7 +121,7 @@ for (reverse sort @reqlist) {
                 my $rreq = qx(sqlite3 $SCHED{SQL_DB_JOBS} "SELECT cmd,stdpath,rc FROM runs WHERE jid<0 AND cmd LIKE '%$reqdir%' AND cmd LIKE '%$grid%';");
                 chomp($rreq);
                 if ($rreq eq "") {
-                    $table .= ("<TD></TD>" x 2);
+                    $table .= "<TD colspan=2>$command</TD>";
                 } else {
                     my ($rcmd,$rlog,$rc) = split(/\|/,$rreq);
                     my $log_filename = $rlog =~ s/^[><] +//r;
