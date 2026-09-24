@@ -195,19 +195,20 @@ print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n",
   "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">",
   "<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">\n";
 
-print "</head>\n",
-  "<body style=\"background-attachment: fixed\">\n",
-  "<div id=\"waiting\">$__{'Searching for data, please wait.'}</div>\n",
-  "<div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>\n",
-  "<script language=\"JavaScript\" src=\"/js/overlib/overlib.js\" type=\"text/javascript\"></script>",
-  "<script language=\"JavaScript\" src=\"/js/jquery.js\" type=\"text/javascript\"></script>",
-  "<script language=\"JavaScript\" src=\"/js/wolb.js\" type=\"text/javascript\"></script>",
-  "<link href=\"/css/wolb.css\" rel=\"stylesheet\" />";
-  "<script language=\"JavaScript\" src=\"/js/htmlFormsUtils.js\" type=\"text/javascript\"></script>\n",
-  "<script language=\"JavaScript\" src=\"/js/overlib/overlib.js\"></script>\n",
-  "<!-- overLIB (c) Erik Bosrup -->\n";
-
 print <<"EOF";
+</head>
+<body style="background-attachment: fixed\">
+<div id="waiting">$__{'Searching for data, please wait.'}</div>
+<div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
+<script language="JavaScript" src="/js/overlib/overlib.js" type="text/javascript"></script>
+<script language="JavaScript" src="/js/jquery.js" type="text/javascript"></script>
+<script language="JavaScript" src="/js/wolb.js" type="text/javascript"></script>
+<link href="/css/wolb.css" rel="stylesheet">
+<script language="JavaScript" src="/js/htmlFormsUtils.js" type="text/javascript"></script>
+<script language="JavaScript" src="/js/tables.js" type="text/javascript"></script>
+<script language="JavaScript" src="/js/overlib/overlib.js"></script>
+<!-- overLIB (c) Erik Bosrup -->
+
 <script type="text/javascript">
 <!--
 function eraseFilter()
@@ -587,7 +588,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
         $text .= "<TH nowrap>$edit</TH>";
     }
     # completion of data
-    $text .= "<TD style='background-color:color-mix(in srgb, $comp_color ".100*$comp/$max_inputs."%, white 0%)' onMouseOut=\"nd()\" onMouseOver=\"overlib('$comp/$max_inputs inputs',CAPTION,'Data completion')\"></TD>";
+    $text .= "<TD style='background-color:color-mix(in srgb, $comp_color ".100*$comp/$max_inputs."%, white 0%)' onMouseOut=\"nd()\" onMouseOver=\"overlib('$comp/$max_inputs inputs',CAPTION,'Data completion')\"><!--".sprintf("%03d",$comp)."--></TD>";
     if ($starting_date) {
         my $dur_str = ($dur[0] ne $dur[1] ? "$dur[0] $__{'to_num'} $dur[1]" : $dur[0]);
         $text .= "<TD nowrap>$sdate</TD><TD nowrap>$edate</TD><TD class=\"tdResult\">$dur_str</TD>";
@@ -737,25 +738,39 @@ for (my $j = 0; $j <= $#rows; $j++) {
 }
 
 # makes the table header
-$header = "<TR>";
+my $ci; # column index
+$header = "<TR><TH rowspan=2>";
 if ($clientAuth > 1) {
     my $form_url = URI->new("/cgi-bin/formGENFORM.pl");
     $form_url->query_form('form' => $form, 'site' => $QryParm->{'node'}, 'return_url' => $return_url, 'action' => 'new');
-    $header .= "<TH rowspan=2><A href=\"$form_url\"><IMG src=\"/icons/new.png\" border=\"0\" title=\"$__{'Enter a new record'}\"></A></TH>\n";
+    $header .= "<A href=\"$form_url\"><IMG src=\"/icons/new.png\" border=\"0\" title=\"$__{'Enter a new record'}\"></A>";
 }
-$header .= "<TH rowspan=2 width='${comp_width}px'></TH>";
-$header .= "<TH ".($starting_date ? "colspan=3>$__{'Sampling Interval'}" : "rowspan=2>$__{'Sampling Date'}")." <I>(UTC".sprintf("%+03d",$FORM{TZ}).")</I></TH>";
-$header .= "<TH rowspan=2>$__{'Site'}</TH><TH rowspan=2>$__{'Oper'}</TH>";
+$header .= "</TH>\n";
+$header .= "<TH rowspan=2 width='${comp_width}px' onclick=\"sortTable('t1',0)\"><IMG src='/icons/sort_both.svg'></TH>\n";
+if ($starting_date) {
+    $header .= "<TH colspan=3>$__{'Sampling Interval'}";
+    $ci = 4;
+} else {
+    $header .= "<TH rowspan=2 onclick=\"sortTable('t1',1)\"><IMG src='/icons/sort_both.svg'>$__{'Sampling Date'}";
+    $ci = 2;
+}
+$header .= " <I>(UTC".sprintf("%+03d",$FORM{TZ}).")</I></TH>\n";
+$header .= "<TH rowspan=2 onclick=\"sortTable('t1',$ci)\"><IMG src='/icons/sort_both.svg'>$__{'Site'}</TH>\n";
+$ci++;
+$header .= "<TH rowspan=2 onclick=\"sortTable('t1',$ci)\"><IMG src='/icons/sort_both.svg'>$__{'Oper'}</TH>\n";
 foreach(@colnam) {
     $header .= "<TH rowspan=2></TH><TH colspan=$colspan{$_}>$_</TH>\n";
 }
 $header .= "<TH rowspan=2></TH></TR>\n"; # end with comment column
 if ($starting_date) {
-    $header .= "<TH align=left>$__{'Start'}</TH><TH align=left>$__{'End'}</TH><TH align=right>$__{'Duration'}<BR>"
+    $header .= "<TH align=left onclick=\"sortTable('t1',1)\"><IMG src='/icons/sort_both.svg'>$__{'Start'}</TH>\n";
+    $header .= "<TH align=left onclick=\"sortTable('t1',2)\"><IMG src='/icons/sort_both.svg'>$__{'End'}</TH>\n";
+    $header .= "<TH align=right onclick=\"sortTable('t1',3)\"><IMG src='/icons/sort_both.svg'>$__{'Duration'}<BR>"
         ."(".($datetime_format eq "hms" ? $__{'d:HH:MM:SS'}:($datetime_format eq "hm" ? $__{'d:HH:MM'}:$__{'days'})).")</TH>";
 }
 foreach(@colnam2) {
-    $header .= "<TH>".$_."</TH>\n";
+    $ci++;
+    $header .= "<TH onclick=\"sortTable('t1',$ci)\"><IMG src='/icons/sort_both.svg'>".$_."</TH>\n";
 }
 $header .= "</TR>\n";
 
@@ -812,7 +827,8 @@ $listofformula .= "</UL>\n</div></div>";
 $csvTxt =~ s/'/&#39;/g; # escapes any single quote
 push(@csv,$csvTxt);
 
-push(@html,"<TABLE class=\"trData\" width=\"100%\">$header\n$text".($text ne "" ? "\n$header\n" : "")."</TABLE>\n$listoflist\n$listofformula");
+push(@html,"<TABLE class=\"trData\" width=\"100%\" id=\"t1\"><THEAD>$header</THEAD>\n"
+    ."<TBODY>$text".($text ne "" ? "\n$header\n" : "")."</TBODY></TABLE>\n$listoflist\n$listofformula");
 push(@html, qq(<hr><a name="download"></a><form action="/cgi-bin/postFormData.pl?form=$form" method="post">
 <input type="submit" value="$__{'Download a CSV text file of these data'}">
 <input type="checkbox" name="dlm" value=";" checked>&nbsp;$__{'Use semicolon as delimiter'}
