@@ -633,7 +633,9 @@ if ($usrCoord eq "utm") {
 }
 $htmlcontents .= "<TH onclick=\"sortTable('t1',6)\"><IMG src='/icons/sort_both.svg'>$__{'Start / Installation'}</TH>"
                 ."<TH onclick=\"sortTable('t1',7)\"><IMG src='/icons/sort_both.svg'>$__{'End / Stop'}</TH>";
-$htmlcontents .= "<TH align=left>".$__{'Subject'}."</TH><TH><IMG src=\"/icons/manager.png\" title=\"$__{'Authors'}\"></TH><TH><IMG src=\"/icons/worker.png\" title=\"$__{'Assignees'}\">" if ($usrProject eq "on");
+$htmlcontents .= "<TH align=left onclick=\"sortTable('t1',11)\"><IMG src='/icons/sort_both.svg'>".$__{'Subject'}."</TH>"
+                ."<TH onclick=\"sortTable('t1',12)\"><IMG src='/icons/sort_both.svg'><IMG src=\"/icons/manager.png\" title=\"$__{'Authors'}\"></TH>"
+                ."<TH onclick=\"sortTable('t1',13)\"><IMG src='/icons/sort_both.svg'><IMG src=\"/icons/worker.png\" title=\"$__{'Assignees'}\">" if ($usrProject eq "on");
 $htmlcontents .= "<TH>$__{'FID'}</TH><TH>$__{'Raw Format'}</TH><TH>$__{'Chan.'}</TH>" if ($usrProcparam eq 'on');
 if ($procOUTG eq "events") {
     $htmlcontents .= "<TH>Events</TH>";
