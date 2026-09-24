@@ -56,7 +56,7 @@ function sortTable(id, n) {
  otherwise returns innerHTML */
 function cellValue(cell) {
     var v = cell.textContent.toLowerCase();
-    if (v != "") {
+    if (v.trim() !== "") {
         return isNaN(v) ? v : parseFloat(v);
     } else {
         return cell.innerHTML.toLowerCase();

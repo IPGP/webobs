@@ -209,20 +209,24 @@ if (-e $statusDB) {
 
 # ---- Start HTML page
 #
-print "Content-type: text/html\n\n";
-print '<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">', "\n";
-print "<HTML><HEAD><title>$titrePage</title>";
-print "<link rel=\"stylesheet\" type=\"text/css\" href=\"/$WEBOBS{FILE_HTML_CSS}\">
-<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">";
-print "<script language=\"JavaScript\" src=\"/js/jquery.js\" type=\"text/javascript\"></script>";
-print "<script language=\"JavaScript\" src=\"/js/htmlFormsUtils.js\" type=\"text/javascript\"></script>";
-print "<link rel=\"stylesheet\" type=\"text/css\" href=\"/css/search.css\">";
-print "</head><body>";
-print "<!-- overLIB (c) Erik Bosrup -->
-<div id=\"overDiv\" style=\"position:absolute; visibility:hidden; z-index:1000;\"></div>
-<script language=\"JavaScript\" src=\"/js/overlib/overlib.js\" type=\"text/javascript\"></script>";
-print "<script language=\"javascript\" type=\"text/javascript\" src=\"/js/wolb.js\"></script>
-<link href=\"/css/wolb.css\" rel=\"stylesheet\" />";
+print <<"EOF";
+Content-type: text/html
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML><HEAD><title>$titrePage</title>
+<link rel="stylesheet" type="text/css" href="/$WEBOBS{FILE_HTML_CSS}">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script language="JavaScript" src="/js/jquery.js" type="text/javascript"></script>
+<script language="JavaScript" src="/js/htmlFormsUtils.js" type="text/javascript"></script>
+<script language="JavaScript" src="/js/tables.js" type="text/javascript"></script>
+<link rel="stylesheet" type="text/css" href="/css/search.css">
+</head><body>
+<!-- overLIB (c) Erik Bosrup -->
+<div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
+<script language="JavaScript" src="/js/overlib/overlib.js" type="text/javascript"></script>
+<script language="javascript" type="text/javascript" src="/js/wolb.js"></script>
+<link href="/css/wolb.css" rel="stylesheet" />
+EOF
 
 # ---- header (GRID name) and internal links within page
 #
@@ -597,17 +601,17 @@ my %NODE;
 my $newNODE = "<A href=\"/cgi-bin/$NODES{CGI_FORM}?node=$grid\"><IMG title=\"$__{'Create a new node'}\" src=\"/icons/new.png\"></A>";
 
 #$htmlcontents .= "<TABLE width=\"100%\" style=\"margin-left: 5px\">";
-$htmlcontents .= "<TABLE width=\"100%\" class=\"trData\"";
+$htmlcontents .= "<TABLE width=\"100%\" class=\"trData\" id=\"t1\"><THEAD>";
 $htmlcontents .= "<TR>";
-$htmlcontents .= ($editOK ? "<TH width=\"14px\" rowspan=2>".($admOK ? $newNODE:"")."</TH>":"")
-  ."<TH rowspan=2>$__{'Alias'}</TH>"
-  ."<TH rowspan=2 style=\"text-align: left\">$__{'Name'}</TH>"
+$htmlcontents .= "<TH rowspan=2 width='".($editOK ? "14px'>".($admOK ? $newNODE:""):"1px'>")."</TH>"
+  ."<TH rowspan=2 onclick=\"sortTable('t1',0)\"><IMG src='/icons/sort_both.svg'>$__{'Alias'}</TH>"
+  ."<TH rowspan=2 style=\"text-align: left\" onclick=\"sortTable('t1',1)\"><IMG src='/icons/sort_both.svg'>$__{'Name'}</TH>"
   ."<TH colspan=3>$__{'Coordinates'}</TH><TH rowspan=2></TH>"
   ."<TH colspan=2>$__{'Lifetime and Activity Status'}</TH>"
-  ."<TH rowspan=2>$__{'Type'}</TH>";
+  ."<TH rowspan=2 onclick=\"sortTable('t1',8)\"><IMG src='/icons/sort_both.svg'>$__{'Type'}</TH>";
 if ($CLIENT ne 'guest') {
-    $htmlcontents .= "<TH rowspan=2>$__{'Nb<br>Evnt'}</TH>";
-    $htmlcontents .= "<TH".($usrProject eq "on" ? " rowspan=2></TH><TH colspan=3>":" rowspan=2 align=left>")."$__{'Project'}</TH>";
+    $htmlcontents .= "<TH rowspan=2 onclick=\"sortTable('t1',9)\"><IMG src='/icons/sort_both.svg'>$__{'Nb<br>Evnt'}</TH>";
+    $htmlcontents .= "<TH".($usrProject eq "on" ? " rowspan=2></TH><TH colspan=3>":" rowspan=2 align=left onclick=\"sortTable('t1',10)\"><IMG src='/icons/sort_both.svg'>")."$__{'Project'}</TH>";
 }
 $htmlcontents .= "<TH rowspan=2></TH><TH colspan=3>$__{'Proc Parameters'}</TH>" if ($usrProcparam eq 'on');
 $htmlcontents .= "<TH rowspan=2></TH><TH colspan=".(@procTS).">$__{'Proc Graphs'}</TH>" if ($procOUTG);
@@ -617,16 +621,18 @@ if ($overallStatus) {
 }
 $htmlcontents .= "<TH rowspan=2></TH><TH colspan=5>$__{'Form Information'}</TH>" if ($isForm);
 $htmlcontents .= "</TR>\n<TR>";
+my @st = map { "<TH onclick=\"sortTable('t1',$_)\"><IMG src='/icons/sort_both.svg'>" } (2,3,4);
 if ($usrCoord eq "utm") {
-    $htmlcontents .= "<TH>UTM Eastern (m)</TH><TH>UTM Northern (m)</TH><TH>$__{'Elev.'} (m)</TH>";
+    $htmlcontents .= "$st[0]UTM Eastern (m)</TH>$st[1]UTM Northern (m)</TH>$st[2]$__{'Elev.'} (m)</TH>";
 } elsif ($usrCoord eq "local") {
-    $htmlcontents .= "<TH>Local TM Eastern (m)</TH><TH>Local TM Northern (m)</TH><TH>$__{'Elev.'} (m)</TH>";
+    $htmlcontents .= "$st[0]Local TM Eastern (m)</TH>$st[1]Local TM Northern (m)</TH>$st[2]$__{'Elev.'} (m)</TH>";
 } elsif ($usrCoord eq "xyz") {
-    $htmlcontents .= "<TH>X (m)</TH><TH>Y (m)</TH><TH>Z (m)</TH>";
+    $htmlcontents .= "$st[0]X (m)</TH>$st[1]Y (m)</TH>$st[2]Z (m)</TH>";
 } else {
-    $htmlcontents .= "<TH>$__{'Lat.'} (WGS84)</TH><TH>$__{'Lon.'} (WGS84)</TH><TH>$__{'Elev.'} (m)</TH>";
+    $htmlcontents .= "$st[0]$__{'Lat.'} (WGS84)</TH>$st[1]$__{'Lon.'} (WGS84)</TH>$st[2]$__{'Elev.'} (m)</TH>";
 }
-$htmlcontents .= "<TH>$__{'Start / Installation'}</TH><TH>$__{'End / Stop'}</TH>";
+$htmlcontents .= "<TH onclick=\"sortTable('t1',6)\"><IMG src='/icons/sort_both.svg'>$__{'Start / Installation'}</TH>"
+                ."<TH onclick=\"sortTable('t1',7)\"><IMG src='/icons/sort_both.svg'>$__{'End / Stop'}</TH>";
 $htmlcontents .= "<TH align=left>".$__{'Subject'}."</TH><TH><IMG src=\"/icons/manager.png\" title=\"$__{'Authors'}\"></TH><TH><IMG src=\"/icons/worker.png\" title=\"$__{'Assignees'}\">" if ($usrProject eq "on");
 $htmlcontents .= "<TH>$__{'FID'}</TH><TH>$__{'Raw Format'}</TH><TH>$__{'Chan.'}</TH>" if ($usrProcparam eq 'on');
 if ($procOUTG eq "events") {
@@ -644,7 +650,7 @@ if ($isForm) {
                     ."<TH onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{help_node_sampling})."')\">$__{'Sampl.'}</TH>"
                     ."<TH onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($__{help_node_status})."')\">$__{'Status'}</TH>";
 }
-$htmlcontents .= "</TR>\n";
+$htmlcontents .= "</TR></THEAD>\n";
 
 my $nbNodesDisplayed = 0;
 my @htmlNodeLines;
@@ -922,7 +928,7 @@ for (@{$GRID{NODESLIST}}) {
         push(@htmlNodeLines,$htmltr);
     }
 }
-$htmlcontents .= join("\n",sort(@htmlNodeLines));
+$htmlcontents .= "<TBODY>".join("\n",sort(@htmlNodeLines))."</TBODY>";
 $htmlcontents .= "<TR><TH colspan=\"24\" class=\"th-bottom\"></TH></TR></TABLE>";
 $htmlcontents .= "</div></div>";
 
