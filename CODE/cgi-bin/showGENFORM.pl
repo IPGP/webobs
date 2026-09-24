@@ -831,7 +831,7 @@ $csvTxt =~ s/'/&#39;/g; # escapes any single quote
 push(@csv,$csvTxt);
 
 push(@html,"<TABLE class=\"trData\" width=\"100%\" id=\"t1\"><THEAD>$header</THEAD>\n"
-    ."<TBODY>$text".($text ne "" ? "\n$header\n" : "")."</TBODY></TABLE>\n$listoflist\n$listofformula");
+    ."<TBODY>$text</TBODY>".($text ne "" ? "\n$header\n" : "")."</TABLE>\n$listoflist\n$listofformula");
 push(@html, qq(<hr><a name="download"></a><form action="/cgi-bin/postFormData.pl?form=$form" method="post">
 <input type="submit" value="$__{'Download a CSV text file of these data'}">
 <input type="checkbox" name="dlm" value=";" checked>&nbsp;$__{'Use semicolon as delimiter'}
