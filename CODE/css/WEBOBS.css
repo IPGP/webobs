@@ -79,6 +79,7 @@ th {
     padding-right: 3px;
     border-top-width: 2px;
     border-bottom-width: 2px;
+    cursor: default;
 }
 .th-bottom {
     padding: 0px;

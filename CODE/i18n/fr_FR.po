@@ -1672,7 +1672,7 @@ msgid "Invalid nodes"
 msgstr "Nodes invalides"
 
 msgid "Lifetime and Activity Status"
-msgstr "Durée de vie et status d'activité"
+msgstr "Durée de vie et statut d'activité"
 
 msgid "help_node_sampling"
 msgstr "Performance du taux d&rsquo;&eacute;chantillonnage (en %): nombre d&rsquo;&eacute;chantillons valides au cours de la derni&egrave;re p&eacute;riode de temps, compar&eacute; &agrave; l&rsquo;acquisition th&eacute;orique"
