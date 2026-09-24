@@ -472,7 +472,10 @@ $csvTxt .= (isok($FORM{QUALITY_CHECK}) ? $dlm.qq(Quality) : "")
 for (my $i = 0; $i <= $#fs_names; $i++) {
     my $fs = $fieldsets[$i];
     my $showfs = ((!isok($FORM{$fs.'_TOGGLE'}) || $QryParm->{lc($fs)}) ? "1" : "0");
-    push(@colnam, $fs_names[$i]) if ($showfs);
+    if ($showfs) {
+        push(@colnam, $fs_names[$i]);
+        push(@colnam2, ''); # empty value for future column index (beginning of a fieldset)
+    }
     my $nb_fields = $#{$field_names[$i]} + 1;
     $colspan{$fs_names[$i]} = $nb_fields;
     for (my $j = 0; $j < $nb_fields; $j++) {
@@ -770,7 +773,7 @@ if ($starting_date) {
 }
 foreach(@colnam2) {
     $ci++;
-    $header .= "<TH onclick=\"sortTable('t1',$ci)\"><IMG src='/icons/sort_both.svg'>".$_."</TH>\n";
+    $header .= "<TH onclick=\"sortTable('t1',$ci)\"><IMG src='/icons/sort_both.svg'>".$_."</TH>\n" if ($_ ne "");
 }
 $header .= "</TR>\n";
 
