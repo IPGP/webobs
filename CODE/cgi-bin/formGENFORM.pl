@@ -136,12 +136,14 @@ my $PATH_THUMBNAILS = $GRIDS{SPATH_THUMBNAILS} || "THUMBNAILS";
 my $LL_MIN_HEIGHT = $GRIDS{GENFORM_SHAPE_MIN_HEIGHT} || 150;
 my $LL_MAX_HEIGHT = $GRIDS{GENFORM_SHAPE_MAX_HEIGHT} || 800;
 my $LL_DEFAULT_HEIGHT = $GRIDS{GENFORM_SHAPE_DEFAULT_HEIGHT} || 300;
+    
+# ---- database is WEBOBSFORMS.db by default
+my $formDB = $FORM{SQL_DB_FORM} // $WEBOBS{SQL_FORMS};
 
 # ---- action is 'save'
 #
-# ---- registering data in WEBOBSFORMS.db
 # --- connecting to the database
-my $dbh = connectDbForms();
+my $dbh = connectDbForms($formDB);
 my $tbl = lc($form);
 my $table_geoloc = "geoloc";
 my $table_udate = "udate";
@@ -627,7 +629,7 @@ my @edate_vals;
 my @sdate_vals;
 
 # --- connecting to the database
-my $dbh = connectDbForms();
+my $dbh = connectDbForms($formDB);
 
 if ($action eq "edit") {
     my $tbl = lc($form);

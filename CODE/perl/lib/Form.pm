@@ -422,11 +422,12 @@ sub count_columns {
 
 # Open an SQLite connection to the forms database
 sub connectDbForms {
-    return DBI->connect("dbi:SQLite:$WEBOBS{SQL_FORMS}", "", "", {
+    my $db = @_ ? $_[0] : $WEBOBS{SQL_FORMS};
+    return DBI->connect("dbi:SQLite:$db", "", "", {
             'AutoCommit' => 1,
             'PrintError' => 1,
             'RaiseError' => 1,
-        }) || die "Error connecting to $WEBOBS{SQL_FORMS}: $DBI::errstr";
+        }) || die "Error connecting to $db: $DBI::errstr";
 }
 
 __END__

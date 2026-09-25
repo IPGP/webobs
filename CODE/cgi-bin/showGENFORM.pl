@@ -221,9 +221,10 @@ EOF
 
 # ---- Read the data file 
 #
+my $formDB = $FORM{SQL_DB_FORM} // $WEBOBS{SQL_FORMS};
 
 # --- connecting to the database
-my $dbh = connectDbForms();
+my $dbh = connectDbForms($formDB);
 
 my $tbl = lc($form);
 my @db_columns = ("trash", "quality", "node", "edate", "sdate", "operators", "comment", "tsupd", "userupd");
@@ -522,7 +523,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
     my @dur = ("0", "0");
 
     # get start date and end date
-    my $dbh = connectDbForms();
+    my $dbh = connectDbForms($formDB);
     my $colnames = join(', ', @columns_udate);
     my $stmt = qq(SELECT $colnames FROM $table_udate WHERE id = $edate);
     my @edate_vals = $dbh->selectrow_array($stmt);
@@ -675,7 +676,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
             # --- input type = geoloc
             elsif ($FORM{$Field."_TYPE"} eq "geoloc") {
                 $val = "";
-                my $dbh = connectDbForms();
+                my $dbh = connectDbForms($formDB);
                 my @gvals = map { "" } @columns_geoloc;
                 my @gunits = ("°N", "m", "°E", "m", "m", "m");
                 if ($fields{$field}) {
@@ -694,7 +695,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
             }
             # --- input type = datetime|udate
             elsif ($FORM{$Field."_TYPE"} =~ /^(datetime|udate)$/) {
-                my $dbh = connectDbForms();
+                my $dbh = connectDbForms($formDB);
                 my @uvals = map { "" } @columns_udate;
                 if ($fields{$field}) {
                     my $colnames = join(', ', @columns_udate);

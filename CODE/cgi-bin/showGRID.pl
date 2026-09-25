@@ -380,7 +380,8 @@ if ($isProc) {
 if ($isForm) {
 
     # connect to the database
-    $dbh = connectDbForms();
+    my $formDB = $GRID{SQL_DB_FORM} // $WEBOBS{SQL_FORMS};
+    $dbh = connectDbForms($formDB);
 
     # get the total number of records
     my $stmt = "SELECT COUNT(id) FROM $tbl";

@@ -209,8 +209,9 @@ sub sql_create_table_udate {
 
 # Create sql table
 sub create_table {
+    my $formDB = shift;
     my $create_table_sql = shift;
-    my $dbh = connectDbForms();
+    my $dbh = connectDbForms($formDB);
     $dbh->do($create_table_sql) or die "Error creating table: $DBI::errstr";
     $dbh->disconnect();
 }
@@ -281,21 +282,11 @@ if (scalar(@GID) == 2) {
     @GID = map { uc($_) } @GID;
     ($GRIDType, $GRIDName) = @GID;
     if ($GRIDType eq 'SEFRAN') {
-        $gridConfFile = "$WEBOBS{PATH_SEFRANS}/$GRIDName/$GRIDName.conf";
         $auth = 'procs';
+    } else {
+        $auth = lc($GRIDType)."s";
     }
-    if ($GRIDType eq 'VIEW') {
-        $gridConfFile = "$WEBOBS{PATH_VIEWS}/$GRIDName/$GRIDName.conf";
-        $auth = 'views';
-    }
-    if ($GRIDType eq 'PROC') {
-        $gridConfFile = "$WEBOBS{PATH_PROCS}/$GRIDName/$GRIDName.conf";
-        $auth = 'procs';
-    }
-    if ($GRIDType eq 'FORM') {
-        $gridConfFile = "$WEBOBS{PATH_FORMS}/$GRIDName/$GRIDName.conf";
-        $auth = 'forms';
-    }
+    $gridConfFile = $WEBOBS{"PATH_".$GRIDType."S"}."/$GRIDName/$GRIDName.conf";
     if ($tpl ne '') {
         $template = "$WEBOBS{ROOT_CODE}/tplates/$tpl";
     } else {
@@ -309,10 +300,7 @@ if (scalar(@GID) == 2) {
             $gridConfFileMtime = (stat($gridConfFile))[9] ;
             $editOK = 1;
         }
-        if (uc($GRIDType) eq 'SEFRAN') { %GRID = readSefran($GRIDName) };
-        if (uc($GRIDType) eq 'VIEW') { %GRID = readView($GRIDName) };
-        if (uc($GRIDType) eq 'PROC') { %GRID = readProc($GRIDName) };
-        if (uc($GRIDType) eq 'FORM') { %GRID = readForm($GRIDName) };
+        %GRID = readGrid("$GRIDType.$GRIDName");
     }
     else {
         if ($admOK) {
@@ -434,15 +422,17 @@ if ($action eq 'save') {
         }
         push(@db_columns, @db_fk_columns);
 
+        my $formDB = $GRID{SQL_DB_FORM} // $WEBOBS{SQL_FORMS};
+
         # Checking if the table we want to edit exists
         my $tbl = lc($GRIDName);
 
         # Create secondary tables if not exists
-        create_table(sql_create_table_geoloc());
-        create_table(sql_create_table_udate());
+        create_table($formDB,sql_create_table_geoloc());
+        create_table($formDB,sql_create_table_udate());
 
         # Connecting to the database in order to create a table with the name of the FORM
-        my $dbh = connectDbForms();
+        my $dbh = connectDbForms($formDB);
 
         my $stmt = qq(select exists (select name from sqlite_master where type='table' and name='$tbl'););
         my $sth = $dbh->prepare($stmt);
@@ -547,7 +537,6 @@ if ($action eq 'save') {
 # ===========================================================================
 # if we reached this point it's the default edit action...
 if (!$newG) {
-    %GRID = %{$GRID{$GRIDName}};
     @domain = split(/\|/, $GRID{'DOMAIN'});
     $form = $GRID{'FORM'} || '' if ($GRIDType eq "PROC");
 
@@ -783,7 +772,7 @@ François Beauducel, Didier Lafon, Xavier Béguin
 
 =head1 COPYRIGHT
 
-WebObs - 2012-2025 - Institut de Physique du Globe Paris
+WebObs - 2012-2026 - Institut de Physique du Globe Paris
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
