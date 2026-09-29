@@ -36,7 +36,7 @@ B<WebObs' events> live in B<dedicated directories> of nodes and/or grids:  B<INT
         NA               :=  "NA" for unknown/undefined HH-MM
 
     Special event file: the Project; only one allowed per Node or Grid, at the first level
-        project_file     :=  name_Projet.txt
+        project_file     :=  name_Project*.txt (former 'Projet' still allowed)
 
     Unfolded example for node NODEA events:
         $NODES{PATH_NODES}/NODEA/$NODES{SPATH_INTERVENTIONS}/
@@ -72,7 +72,7 @@ our(@ISA, @EXPORT, @EXPORT_OK, $VERSION);
 
 require Exporter;
 @ISA        = qw(Exporter);
-@EXPORT     = qw(struct eventsShow projectShow eventsTree eventsChrono);
+@EXPORT     = qw(struct eventsShow projectShow eventsTree eventsChrono listProject);
 $VERSION    = "1.00";
 
 my $query = $ENV{SCRIPT_NAME}.($ENV{QUERY_STRING} ? "?$ENV{QUERY_STRING}":"");
@@ -216,7 +216,7 @@ sub eventsTree {
     return if(ref($list) ne 'ARRAY');
     my @entries = sort {$b cmp $a} glob($path."/*");
     foreach my $entry (@entries) {
-        next if ($entry =~ /_Projet\.txt$|.*\.txt~$|.*backup$/);
+        next if ($entry =~ /_Proje.*\.txt$|.*\.txt~$|.*backup$/);
         next if ($entry =~ /\/PHOTOS\//);
 
         #DL-err5.10: push($list, $entry) if -f $entry;
@@ -259,24 +259,22 @@ sub eventsChrono {
 
 =pod
 
-=head2 existProject alias countProject
+=head2 listProject
 
-existProject(objectname) takes objectname as a normalized grid or node name and
-returns 1 if a Project file exists for this object, 0 otherwise
-
-countProject is an alias for existProject.
+listProject(objectname) takes objectname as a normalized grid or node name and
+returns an array of existing project file names
 
 =cut
 
-sub existProject {
-    return 0 if (@_ != 1);
+sub listProject {
+    return () if (@_ != 1);
     my ($gt,$gn,$n,$p,$t) = struct($_[0]);
     if (defined($p)) {
-        return 1 if (-e "$p/$n\_Projet.txt");
+        my @p = glob("$p/$n\_Proj*.txt");
+        return @p;
     }
-    return 0;
+    return ();
 }
-sub countProject { return existProject(@_) }
 
 # -------------------------------------------------------------------------------------------
 
@@ -435,53 +433,58 @@ sub projectShow {
 
     my ($GRIDType, $GRIDName, $NODEName, $path, $trash) = struct($objectname);
     return undef if (!defined($GRIDType));
-    my $projdir  = "$NODEName\_Projet" ;
-    my $projphotos  = "$path/$projdir/PHOTOS" ;
-    my $projname = "$projdir.txt";
-    my $projpath = "$path/$projname";
 
-    my $html = '';
-    if (-e $projpath) {
-        my $Pts = Time::Piece->strptime((stat($projpath))[9],"%s");
-        my @file = readFile($projpath);
-        chomp(@file);
+    my @list = glob("$path/$NODEName\_Proje*.txt");
 
-# first line = usersList|title  with usersList = a + separated list of userIds, and optional |title
-        if ($file[0] !~ /\|/) {            # if firstline doesn't look like 'something|someotherthing'
-            unshift(@file,"|untitled\n");  # force our own default (add a line)
+    my $html = '<OL>';
+    for my $projpath (@list) {
+        my $projname = basename($projpath);
+        (my $projdir = $projname) =~ s/.txt//;
+        my $projphotos  = "$path/$projdir/PHOTOS" ;
+
+        if (-e $projpath) {
+            my $Pts = Time::Piece->strptime((stat($projpath))[9],"%s");
+            my @file = readFile($projpath);
+            chomp(@file);
+
+            # first line = usersList|title  with usersList = a + separated list of userIds, and optional |title
+            if ($file[0] !~ /\|/) {            # if firstline doesn't look like 'something|someotherthing'
+                unshift(@file,"|untitled\n");  # force our own default (add a line)
+            }
+            my ($author,$assignee,$title,$date,$heure) = headersplit($file[0]);
+            my $EVTusers = join(", ",WebObs::Users::userName(@$author));
+            my $EVTworker = join(", ",WebObs::Users::userName(@$assignee));
+            my $Pusers = "";
+            if ($EVTusers ne "" || $EVTworker ne "") {
+                $Pusers = "<I>(".($EVTusers ne "" ? "<IMG src=\"/icons/manager.png\" title=\"".js($__{'Authors'})."\">$EVTusers":"")
+                                .($EVTworker ne "" ? " / <IMG src=\"/icons/worker.png\" title=\"".js($__{'Assignees'})."\">$EVTworker":"")
+                                .")</I>";
+            }
+
+            # remaining lines = event text contents
+            shift(@file);
+            my $Ptext  = wiki2html(join("\n",@file));
+
+            # event's photos if any
+            my @photos = qx(/usr/bin/find $projphotos -maxdepth 1 -type f  2>/dev/null);
+            chomp(@photos);
+            my $Pphotos = scalar(@photos) > 0 ? photoStrip(@photos) : "";
+
+            my $Pedit = "";
+            if ($editOK) {
+                $Pedit .= "<a href=\"/cgi-bin/vedit.pl?object=$objectname&type=project&event=$projname&action=upd&return_url=$query\"><img src=\"/icons/modif.png\" title=\"$__{'Edit...'}\"></a>";
+                $Pedit .= "<a href=\"/cgi-bin/vedit.pl?object=$objectname&type=project&event=$projname&action=p2e&return_url=$query\"><img src=\"/icons/check.png\" title=\"$__{'Close the project'}\"\"></a>";
+                $Pedit .= "<a href=\"$WEBOBS{CGI_UPLOAD}?object=$objectname&doc=SPATH_INTERVENTIONS&event=$projdir\"><img src=\"/icons/camera.png\" title=\"$__{'Manage Photos'}\"></a>";
+            }
+            my $Pfts = $Pts->strftime("%Y-%m-%d %H:%M");
+            $html .= "<LI class='Event'>";
+            $html .= "<P class=\"titleEvent\"><B>$title</B> $Pusers  $Pedit</P>\n";
+            $html .= "<P class=\"subEvent\">$__{'created:'} $date $heure / $__{'modified:'} $Pfts</P>\n";
+            $html .= "<BLOCKQUOTE class=\"contentEvent\">$Pphotos$Ptext</BLOCKQUOTE>";
+            $html .= "</LI>\n";
         }
-        my ($author,$assignee,$title,$date,$heure) = headersplit($file[0]);
-        my $EVTusers = join(", ",WebObs::Users::userName(@$author));
-        my $EVTworker = join(", ",WebObs::Users::userName(@$assignee));
-        my $Pusers = "";
-        if ($EVTusers ne "" || $EVTworker ne "") {
-            $Pusers = "<I>(".($EVTusers ne "" ? "<IMG src=\"/icons/manager.png\" title=\"".js($__{'Authors'})."\">$EVTusers":"")
-                            .($EVTworker ne "" ? " / <IMG src=\"/icons/worker.png\" title=\"".js($__{'Assignees'})."\">$EVTworker":"")
-                            .")</I>";
-        }
-
-        # remaining lines = event text contents
-        shift(@file);
-        my $Ptext  = wiki2html(join("\n",@file));
-
-        # event's photos if any
-        my @photos = qx(/usr/bin/find $projphotos -maxdepth 1 -type f  2>/dev/null);
-        chomp(@photos);
-        my $Pphotos = scalar(@photos) > 0 ? photoStrip(@photos) : "";
-
-        my $Pedit = "";
-        if ($editOK) {
-            $Pedit .= "<a href=\"/cgi-bin/vedit.pl?object=$objectname&event=$projname&action=upd&return_url=$query\"><img src=\"/icons/modif.png\" title=\"$__{'Edit...'}\"></a>";
-            $Pedit .= "<a href=\"/cgi-bin/vedit.pl?object=$objectname&event=$projname&action=p2e&return_url=$query\"><img src=\"/icons/check.png\" title=\"$__{'Close the project'}\"\"></a>";
-            $Pedit .= "<a href=\"$WEBOBS{CGI_UPLOAD}?object=$objectname&doc=SPATH_INTERVENTIONS&event=$projdir\"><img src=\"/icons/camera.png\" title=\"$__{'Manage Photos'}\"></a>";
-        }
-        my $Pfts = $Pts->strftime("%Y-%m-%d %H:%M");
-        $html .= "<BLOCKQUOTE>";
-        $html .= "<P class=\"titleEvent\"><B>$title</B> $Pusers  $Pedit</P>\n";
-        $html .= "<P class=\"subEvent\">$__{'created:'} $date $heure / $__{'modified:'} $Pfts</P>\n";
-        $html .= "<BLOCKQUOTE class=\"contentEvent\">$Pphotos$Ptext</BLOCKQUOTE>";
-        $html .= "</BLOCKQUOTE>";
     }
+    $html .= "</OL>\n";
     return $html;
 }
 

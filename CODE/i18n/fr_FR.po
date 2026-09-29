@@ -173,6 +173,9 @@ msgstr "Données"
 msgid "Project"
 msgstr "Projet"
 
+msgid "Projects"
+msgstr "Projets"
+
 msgid "Networks"
 msgstr "Réseaux"
 

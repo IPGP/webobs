@@ -245,7 +245,7 @@ if (uc($GRIDType) =~ /^VIEW|PROC|FORM$/) {
     print " <A href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRIDS}?domain=$GRID{DOMAIN}&type=all\">$DOMAINS{$GRID{DOMAIN}}{NAME}</A> / "
       ."<A href=\"/cgi-bin/$GRIDS{CGI_SHOW_GRID}?grid=$GRIDType.$GRIDName\">$GRID{NAME}</A> |";
 }
-print " <A href=\"#PROJECT\">$__{Project}</A> | <A href=\"#EVENTS\">$__{Events}</A> "
+print " <A href=\"#PROJECT\">$__{Projects}</A> | <A href=\"#EVENTS\">$__{Events}</A> "
   ."| <IMG src='/icons/refresh.png' style='vertical-align:middle;cursor:pointer' title='Refresh' onClick='document.location.reload(false)'> ]</P>";
 
 print "</TD><TD width='82px' style='border:0;text-align:right'>".qrcode($WEBOBS{QRCODE_BIN},$WEBOBS{QRCODE_SIZE})."</TD></TR></TABLE>\n";
@@ -854,15 +854,14 @@ printInfo("info.txt","Information",$editOK,"$GRIDType.$GRIDName.$NODEName");
 # ---- end of node table ------------------------------------------------------
 print "<TR><TH colspan=\"3\" class=\"th-bottom\"></TH></TR></TABLE>\n";
 
-# ---- Project ----------------------------------------------------------------
+# ---- Projects ----------------------------------------------------------------
 #
 print "<BR><A name=\"PROJECT\"></A>\n";
 print "<div class=\"drawer\"><div class=\"drawerh2\" >&nbsp;<img src=\"/icons/drawer.png\" onClick=\"toggledrawer('\#projID');\">&nbsp;&nbsp;";
-print "$__{Project}";
-if ($editOK) { print "&nbsp;&nbsp;<A href=\"/cgi-bin/vedit.pl?action=new&event=$NODEName\_Projet.txt&object=$GRIDType.$GRIDName.$NODEName\"><img src=\"/icons/new.png\" title=\"$__{'New project'}\"></A>" }
+print "$__{Projects}";
+if ($editOK) { print "&nbsp;&nbsp;<A href=\"/cgi-bin/vedit.pl?action=new&type=project&object=$GRIDType.$GRIDName.$NODEName\"><img src=\"/icons/new.png\" title=\"$__{'New project'}\"></A>" }
 print "&nbsp;$go2top</div><div id=\"projID\"><BR>";
-my $htmlProj = projectShow("$GRIDType.$GRIDName.$NODEName", $editOK);
-print $htmlProj;
+print projectShow("$GRIDType.$GRIDName.$NODEName", $editOK);
 print "</div></div>";
 
 # ---- Events / interventions
@@ -874,8 +873,7 @@ if ($editOK) { print "&nbsp;&nbsp;<A href=\"/cgi-bin/vedit.pl?action=new&object=
 print "&nbsp;$go2top</div><div id=\"eventID\"><BR>";
 print "&nbsp;$__{'Sort by'} [ ".($sortBy ne "event" ? "<A href=\"$myself&amp;sortby=event#EVENTS\">$__{'Event'}</A>":"<B>$__{'Event'}</B>")." | "
   .($sortBy ne "date" ? "<A href=\"$myself&amp;sortby=date#EVENTS\">$__{'Date'}</A>":"<B>$__{'Date'}</B>")." ]<BR>\n";
-my $htmlEvents = ($sortBy =~ /event/i) ? eventsShow("events","$GRIDType.$GRIDName.$NODEName", $editOK) : eventsShow("date","$GRIDType.$GRIDName.$NODEName", $editOK);
-print $htmlEvents;
+print eventsShow($sortBy eq "event" ? "events":"date","$GRIDType.$GRIDName.$NODEName", $editOK);
 print "</div></div>";
 
 # --- we're done !!!!

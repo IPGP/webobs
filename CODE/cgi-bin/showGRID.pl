@@ -694,8 +694,9 @@ for (@{$GRID{NODESLIST}}) {
 
         # look for projects (projectonly filter)
         my $pathInter = "$NODES{PATH_NODES}/$NODEName/$NODES{SPATH_INTERVENTIONS}";
-        my $fileProj = "$pathInter/$NODEName"."_Projet.txt";
-        if ($usrProjectOnly eq "on" && (!(-e $fileProj) || !(-s $fileProj))) {
+        my @listProj = listProject("$GRIDType.$GRIDName.$NODEName");
+        my $rsp = (scalar(@listProj) > 1 && $usrProject eq "on" ? " rowspan=".scalar(@listProj):"");
+        if ($usrProjectOnly eq "on" && scalar(@listProj) == 0) {
             $displayNode = 0;
         }
 
@@ -704,20 +705,20 @@ for (@{$GRID{NODESLIST}}) {
         # tricks:
         #   - execute display logic even if we don't display, but html-comment out first
         #   - start the line by a comment with ALIAS for future sort
-        $htmltr .= "<!-- $NODE{ALIAS}-->".(!$displayNode ? "<!--":"")."<TR class=\"$tcolor\">";
-        $htmltr .= ($editOK ? "<TH><A href=\"/cgi-bin/formNODE.pl?node=$grid.$NODEName\"><IMG title=\"Edit node $NODEName\" src=\"/icons/modif.png\"></TH>":"");
+        $htmltr .= "<!-- $NODE{ALIAS}-->".(!$displayNode ? "<!--":"")."<TR class=\"$tcolor\"$rsp>";
+        $htmltr .= ($editOK ? "<TH$rsp><A href=\"/cgi-bin/formNODE.pl?node=$grid.$NODEName\"><IMG title=\"Edit node $NODEName\" src=\"/icons/modif.png\"></TH>":"");
 
         # Node's code and name
         my $lienNode="/cgi-bin/$NODES{CGI_SHOW}?node=$grid.$NODEName";
-        $htmltr .= "<TD align=center><B>$NODE{ALIAS}</B></TD>";
-        $htmltr .= "<TD nowrap><a href=\"$lienNode\"><B>$NODE{NAME}</B></a></TD>";
+        $htmltr .= "<TD align=center$rsp><B>$NODE{ALIAS}</B></TD>";
+        $htmltr .= "<TD nowrap$rsp><a href=\"$lienNode\"><B>$NODE{NAME}</B></a></TD>";
 
         # Node's localization
         $NODE{LAT_WGS84} //= "";
         $NODE{LON_WGS84} //= "";
         $NODE{ALTITUDE}  //= "";
         if ($NODE{LAT_WGS84} eq "" && $NODE{LON_WGS84} eq "" && $NODE{ALTITUDE} eq "") {
-            $htmltr .= "<TD colspan=3> </TD>";
+            $htmltr .= "<TD colspan=3$rsp> </TD>";
         } else {
             my $lat = sprintf("%.5f",$NODE{LAT_WGS84});
             my $lon = sprintf("%.5f",$NODE{LON_WGS84});
@@ -736,74 +737,88 @@ for (@{$GRID{NODESLIST}}) {
                 $lon = sprintf("%.0f",$lon);
                 $alt = sprintf("%.0f",$alt);
             }
-            $htmltr .= "<TD align=\"center\" nowrap>$lat</TD><TD align=\"center\" nowrap>$lon</TD><TD align=\"center\" nowrap>$alt</TD>";
+            $htmltr .= "<TD align=\"center\" nowrap$rsp>$lat</TD><TD align=\"center\" nowrap$rsp>$lon</TD><TD align=\"center\" nowrap$rsp>$alt</TD>";
         }
 
         # Node's dates
-        $htmltr .= "<TD></TD>";
+        $htmltr .= "<TD$rsp></TD>";
         if ($NODE{INSTALL_DATE} eq "NA") {
-            $htmltr .= "<TD> </TD>";
+            $htmltr .= "<TD$rsp> </TD>";
         } else {
-            $htmltr .= "<TD align=\"center\" nowrap>$NODE{INSTALL_DATE}</TD>";
+            $htmltr .= "<TD align=\"center\" nowrap$rsp>$NODE{INSTALL_DATE}</TD>";
         }
         if ($NODE{END_DATE} eq "NA") {
-            $htmltr .= "<TD> </TD>";
+            $htmltr .= "<TD$rsp> </TD>";
         } else {
-            $htmltr .= "<TD align=\"center\" nowrap>$NODE{END_DATE}</TD>";
+            $htmltr .= "<TD align=\"center\" nowrap$rsp>$NODE{END_DATE}</TD>";
         }
 
         # Node's type
-        $htmltr .= "<TD align=\"center\">".($NODE{TYPE} // "")."</TD>";
+        $htmltr .= "<TD align=\"center\"$rsp>".($NODE{TYPE} // "")."</TD>";
 
         # #Interventions and Project file
+        my $nextProj = "";
         if ( $CLIENT ne 'guest' ) {
             my @interventions  = glob("$pathInter/$NODEName*.txt");
 
             #my $nbInter  = 0;
             #find(sub { $nbInter++ if /^$NODEName.*\.txt$/ }, $pathInter);
-            $htmltr .= "<TD align=center><A href=\"/cgi-bin/showNODE.pl?node=$grid.$NODEName#EVENTS\">".scalar(@interventions)."</A></TD>";
-            if ((-e $fileProj) && (-s $fileProj)) {
-                my $titleProj = "";
-                my $textProj = "";
-                my $author_ovl = "";
-                my $assignee_ovl = "";
-                my @proj = readFile($fileProj);
-                @proj = grep(!/^$|^WebObs: /, @proj);
-                chomp(@proj);
-                my ($author,$assignee,$title) = WebObs::Events::headersplit($proj[0]);
-                my $EVTusers = join(", ",WebObs::Users::userName(@$author));
-                $author_ovl = "onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($EVTusers)."',CAPTION,'".js($__{'Project author'})."')\"" if ($EVTusers ne "");
-                my $EVTworker = join(", ",WebObs::Users::userName(@$assignee));
-                $assignee_ovl = "onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($EVTworker)."',CAPTION,'".js($__{'Project assigned to'})."')\"" if ($EVTworker ne "");
-                if ($title ne "") {
-                    shift(@proj);
-                    $titleProj = "<B>$title</B>";
-                }
-                $textProj = WebObs::Wiki::wiki2html(join("\n",@proj));
-                if ($usrProject eq "on") {
-                    $htmltr .= "<TD></TD><TD align=left>$titleProj<BR>$textProj</TD>"
-                              ."<TD align=center $author_ovl>@$author[0]</TD>"
-                              ."<TD align=center $assignee_ovl>@$assignee[0]</TD>\n";
-                } else {
-                    $htmltr .= "<TD text-align=left>"
-                              ."<IMG src=\"/icons/attention.gif\" onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($textProj)."',CAPTION,'$NODE{ALIAS}: $titleProj')\">"
-                              ."<IMG src=\"/icons/manager.png\" $author_ovl>";
-                    $htmltr .= "<IMG src=\"/icons/worker.png\" $assignee_ovl>" if ($EVTworker ne "");
-                    $htmltr .= "</TD>\n";
-                }
+            $htmltr .= "<TD align=center$rsp><A href=\"/cgi-bin/showNODE.pl?node=$grid.$NODEName#EVENTS\">".scalar(@interventions)."</A></TD>";
+            if (scalar(@listProj) == 0) {
+                $htmltr .= "<TD$rsp></TD><TD$rsp></TD><TD$rsp></TD>" if ($usrProject eq "on");
+                $htmltr .= "<TD$rsp></TD>\n";
             } else {
-                $htmltr .= "<TD></TD><TD></TD><TD></TD>" if ($usrProject eq "on");
-                $htmltr .= "<TD></TD>\n";
+                if ($usrProject eq "on") {
+                    $htmltr .= "<TD$rsp></TD>";
+                } else {
+                    $htmltr .= "<TD text-align=left$rsp>";
+                }
+                my $i = 0;
+                for my $fileProj (@listProj) {
+                    my $titleProj = "";
+                    my $textProj = "";
+                    my $author_ovl = "";
+                    my $assignee_ovl = "";
+                    my @proj = readFile($fileProj);
+                    @proj = grep(!/^$|^WebObs: /, @proj);
+                    chomp(@proj);
+                    my ($author,$assignee,$title) = WebObs::Events::headersplit($proj[0]);
+                    my $EVTusers = join(", ",WebObs::Users::userName(@$author));
+                    $author_ovl = "onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($EVTusers)."',CAPTION,'".js($__{'Project author'})."')\"" if ($EVTusers ne "");
+                    my $EVTworker = join(", ",WebObs::Users::userName(@$assignee));
+                    $assignee_ovl = "onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($EVTworker)."',CAPTION,'".js($__{'Project assigned to'})."')\"" if ($EVTworker ne "");
+                    if ($title ne "") {
+                        shift(@proj);
+                        $titleProj = "<B>$title</B>";
+                    }
+                    $textProj = WebObs::Wiki::wiki2html(join("\n",@proj));
+                    if ($usrProject eq "on") {
+                        my $txt = "<TD align=left>$titleProj<BR>$textProj</TD>"
+                                ."<TD align=center $author_ovl>@$author[0]</TD>"
+                                ."<TD align=center $assignee_ovl>@$assignee[0]</TD>\n";
+                        if ($i == 0) {
+                            $htmltr .= $txt;
+                        } else {
+                            $nextProj .= "<TR class=\"$tcolor\">$txt</TR>";
+                        }
+                    } else {
+                        $htmltr .= " <IMG src=\"/icons/attention.gif\" onMouseOut=\"nd()\" onMouseOver=\"overlib('".js($textProj)."',CAPTION,'$NODE{ALIAS}: $titleProj')\">"
+                                  ."<IMG src=\"/icons/manager.png\" $author_ovl>";
+                        $htmltr .= "<IMG src=\"/icons/worker.png\" $assignee_ovl>" if ($EVTworker ne "");
+                    }
+                    $i++;
+                }
+                $htmltr .= "</TD>\n" if ($usrProject ne "on");
             }
         }
 
         # Node's proc parameters
         $NODE{RAWFORMAT} //= "";
         if ($usrProcparam eq 'on') {
-            $htmltr .= "<TD></TD><TD align=\"center\"><SPAN class=\"code\">".(($NODE{"$grid.FID"} // "") ? $NODE{"$grid.FID"} : $NODE{FID})."</SPAN></TD>\n"
-              ."<TD align=\"center\">".(($NODE{"$grid.RAWFORMAT"} // "") ? $NODE{"$grid.RAWFORMAT"}
+            $htmltr .= "<TD$rsp></TD><TD align=\"center\"$rsp><SPAN class=\"code\">".(($NODE{"$grid.FID"} // "") ? $NODE{"$grid.FID"} : $NODE{FID})."</SPAN></TD>\n"
+              ."<TD align=\"center\"$rsp>".(($NODE{"$grid.RAWFORMAT"} // "") ? $NODE{"$grid.RAWFORMAT"}
                 : ($NODE{RAWFORMAT} ne "" ? $NODE{RAWFORMAT} : $GRID{RAWFORMAT}))."</TD>\n"
-              ."<TD align=\"center\">";
+              ."<TD align=\"center\"$rsp>";
             my %carCLB = readCLB("$grid.$NODEName");
             my $maxchid = ( sort { $carCLB{$a}{"nv"} <=> $carCLB{$b}{"nv"} } keys %carCLB )[-1] // "";
             $htmltr .= "<A href=\"/cgi-bin/$CLBS{CGI_FORM}?node=$grid.$NODEName\">".($carCLB{$maxchid}{"nv"} // "")."</A>";
@@ -811,11 +826,11 @@ for (@{$GRID{NODESLIST}}) {
         }
         if ($procOUTG) {
             my $urn = "/cgi-bin/showOUTG.pl?grid=PROC.$GRIDName";
-            $htmltr .= "<TD></TD>";
+            $htmltr .= "<TD$rsp></TD>";
             if ($procOUTG eq "events") {
-                $htmltr .= "<TD align=\"center\"><A href=\"$urn&amp;ts=events&amp;g=*/*/*/$NODEName\"><B><IMG src=\"/icons/visu.png\"></B></A></TD>\n";
+                $htmltr .= "<TD align=\"center\"$rsp><A href=\"$urn&amp;ts=events&amp;g=*/*/*/$NODEName\"><B><IMG src=\"/icons/visu.png\"></B></A></TD>\n";
             } else {
-                $htmltr .= join('',map {$_ = "<TD align=\"center\">".( -e "$WEBOBS{ROOT_OUTG}/$grid/$WEBOBS{PATH_OUTG_GRAPHS}/".lc($NODEName)."_$_.png" ? "<A href=\"$urn&amp;ts=$_&amp;g=".lc($NODEName)."\"><B><IMG src=\"/icons/visu.png\"></B></A>":"" )."</TD>"} split(/,/,$GRID{TIMESCALELIST}))."\n";
+                $htmltr .= join('',map {$_ = "<TD align=\"center\"$rsp>".( -e "$WEBOBS{ROOT_OUTG}/$grid/$WEBOBS{PATH_OUTG_GRAPHS}/".lc($NODEName)."_$_.png" ? "<A href=\"$urn&amp;ts=$_&amp;g=".lc($NODEName)."\"><B><IMG src=\"/icons/visu.png\"></B></A>":"" )."</TD>"} split(/,/,$GRID{TIMESCALELIST}))."\n";
             }
         }
 
@@ -847,15 +862,15 @@ for (@{$GRID{NODESLIST}}) {
 
                 # $stState->[3..5] (Date, Time and TZ of last measurement)
                 # Display
-                $htmltr .= "<TD></TD><TD align=\"center\" nowrap>".substr($stState->[3],0,16)."</TD>\n"; # Datetime of last data (limited to minute)
+                $htmltr .= "<TD$rsp></TD><TD align=\"center\" nowrap$rsp>".substr($stState->[3],0,16)."</TD>\n"; # Datetime of last data (limited to minute)
                 if ($NODE{END_DATE} eq "NA" || $NODE{END_DATE} ge $today) {
-                    $htmltr .= "<TD  align=\"center\" class=\"$bgcolA\"><B>$stState->[2]</B></TD>"
-                      ."<TD  align=\"center\" class=\"$bgcolEt\"><B>$stState->[1]</B></TD>";
+                    $htmltr .= "<TD  align=\"center\" class=\"$bgcolA\"$rsp><B>$stState->[2]</B></TD>"
+                      ."<TD  align=\"center\" class=\"$bgcolEt\"$rsp><B>$stState->[1]</B></TD>";
                 } else {
-                    $htmltr .= "<TD align=\"center\" colspan=\"2\"><I>$__{'Stopped'}</I></TD>";
+                    $htmltr .= "<TD align=\"center\" colspan=\"2\"$rsp><I>$__{'Stopped'}</I></TD>";
                 }
             } else {
-                $htmltr .= "<TD colspan=\"4\"> </TD>";
+                $htmltr .= "<TD colspan=\"4\"$rsp> </TD>";
             }
         }
 
@@ -881,9 +896,9 @@ for (@{$GRID{NODESLIST}}) {
             my $lastdelay = $NODE{"$GRIDType.$GRIDName.LAST_DELAY"};
             my $acqrate = $NODE{"$GRIDType.$GRIDName.ACQ_RATE"};
 
-            $htmltr .= "<TD></TD><TD align=\"center\"><A href=\"/cgi-bin/showGENFORM.pl?form=$GRIDName&node=$NODEName\" title=\"$__{'Access to form data'} ($NODE{ALIAS})\"><IMG src=\"/icons/form.png\"></A></TD>";
-            $htmltr .= "<TD align=\"center\">$nbRec</TD>";
-            $htmltr .= "<TD align=\"center\">$lastRec</TD>";
+            $htmltr .= "<TD$rsp></TD><TD align=\"center\"$rsp><A href=\"/cgi-bin/showGENFORM.pl?form=$GRIDName&node=$NODEName\" title=\"$__{'Access to form data'} ($NODE{ALIAS})\"><IMG src=\"/icons/form.png\"></A></TD>";
+            $htmltr .= "<TD align=\"center\"$rsp>$nbRec</TD>";
+            $htmltr .= "<TD align=\"center\"$rsp>$lastRec</TD>";
 
             if ($lastdelay ne "" && $acqrate ne "") {
                 my $now = strftime('%Y-%m-%d %H:%M:%S',localtime(time));
@@ -917,17 +932,18 @@ for (@{$GRID{NODESLIST}}) {
 
                 # Display
                 if ($NODE{END_DATE} eq "NA" || $NODE{END_DATE} ge $today) {
-                    $htmltr .= "<TD  align=\"center\" class=\"$bgcolA\"><B>$stAcqRate</B></TD>"
-                      ."<TD  align=\"center\" class=\"$bgcolEt\"><B>$stLastData</B></TD>";
+                    $htmltr .= "<TD  align=\"center\" class=\"$bgcolA\"$rsp><B>$stAcqRate</B></TD>"
+                      ."<TD  align=\"center\" class=\"$bgcolEt\"$rsp><B>$stLastData</B></TD>";
                 } else {
-                    $htmltr .= "<TD align=\"center\" colspan=\"2\"><I>$__{'Stopped'}</I></TD>";
+                    $htmltr .= "<TD align=\"center\" colspan=\"2\"$rsp><I>$__{'Stopped'}</I></TD>";
                 }
             } else {
-                $htmltr .= "<TD colspan=\"2\"> </TD>";
+                $htmltr .= "<TD colspan=\"2\"$rsp> </TD>";
             }
 
         }
         $htmltr .= "</TR>\n".(!$displayNode ? "-->":"");
+        $htmltr .= "$nextProj\n" if ($nextProj ne "");
         push(@htmlNodeLines,$htmltr);
     }
 }

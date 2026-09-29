@@ -114,21 +114,21 @@ my $me = $ENV{SCRIPT_NAME};
 my $GazetteWhat = (defined($WEBOBS{EVENTS_TO_GAZETTE})) ? $WEBOBS{EVENTS_TO_GAZETTE} : "ALL";
 $GazetteWhat = "NONE" if ($GazetteWhat eq "LEVEL1");  # legacy "LEVEL1" now means "NONE"
 my $GazetteDel  = (defined($WEBOBS{EVENTS_GAZETTE_DELETE})) ? $WEBOBS{EVENTS_GAZETTE_DELETE} : "YES";
-my $isProject = 0;
 my $QryParm   = $cgi->Vars;
 
 my $action      = $QryParm->{'action'} // "";
 my $notify      = $QryParm->{'notify'} // "";
 my $object      = $QryParm->{'object'} // "";
 my ($GRIDType, $GRIDName, $NODEName, $evbase, $evtrash) = WebObs::Events::struct(trim($object));
+my $type        = $QryParm->{'type'} // "";
 my $evpath      = $QryParm->{'event'}  // "";
 my $mvnode      = $QryParm->{'mvnode'} // "";
 my $delproj     = $QryParm->{'delproj'} // "";
 my $s2g         = 0;
 my $send2Gazette = $QryParm->{'s2g'} // 0;
 my $titre       = $QryParm->{'titre'} // "";
-my @oper        = $cgi->param('oper');
-my @roper       = $cgi->param('roper');
+my @oper        = $QryParm->{'oper'};
+my @roper       = $QryParm->{'roper'};
 my $contents    = $QryParm->{'contents'} // "";
 my $date        = $QryParm->{'date'} // "";
 my $time        = $QryParm->{'time'} // "";
@@ -140,24 +140,32 @@ my $outcome     = $QryParm->{'outcome'} // "0";
 my $notebook    = $QryParm->{'notebook'} // "000";
 my $notebookfwd = $QryParm->{'notebookfwd'} // "0";
 my $metain      = $QryParm->{'meta'} // "";     # add MMD
-my $conv        = $cgi->param('conv')  // "0";  # add MMD
-my $return_url  = $cgi->param('return_url');
+my $conv        = $QryParm->{'conv'} // "0";  # add MMD
+my $return_url  = $QryParm->{'return_url'};
 
 $contents = "$metain$contents";            # add MMD
 my $meta = "";                                  # add MMD
 my $mmd = isok($WEBOBS{WIKI_MMD}) // 1;    # add MMD
 my $target = "";
 my $tz = "";
+my $isProject = (!$delproj && ($type eq "project" || $evpath =~ /$NODEName\_Projet.txt/));
 
 if ($action =~ /^upd|p2e|new|del|save$/i) {
     if (defined($GRIDType)) {
-        $isProject = (!$delproj && $evpath =~ /$NODEName\_Projet.txt/);
         if (clientHasEdit(type=>"auth".lc($GRIDType)."s",name=>"$GRIDName")) {
-            if ( $isProject && basename($evpath) ne $evpath ) { die $__{'invalid project name'} }
             if ( $action =~ /upd|del/i && $evpath !~ /.*\.txt$/i) { die "\"$evpath\" $__{'invalid for action'} $action" }
             if ( $action =~ /upd|del/i && !-f "$evbase/$evpath") { die "\"$evpath\" $__{'not found'}" }
             if ( $action =~ /p2e/i && !$isProject ) { die "\"$evpath\" $__{'invalid for action'} $action" } # p2e is for project only
-            if ( $action =~ /new/i && -f "$evbase/$evpath" ) { $action = 'upd' } # new on existing: force upd !
+            if ( $action =~ /new/i && !$isProject && -f "$evbase/$evpath" ) { $action = 'upd' } # new on existing: force upd !
+            if ( $action =~ /new/i && $isProject ) {
+                # creates a new project name (ignores evpath if given)
+                $evpath = $NODEName."_Project.txt";
+                my $i = 1;
+                while ( -f "$evbase/$evpath" ) {
+                    $i++;
+                    $evpath =~ s/Project\.*.txt/Project$i.txt/;
+                }
+            }
         } else {
             die "$__{'Not authorized'}";
         }
@@ -642,7 +650,7 @@ print "<!-- overLIB (c) Erik Bosrup -->
 print "<A NAME=\"MYTOP\"></A>";
 print "\n<H2>$objectfullname</H2>\n<H3>$pagetitle";
 print "<br><small>$parents</small>" if ($parents ne "");
-print " <A href=\"#\" onClick=\"deleteProject();\" title=\"$__{'Delete this project'}\"><IMG src=\"/icons/no.png\"></A>" if ($isProject);
+print " <A href=\"#\" onClick=\"deleteProject();\" title=\"$__{'Delete this project'}\"><IMG src=\"/icons/no.png\"></A>" if ($isProject && $action !~ /new/i);
 print "</H3>\n";
 print "<FORM name=\"theform\" id=\"theform\" action=\"\">";
 print "<TABLE><TR>";
@@ -798,6 +806,7 @@ if ($action !~ /p2e/i) {
 print "<input type=\"hidden\" name=\"action\" value=\"save\">";
 print "<input type=\"hidden\" name=\"object\" value=\"$object\">";
 print "<input type=\"hidden\" name=\"event\" value=\"$evpath\">";
+print "<input type=\"hidden\" name=\"type\" value=\"$type\">";
 print "<input type=\"hidden\" name=\"s2g\" value=\"0\">";
 print "<input type=\"hidden\" name=\"conv\" value=\"0\">";
 print "<input type=\"hidden\" name=\"meta\" value=\"$meta\">\n";
