@@ -169,10 +169,13 @@ for (@groups) {
 # adds optional additionnal menu for USER
 push(@menu, readCfgFile("$WEBOBS{ROOT_CONF}/MENUS/$USERS{$CLIENT}{UID}","utf8"));
 
+# filters admin links (lines starting with *)
 @menu = grep { $_ !~ /^\*/ } @menu if (! $admOK);
 for(@menu) {
     s/^\*//;
-    s/[\$]WEBOBS[\{](.*?)[\}]/$WEBOBS{$1}/g ;
+    s/[\$]WEBOBS[\{](.*?)[\}]/$WEBOBS{$1}/g; # substitutes $WEBOBS{} variables
+    s/[\$]CLIENT/$CLIENT/g; # substitutes $CLIENT
+    # external links icon
     my $xtrn = ($_ =~ m/http.?:\/\//) ? " class=\"externe\" ": "";
     s/<a/<a$xtrn/g;
 }
