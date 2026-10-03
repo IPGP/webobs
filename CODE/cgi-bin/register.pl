@@ -116,7 +116,7 @@ if ($action eq "reg") {
 
     # Password: only letters & allowed special chars
     my $passwd = checkParam(decode("utf-8", scalar($cgi->param('pass'))),
-        qr/^[\p{Letter}\d-!\?=_#%@\/()_=&*+,.:;^{}~\$]*$/, 'pass') // '';
+        qr/^[\p{Letter}\d\-!\?=_#%@\/()_=&*+,.:;^{}~\$]*$/, 'pass') // '';
 
     # Email address: most chars that are allowed in specs (minus a few)
     my $mailaddr = checkParam($cgi->param('mail'),
