@@ -32,7 +32,7 @@ function M=invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,opt)
 %
 %	Author: François Beauducel
 %	Created: 2010 in Paris (France)
-%	Updated: 2026-08-31
+%	Updated: 2026-10-06
 
 sz = size(xx);
 nn = length(xsta);
@@ -190,7 +190,7 @@ for m = 1:opt.multi
 		d(:,3) = d(:,3) - uzb;
 	end
     % rejects the secondary source if not improve misfit: set model displacements to 0 and parameters to NaN
-	if m > 1 && M(m).m0 > M(m-1).m0
+	if m > 1 && M(m).m0 > M(m-1).m0*(1-opt.multithreshold/100)
         M(m).mm(:) = 0;
         M(m).ux(:) = 0;
         M(m).uy(:) = 0;

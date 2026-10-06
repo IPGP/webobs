@@ -353,6 +353,8 @@ MODELLING_SOURCE_TYPE|isotropic
 MODELLING_NU|0.25
 # sets 2 to model the residuals with a secondary source (EXPERIMENTAL)
 MODELLING_MULTIPLE_SOURCES|1
+# threshold on misfit reduction (in percent) to accept secondary source
+MODELLING_MULTIPLE_SOURCES_MISFIT_THRESHOLD_PERCENT|10
 # misfit norm calculation: 'L1' (default) or 'L2'
 MODELLING_MISFITNORM|L1
 # a priori source depth, gaussian STD (both in m), empty = no apriori

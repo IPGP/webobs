@@ -295,6 +295,7 @@ modelopt.apriori_horizontal = field2num(P,'MODELLING_APRIORI_HSTD_KM');
 modelopt.msig = field2num(P,'MODELLING_SIGMAS',1);
 modelopt.misfitnorm = field2str(P,'MODELLING_MISFITNORM','L1');
 modelopt.multi = field2num(P,'MODELLING_MULTIPLE_SOURCES',1,'notempty');
+modelopt.multithreshold = field2num(P,'MODELLING_MULTIPLE_SOURCES_MISFIT_THRESHOLD_PERCENT',10,'notempty');
 modelopt.nu = field2num(P,'MODELLING_NU',0.25);
 
 % MODELLING pCDM parameters (see invpcdm.m and PROC.GNSS template)
