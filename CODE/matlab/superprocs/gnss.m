@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel, Pierre Sakic / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-09-22
+%   Updated: 2026-10-12
 
 WO = readcfg;
 
@@ -759,11 +759,11 @@ for r = 1:numel(P.GTABLE)
 		% former behavior: will plot all possible pairs combinations,
 		% eventually using only specific reference stations
 		if isempty(B)
-			kn = selectnode(N,tlim,baselines_excluded,baselines_included,[targetll,baselines_excluded_target]);
+			kn = selectnode(N,tlim,baselines_excluded,baselines_included,[targetll,baselines_excluded_target])';
 			if isfield(P,'BASELINES_REF_NODELIST') && ~isempty(P.BASELINES_REF_NODELIST)
 				kr = kn(ismemberlist({N(kn).FID},split(P.BASELINES_REF_NODELIST,',')));
 			else
-				kr = 1:numel(N);
+				kr = kn;
 			end
 			for nn = 1:numel(kr)
 				B(nn).kr = kr(nn);
@@ -1173,7 +1173,7 @@ for r = 1:numel(P.GTABLE)
         for n = 1:length(B)
             a = B(n).a;
             b = B(n).b;
-            if isscalar(strainmap_linewidth) || isnan(B(n).def) || isscalar(absdef)
+            if isscalar(strainmap_linewidth) || isnan(B(n).def) || numel(absdef(~isnan(absdef))) < 2
                 lw = strainmap_linewidth(end);
             else
                 lw = (abs(B(n).def)-min(absdef))*diff(strainmap_linewidth)/diff(minmax(absdef)) + strainmap_linewidth(1);
@@ -1263,7 +1263,7 @@ for r = 1:numel(P.GTABLE)
             end
         end
 
-        plottable(bstab,[.1,.3,.5,.7,.9],[.85,.85/length(B)],'ccccc',bscol,'FontSize',strainmap_table_fontsize)
+        plottable(bstab,[.1,.3,.5,.7,.9],[.85,.85/(length(B)+1)],'ccccc',bscol,'FontSize',strainmap_table_fontsize)
         set(gca,'YLim',[0,1])
         axis off
 
