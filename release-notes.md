@@ -10,8 +10,29 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 If you have any question which is not answered in the user manual, do not hesitate to write to developpers through the mailing list [webobs-devs@services.cnrs.fr](mailto:webobs-devs@services.cnrs.fr), or start a public discussion thread at [github.com/IPGP/webobs/discussions](https://github.com/IPGP/webobs/discussions).
 
-## v2.8.3a  (August 2026)
+## v2.9 (Octobre 2026)
+### New features
 
+1. **Gridmaps request**: a new form allows requests of grid maps, from a selection of grids (view, proc, form, or sefran), to produce maps of nodes, or a single merged map showing all nodes with different markers, colors, etc. The form included a date interval to filter the nodes from their start/end validity dates.
+
+1. **FORMS** have a data completion indicator (number of not empty inputs) for each record, and each column of the data table can be sorted.
+
+1. **GRIDS and NODES** can have multiple projects. A project is now a specific event associated to a creation date, a single author, and a single assignee. Projects appear in the grid node table and can be used as a filter to display only nodes with project. A project can be edited or closed; in that case it is converted to a normal dated event where the assignee becomes one of the operators.
+
+1. **GNSS superproc**: summary graph BASELINES is able to plot automatic side maps of baselines over topography. New keys are:
+```
+BASELINES_MAPS|right
+BASELINES_MAPS_LIMITS|ref
+BASELINES_DEM_OPT|'fontsize',0,'borderwidth',.5,'watermark',1.5,'interp','saturation',0,'hlegend'
+```
+where `BASELINES_MAPS` sets the location (right or bottom), `BASELINES_MAPS_LIMITS` can be fixed bounding box as 'LON1,LAT1,WID1;LON2,LAT2,WID2;...' triples (fixed longitude,latitude center and width), or 'all' (automatic for all baselines), or 'ref' (automatic per reference, the default), and `BASELINES_DEM_OPT` for the basemap DEM options.
+
+### Fixed issues
+1. Fix issues in FORMS.
+1. Fix issues in gnss superprocs.
+1. Postboard cannot send email anymore to invalid users. 
+
+## v2.8.3b  (August 2026)
 ### New features
 1. **New grids FORM**: manual databases (formerly dedicated forms) are now fully integrated as a grid type along with PROCs and VIEWs. A FORM is then associated to a DOMAIN and some NODES, appears in the GRIDs table and has its own page with description, nodes table list, map location, and events. FORM is based on the new GENFORM user-defined manual database tool (introduced in the previous release): a freely configurazble SQLite database managed through a GUI form (for entering new data, editing and deleting), a table data display with options and filters, data export as CSV file or as raw data source for PROCs. Creating a FORM becomes as simple as creating a PROC or VIEW, by selecting a template (a dozen are available), if necessary modifying it partially or completely, associating a DOMAIN, associating or creating NODES, and editing the configuration file to set the database structure (inputs and outputs) and the form layout. GENFORM is able to store numerical values, checkboxes, lists, text strings, images, and mathematical output formulas. It aims to replace spreadsheets files for (potentially) any structured scientific data. See the user manual for more details.
 
