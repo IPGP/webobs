@@ -2513,6 +2513,7 @@ for r = 1:numel(P.GTABLE)
 		end
 
 		mtlabel = cell(1,numel(modeltime_period));
+        clear M
 		for m = 1:numel(modeltime_period)
 			mtp = modeltime_period(m);
 			if mtp > 0
@@ -2671,9 +2672,11 @@ for r = 1:numel(P.GTABLE)
 		hold on
 		for m = 1:numel(M)
 			col = scolor(m);
-			errorbar(M(m).t,M(m).d(:,4)/vfactor,M(m).e(:,4)/vfactor,'-','LineWidth',P.GTABLE(r).LINEWIDTH/3,'Color',col/3 + 2/3)
-			%errorarea(M(m).t,M(m).d(:,4)/vfactor,M(m).e(:,4)/vfactor,col);
-			plotorbit(M(m).t,M(m).d(:,4)/vfactor,M(m).o,modeltime_linestyle,P.GTABLE(r).LINEWIDTH,P.GTABLE(r).MARKERSIZE,col)
+            if ~isempty(M(m).t)
+                errorbar(M(m).t,M(m).d(:,4)/vfactor,M(m).e(:,4)/vfactor,'-','LineWidth',P.GTABLE(r).LINEWIDTH/3,'Color',col/3 + 2/3)
+                %errorarea(M(m).t,M(m).d(:,4)/vfactor,M(m).e(:,4)/vfactor,col);
+                plotorbit(M(m).t,M(m).d(:,4)/vfactor,M(m).o,modeltime_linestyle,P.GTABLE(r).LINEWIDTH,P.GTABLE(r).MARKERSIZE,col)
+            end
 		end
 		hold off
 		if numel(modeltime_flim)==2
