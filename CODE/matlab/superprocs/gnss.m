@@ -1625,7 +1625,7 @@ for r = 1:numel(P.GTABLE)
 		for nn = 1:numel(knv)
 			n = knv(nn);
 			k = isinto(D(n).t,tlim);
-			if sum(k) > 1
+			if sum(k) > motion_filter
 				X(nn).t = D(n).t(k);
 				X(nn).d = mavr(rf(D(n).d(k,5:7)),motion_filter);
 			else
@@ -2655,7 +2655,7 @@ for r = 1:numel(P.GTABLE)
 
 		% adjusts unit
 		vmaxs = max(abs(cat(1,M.vmax)));
-		if isfinite(vmaxs) && vmaxs > 0.5e6
+		if all(isfinite(vmaxs)) && any(vmaxs > 0.5e6)
 			vfactor = 1e6;
 			vunit = ['M',vunit];
 		else
