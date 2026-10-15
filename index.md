@@ -195,7 +195,7 @@ Your WebObs installation is now linked to the GitHub repository.
 - new gridmaps request form to make merged grid maps;
 - multiple projects, closing project make events, and improved display in nodes and grids;
 - data completion indicator and sorted columns in forms;
-- improved gnss baselines plots;
+- improved gnss baselines plots and new VFLOW summary graph (dynamic vectors map);
 - minor to moderate fixes.
 
 ### What's new in the 2.8?

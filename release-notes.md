@@ -19,13 +19,29 @@ If you have any question which is not answered in the user manual, do not hesita
 
 1. **GRIDS and NODES** can have multiple projects. A project is now a specific event associated to a creation date, a single author, and a single assignee. Projects appear in the grid node table and can be used as a filter to display only nodes with project. A project can be edited or closed; in that case it is converted to a normal dated event where the assignee becomes one of the operators.
 
-1. **GNSS superproc**: summary graph BASELINES is able to plot automatic side maps of baselines over topography. New keys are:
-```
-BASELINES_MAPS|right
-BASELINES_MAPS_LIMITS|ref
-BASELINES_DEM_OPT|'fontsize',0,'borderwidth',.5,'watermark',1.5,'interp','saturation',0,'hlegend'
-```
-where `BASELINES_MAPS` sets the location (right or bottom), `BASELINES_MAPS_LIMITS` can be fixed bounding box as 'LON1,LAT1,WID1;LON2,LAT2,WID2;...' triples (fixed longitude,latitude center and width), or 'all' (automatic for all baselines), or 'ref' (automatic per reference, the default), and `BASELINES_DEM_OPT` for the basemap DEM options.
+1. **GNSS superproc**:
+    1. Summary graph BASELINES is able to plot automatic side maps of baselines over topography. New keys are:
+    ```
+    BASELINES_MAPS|right
+    BASELINES_MAPS_LIMITS|ref
+    BASELINES_DEM_OPT|'fontsize',0,'borderwidth',.5,'watermark',1.5,'interp','saturation',0,'hlegend'
+    ```
+    where `BASELINES_MAPS` sets the location (right or bottom), `BASELINES_MAPS_LIMITS` can be fixed bounding box as 'LON1,LAT1,WID1;LON2,LAT2,WID2;...' triples (fixed longitude,latitude center and width), or 'all' (automatic for all baselines), or 'ref' (automatic per reference, the default), and `BASELINES_DEM_OPT` for the basemap DEM options.
+
+    2. New summary graph VFLOW, which proposes dynamic javascript map of velocity vectors on sliding time windows. New keys are:
+    ```
+    VFLOW_TITLE|Displacement vector flows ($timescale)
+    VFLOW_PERIOD_DAY|30,15
+    VFLOW_SAMPLING_DAY|1
+    VFLOW_SCALE_FACTOR|10000
+    VFLOW_HORIZONTAL_COLOR|red
+    VFLOW_VERTICAL_COLOR|green
+    VFLOW_TILES|https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
+    VFLOW_TILES_SOURCES|OpenStreetMap contributors
+    ```
+### Enhancements and modifications
+1. **gridmaps** is now optimized: the map will be updated only if necessary (modification in any grid/node configuration, add/remove nodes). Now the default hourly scheduler job (3600) do not lead to loss of performance.
+1. **scheduler** Matlab job's log are now using systematic timestamp and function stack names.
 
 ### Fixed issues
 1. Fix issues in FORMS.
