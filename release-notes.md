@@ -10,7 +10,9 @@ Sections with `!!` prefix must be carefully read in case of upgrade. It usually 
 
 If you have any question which is not answered in the user manual, do not hesitate to write to developpers through the mailing list [webobs-devs@services.cnrs.fr](mailto:webobs-devs@services.cnrs.fr), or start a public discussion thread at [github.com/IPGP/webobs/discussions](https://github.com/IPGP/webobs/discussions).
 
-## v2.9 (Octobre 2026)
+## v2.9.0 (October 2026)
+`!!` **PROCS**: need to edit **WEBOBS.rc** to change `PATH_MCC` key to `${ROOT_CODE}/bin/linux-64` value, since former symbolic link has been removed. The scheduler must be restarted to activate the change.
+
 ### New features
 
 1. **Gridmaps request**: a new form allows requests of grid maps, from a selection of grids (view, proc, form, or sefran), to produce maps of nodes, or a single merged map showing all nodes with different markers, colors, etc. The form included a date interval to filter the nodes from their start/end validity dates.
@@ -45,7 +47,7 @@ If you have any question which is not answered in the user manual, do not hesita
 1. **scheduler** Matlab job's log are now using systematic timestamp and function stack names.
 
 ### Fixed issues
-1. Fix issues in FORMS.
+1. Fix issues in FORMS formula.
 1. Fix issues in gnss superprocs.
 1. Postboard cannot send email anymore to invalid users. 
 
