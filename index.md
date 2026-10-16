@@ -18,9 +18,9 @@ We also provide a ready-to-use Docker image and docker-compose setup to deploy W
 <a name="latest"></a>
 ## Download the latest release
 
-- [WebObs-2.9.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.9/WebObs-2.9.tar.gz) (104 Mb) updated October 11, 2026
-- [Release notes](https://github.com/IPGP/webobs/blob/v2.9/release-notes.md) (see also the [What's new?](#whatsnew) section below)
-- [User manual](https://github.com/IPGP/webobs/releases/download/v2.9/WebObs_Manual.pdf) (in progress)
+- [WebObs-2.9.0.tar.gz](https://github.com/IPGP/webobs/releases/download/v2.9/WebObs-2.9.0.tar.gz) (104 Mb) updated October 17, 2026
+- [Release notes](https://github.com/IPGP/webobs/blob/v2.9.0/release-notes.md) (see also the [What's new?](#whatsnew) section below)
+- [User manual](https://github.com/IPGP/webobs/releases/download/v2.9.0/WebObs_Manual.pdf) (in progress)
 - And, for a first install:
   - Mandatory (license free): **Matlab runtime** for [Linux 64bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip) (386 Mb) or [Linux 32bit](http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnx86_installer.zip) (389 Mb)
   - Recommanded: **ETOPO1** (see [below](#srtm1) for download and install)

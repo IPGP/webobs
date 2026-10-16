@@ -40,7 +40,7 @@ function gridmaps(grids,outd,varargin)
 %
 %   Author: F. Beauducel, C. Brunet, WEBOBS/IPGP
 %   Created: 2013-09-13 in Paris, France
-%   Updated: 2026-09-11
+%   Updated: 2026-10-17
 
 
 WO = readcfg;
@@ -502,7 +502,7 @@ for g = 1:length(grids)
 
 				ftmp = sprintf('%s/%s',ptmp,fimg);
 				print(gcf,'-depsc','-loose','-painters',sprintf('%s.eps',ftmp));
-				wosystem(sprintf('%s %s.eps %s -density %dx%d %s.png',WO.PRGM_CONVERT,ftmp,convertopt,dpi,dpi,ftmp));
+				wosystem(sprintf('%s %s -density %dx%d %s.eps %s.png',WO.PRGM_CONVERT,convertopt,dpi,dpi,ftmp,ftmp));
 				wosystem(sprintf('%s %s.png -scale x%g %s.jpg',WO.PRGM_CONVERT,ftmp,thumbnailheight,ftmp));
 
 				IM = imfinfo(sprintf('%s.png',ftmp));
