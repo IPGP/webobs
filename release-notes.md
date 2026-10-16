@@ -41,6 +41,7 @@ If you have any question which is not answered in the user manual, do not hesita
     ```
 ### Enhancements and modifications
 1. **gridmaps** is now optimized: the map will be updated only if necessary (modification in any grid/node configuration, add/remove nodes). Now the default hourly scheduler job (3600) do not lead to loss of performance.
+1. **grids**: table of grids show grid map thumbnails of each grids. Columns of node list table can be sorted.
 1. **scheduler** Matlab job's log are now using systematic timestamp and function stack names.
 
 ### Fixed issues
