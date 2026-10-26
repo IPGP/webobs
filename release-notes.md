@@ -30,7 +30,7 @@ If you have any question which is not answered in the user manual, do not hesita
     ```
     where `BASELINES_MAPS` sets the location (right or bottom), `BASELINES_MAPS_LIMITS` can be fixed bounding box as 'LON1,LAT1,WID1;LON2,LAT2,WID2;...' triples (fixed longitude,latitude center and width), or 'all' (automatic for all baselines), or 'ref' (automatic per reference, the default), and `BASELINES_DEM_OPT` for the basemap DEM options.
 
-    2. New summary graph VFLOW, which proposes dynamic javascript map of velocity vectors on sliding time windows. New keys are:
+    2. New summary graph VFLOW, which proposes dynamic javascript map of velocity vectors on sliding time windows. This is a development work made by Nicolas Zito, Clément Monat, and Bastien Doré from ENSG engineering school (see their [original code](https://github.com/Nicolas-zt/PDI_17). New keys are:
     ```
     VFLOW_TITLE|Displacement vector flows ($timescale)
     VFLOW_PERIOD_DAY|30,15

@@ -195,7 +195,7 @@ Your WebObs installation is now linked to the GitHub repository.
 - new gridmaps request form to make merged grid maps;
 - multiple projects, closing project make events, and improved display in nodes and grids;
 - data completion indicator and sorted columns in forms;
-- improved gnss baselines plots and new VFLOW summary graph (dynamic vectors map);
+- improved gnss BASELINES plots and new VFLOW summary graph (dynamic vectors map, thanks to N. Zito, C. Monat, B. Doré);
 - minor to moderate fixes.
 
 ### What's new in the 2.8?
@@ -204,7 +204,7 @@ Your WebObs installation is now linked to the GitHub repository.
 - generic form for manual database management is now operational with automatic migration of former forms;
 - first version of Python library with demonstration proc (genplot) and integration of Downflowgo tool;
 - geojson shapefiles can be associated to nodes and grids;
-- new summary plots STRAINMAP and VFLOW an many other improvements for gnss procs;
+- new summary plots STRAINMAP and many other improvements for gnss procs;
 - rsam procs now deal with multiple data channels (e.g., different frequency bands for SSAM)
 - configurable headers fo proc data exports;
 - improvements and new features in MC3/SEFRAN3;
@@ -398,6 +398,7 @@ le système hydrothermal, *Doctorate Thesis, Université Paris Diderot, October 
 1. Firode, L., Duputel, Z., Ferrazzini, V., & Lengliné, O. (2024). Seismicity under a dormant volcano: unveiling active crustal faulting beneath Piton des Neiges, La Réunion. Bulletin of the Seismological Society of America, 114(3), 1626-1638.
 1. Auclair, S., Nachbaur, A., Gehl, P., Legendre, Y., & Vittecoq, B. (2024). Co-defining a user-based desirable future for seismic alert systems with stakeholders: application to Martinique, French West Indies. International Journal of Disaster Risk Reduction, 104932.
 1. Rimpot, J., Hibert, C., Retailleau, L., Saurel, J. M., Malet, J. P., Forestier, G., ... & Pelleau, P. (2025). Self-supervised learning of seismological data reveals new eruptive sequences at the Mayotte submarine volcano. Geophysical Journal International, 240(1), 1-12.
+1. Dye, B. C., & Morra, G. (2026). Machine learning detection of small Strombolian eruptions in noisy multi-temporal infrared images: Toward continuous monitoring. *PNAS Nexus*, pgag359.
 
 #### Deformation
 1.  Beauducel F. et al. (2014). Real-time source deformation modeling through GNSS permanent stations at Merapi volcano (Indonesia). *In AGU Fall Meeting Abstracts* Vol. 2014, pp. V41B-4800.
@@ -422,7 +423,11 @@ le système hydrothermal, *Doctorate Thesis, Université Paris Diderot, October 
 1. Pinel, V., & Albino, F. (2025). Monitoring Volcanoes Deformation Based on Synthetic Aperture Radar (SAR) Data. In Modern Volcano Monitoring (pp. 33-59). Cham: Springer Nature Switzerland.
 1. Sakic, P., Boissier, P., Saurel, J. M., Deroussi, S., Andrieu, A., Griot, C., ... & de Chabalier, J. B. (2025). Modernizing GNSS Data Acquisition, Pre-Processing, and Distribution at Volcanological Observatories. EGUsphere, 2025, 1-34.
 1. Tsironi, V., Goutsos, G., & Mintourakis, I. (2025). Geodetic monitoring of the 2024-2025 Santorini volcanic unrest using GNSS and InSAR data: preliminary results. Bulletin of the Geological Society of Greece.
-
+1. Pantobe, L., Chanard, K., Burtin, A., Sakic, P., & Komorowski, J.‐C. (2026). Integrating GNSS and hydrological data to understand seasonal microseismicity at La
+Soufrière de Guadeloupe. Journal of Geophysical Research:SolidEarth, 131, e2025JB033078. [10.1029/2025JB033078](https://doi.org/10.1029/2025JB033078)
+1. Sakic, P., Boissier, P., Saurel, J. M., Deroussi, S., Andrieu, A., Griot, C., ... & Teams, OVSM (2026). Modernizing GNSS data acquisition, pre-processing, and distribution at volcanological observatories. Geoscientific Instrumentation, *Methods and Data Systems*, 15(1), 89-106.
+1. Nougaret, M., Le Losq, C., Retailleau, L., & Peltier, A. (2026). Geophysical time series forecasting at the Piton de la Fournaise volcano by machine learning. Comptes Rendus. *Géoscience*, 358(G1), 283-307.
+1. Mendieta, A., Rosas-Carbajal, M., Jessop, D. E., Komorowski, J. C., Deroussi, S., Vlastelic, I., ... & Heap, M. J. (2026). Geophysics-assisted imaging of shallow gas pockets and hydrothermal alteration at the summit of La Soufrière de Guadeloupe (Eastern Caribbean). *Bulletin of Volcanology*, 88(5), 48.
 
 
 #### Critical Zone
