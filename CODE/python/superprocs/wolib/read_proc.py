@@ -11,29 +11,13 @@ from wolib.config import WEBOBS
 from wolib.config import read_config
 from wolib.grids import Grid
 from wolib.grids import Node
+from wolib.readers import read_campbell
 from wolib.readers import read_dsv
 from wolib.readers import read_miniseed
 from wolib.utils import get_timescale
 from wolib.utils import str_to_date
-from wolib.utils import str_to_float
 from wolib.utils import str_to_timestamp
 from wolib.utils import update_db_status
-
-
-def timestamps(start_timestamp, npts, sampling_rate):
-    return np.arange(npts) / sampling_rate + start_timestamp
-
-
-def stream_to_array(st):
-    for tr in st:
-        if np.ma.is_masked(tr):
-            tr.data = tr.data.filled(np.nan)
-    data = np.array([tr.data for tr in st])
-    data = np.transpose(data)
-    sr = st[0].stats.sampling_rate
-    time = timestamps(st[0].stats.starttime.timestamp, data.shape[0], sr)
-    error = np.ones(shape=data.shape)
-    return [time, data, error]
 
 
 def set_status(proc):
@@ -41,6 +25,8 @@ def set_status(proc):
     for node in proc.nodes:
         node.k1 = None
         node.ke = None
+        node.samp = None
+        node.last = None
         k = np.empty(0)
 
         # last: status of the station, checking whether the channels have at least
@@ -87,32 +73,6 @@ def set_status(proc):
         node.k = k
         node.tlim = [tlim1, tlim2]
         update_db_status(proc, node.fullid)
-
-
-def calib(time, data, clb):
-    dates = {}
-    nv = sorted(set(v["nv"] for v in clb.values()))
-    for n in nv:
-        dates[n] = [v["dt"] for v in clb.values() if n == v["nv"]]
-        dates[n].append(np.inf)
-
-    for v in clb.values():
-        n = v["nv"]
-        cn = int(n) - 1
-        for ii in range(len(dates[n]) - 1):
-            if v["dt"] == dates[n][ii]:
-                # print(f'Calibration of {v["nm"]} between {dates[n][ii]} and {dates[n][ii+1]}.')
-                k = (time >= dates[n][ii]) & (time < dates[n][ii + 1])
-                clip = (data[k, cn] < v["vn"]) | (data[k, cn] > v["vm"])
-                data[clip, cn] = np.nan
-                x = data[k, cn]
-                if isinstance(str_to_float(v["et"], verbose=False), float):
-                    data[k, cn] = x * str_to_float(v["et"])
-                else:
-                    formula = re.sub(r"[^\w\d\.+-\/\*^xE\ \(\)]", "", v["et"])
-                    data[k, cn] = ne.evaluate(formula)
-                if isinstance(v["ga"], float) and isinstance(v["of"], float):
-                    data[k, cn] = data[k, cn] * v["ga"] + v["of"]
 
 
 def get_data_stats(dt, node):
@@ -165,9 +125,9 @@ class Proc(Grid):
         try:
             pendulum.set_local_timezone(pendulum.timezone(tz))
         except pendulum.tz.exceptions.InvalidTimezone:
-            print(
-                f"Can't read {name} Proc. Please select a valid timezone such as 'UTC' or 'Europe/Paris'."
-            )
+            msg = f"Can't read {name} Proc. "
+            msg += f"Please select a valid timezone such as 'UTC' or 'Europe/Paris'."
+            print(msg)
             exit()
 
         for key, val in conf.items():
@@ -198,15 +158,11 @@ class Proc(Grid):
         for node in self.nodes:
             rawformat = node.RAWFORMAT
             if rawformat in ["miniseed", "seedlink", "fdsnws-dataselect"]:
-                st_node = read_miniseed(self, node.fullid, timescale)
-                if st_node:
-                    t, d, e = stream_to_array(st_node)
-                    node.time = t
-                    node.data = d
-                    node.error = e
-                    calib(t, d, node.CLB)
-            if rawformat in ["ascii", "dsv"]:
+                read_miniseed(self, node.fullid, timescale)
+            elif rawformat in ["ascii", "dsv"]:
                 read_dsv(self, node.fullid, timescale)
+            elif rawformat in ["cr10xasc", "toa5", "tob1"]:
+                read_campbell(self, node.fullid, timescale)
         duration = round(time.time() - start, 1)
         msg = "" if self.request else f" for timescale '{ts}'"
         print(f"Fetch data{msg} in:", duration, "seconds")

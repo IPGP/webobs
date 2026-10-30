@@ -1,6 +1,7 @@
 import re
 
 import numpy as np
+from csiio import CSIDataFile
 from obspy import Stream
 from obspy import Trace
 from obspy import UTCDateTime
@@ -12,12 +13,55 @@ from obspy.clients.seedlink import Client as Client_Seedlink
 from wolib.processings import decimate
 from wolib.utils import is_ok
 from wolib.utils import str_to_int
+from wolib.utils import str_to_float
 from wolib.utils import str_to_timestamp
 from wolib.utils import timestamp_to_date
 
 
 def get_stream_sampling_rates(streams):
     return set(tr.stats.sampling_rate for st in streams for tr in st)
+
+
+def timestamps(start_timestamp, npts, sampling_rate):
+    return np.arange(npts) / sampling_rate + start_timestamp
+
+
+def stream_to_array(st):
+    for tr in st:
+        if np.ma.is_masked(tr):
+            tr.data = tr.data.filled(np.nan)
+    data = np.array([tr.data for tr in st])
+    data = np.transpose(data)
+    sr = st[0].stats.sampling_rate
+    time = timestamps(st[0].stats.starttime.timestamp, data.shape[0], sr)
+    error = np.ones(shape=data.shape)
+    return [time, data, error]
+
+
+def calib(time, data, clb):
+    dates = {}
+    nv = sorted(set(v["nv"] for v in clb.values()))
+    for n in nv:
+        dates[n] = [v["dt"] for v in clb.values() if n == v["nv"]]
+        dates[n].append(np.inf)
+
+    for v in clb.values():
+        n = v["nv"]
+        cn = int(n) - 1
+        for ii in range(len(dates[n]) - 1):
+            if v["dt"] == dates[n][ii]:
+                # print(f'Calibration of {v["nm"]} between {dates[n][ii]} and {dates[n][ii+1]}.')
+                k = (time >= dates[n][ii]) & (time < dates[n][ii + 1])
+                clip = (data[k, cn] < v["vn"]) | (data[k, cn] > v["vm"])
+                data[clip, cn] = np.nan
+                x = data[k, cn]
+                if isinstance(str_to_float(v["et"], verbose=False), float):
+                    data[k, cn] = x * str_to_float(v["et"])
+                else:
+                    formula = re.sub(r"[^\w\d\.+-\/\*^xE\ \(\)]", "", v["et"])
+                    data[k, cn] = ne.evaluate(formula)
+                if isinstance(v["ga"], float) and isinstance(v["of"], float):
+                    data[k, cn] = data[k, cn] * v["ga"] + v["of"]
 
 
 def read_miniseed(proc, node_id, timescale):
@@ -49,7 +93,7 @@ def read_miniseed(proc, node_id, timescale):
         st_node_dic[cha] = Stream()
         try:
             if rawformat == "miniseed":
-                st = read("test.mseed")
+                st = read(rawdata)
             elif rawformat == "seedlink":
                 client = Client_Seedlink(rawdata)
                 st = client.get_waveforms(net, sta, loc, cha, start, end)
@@ -71,7 +115,15 @@ def read_miniseed(proc, node_id, timescale):
             st.interpolate(max(sampling_rates))
         st = st.trim(starttime=start, endtime=end - 1, pad=True)
         st_node += st.merge()
-    return st_node
+
+    if st_node:
+        t, d, e = stream_to_array(st_node)
+        calib(t, d, node.CLB)
+        node.time = t
+        node.data = d
+        node.error = e
+    else:
+        print("No data")
 
 
 def read_dsv(proc, node_id, timescale):
@@ -118,6 +170,25 @@ def read_dsv(proc, node_id, timescale):
     selected = data[error_cols, :]
     e = np.array(selected).astype("float").T
 
+    calib(t, d, node.CLB)
+
     node.time = decimate(t, data_decim)
     node.data = decimate(d, data_decim)
     node.error = decimate(e, data_decim)
+
+
+def read_campbell(proc, node_id, timescale):
+    print("Reading Campbell Scientific data files")
+    node = proc.find_node(node_id)
+    reader = CSIDataFile(node.RAWDATA)
+    reader.read()
+    print(reader.data.head())
+
+    t = reader.data.index.values.astype("int64")
+    d = reader.data.values.astype("float")
+
+    calib(t, d, node.CLB)
+
+    node.time = t
+    node.data = d
+    node.error = np.ones(shape=node.data.shape)
