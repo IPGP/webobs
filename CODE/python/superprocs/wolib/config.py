@@ -1,3 +1,5 @@
+import logging
+import logging.config
 import os
 import re
 
@@ -5,18 +7,18 @@ import pendulum
 
 from wolib.utils import str_to_float
 
+logging.config.fileConfig("logging.ini")
+logger = logging.getLogger("genplot")
+
 
 def read_config(filename, encoding="ISO-8859-1", sep="|"):
     config = {}
 
-    try:
-        with open(file=filename, encoding=encoding) as fp:
-            for line in fp:
-                if re.match(r"\w+", line):
-                    key, val = line.rstrip("\n").partition(sep)[::2]
-                    config[key.strip()] = val
-    except OSError:
-        raise
+    with open(file=filename, encoding=encoding) as fp:
+        for line in fp:
+            if re.match(r"\w+", line):
+                key, val = line.rstrip("\n").partition(sep)[::2]
+                config[key.strip()] = val
 
     for key, val in config.items():
         variables = re.findall(r"\${(.+?)}", val)
@@ -39,7 +41,7 @@ def read_config(filename, encoding="ISO-8859-1", sep="|"):
 
 def print_config(config):
     for key, val in config.items():
-        print(key, "->", val)
+        logger.info(key, "->", val)
 
 
 def set_clb_timestamp(clb, timezone=None):
@@ -51,8 +53,7 @@ def set_clb_timestamp(clb, timezone=None):
         try:
             clb[k]["dt"] = pendulum.parse(dt, tz=timezone).timestamp()
         except (TypeError, ValueError) as tvex:
-            print(tvex)
-            pass
+            logger.warning(tvex)
     return clb
 
 
@@ -82,7 +83,7 @@ def read_clb(filename, encoding="ISO-8859-1", sep="|"):
 
         config = set_clb_timestamp(config)
     except OSError as err:
-        print(err)
+        logger.error(err)
     return config
 
 

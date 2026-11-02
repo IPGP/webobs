@@ -1,23 +1,21 @@
 import glob
+import logging
+import logging.config
 import os
 import re
+import sys
 import time
 
-import numexpr as ne
 import numpy as np
 import pendulum
 
-from wolib.config import WEBOBS
-from wolib.config import read_config
-from wolib.grids import Grid
-from wolib.grids import Node
-from wolib.readers import read_campbell
-from wolib.readers import read_dsv
-from wolib.readers import read_miniseed
-from wolib.utils import get_timescale
-from wolib.utils import str_to_date
-from wolib.utils import str_to_timestamp
-from wolib.utils import update_db_status
+from wolib.config import WEBOBS, read_config
+from wolib.grids import Grid, Node
+from wolib.readers import read_campbell, read_dsv, read_miniseed
+from wolib.utils import get_timescale, str_to_date, str_to_timestamp, update_db_status
+
+logging.config.fileConfig("logging.ini")
+logger = logging.getLogger("genplot")
 
 
 def set_status(proc):
@@ -97,7 +95,7 @@ def get_data_stats(dt, node):
 def get_last_data(stats):
     last_time = -np.inf
     last_data = np.nan
-    for k, v in stats.items():
+    for v in stats.values():
         if v["last_time"] > last_time:
             last_time = v["last_time"]
             last_data = v["last_data"]
@@ -126,9 +124,9 @@ class Proc(Grid):
             pendulum.set_local_timezone(pendulum.timezone(tz))
         except pendulum.tz.exceptions.InvalidTimezone:
             msg = f"Can't read {name} Proc. "
-            msg += f"Please select a valid timezone such as 'UTC' or 'Europe/Paris'."
-            print(msg)
-            exit()
+            msg += "Please select a valid timezone such as 'UTC' or 'Europe/Paris'."
+            logger.error(msg)
+            sys.exit()
 
         for key, val in conf.items():
             key = key.replace(f"PROC.{self.name}.", "")  # For request mode
@@ -165,7 +163,7 @@ class Proc(Grid):
                 read_campbell(self, node.fullid, timescale)
         duration = round(time.time() - start, 1)
         msg = "" if self.request else f" for timescale '{ts}'"
-        print(f"Fetch data{msg} in:", duration, "seconds")
+        logger.info(f"Fetch data{msg} in {duration} seconds")
         set_status(self)
 
     def set_outdir(self, outdir):

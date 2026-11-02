@@ -1,11 +1,15 @@
 import glob
+import logging
+import logging.config
 import os
 import re
+import sys
 
-from wolib.config import NODES
-from wolib.config import read_clb
-from wolib.config import read_config
+from wolib.config import NODES, read_clb, read_config
 from wolib.utils import safe_eval
+
+logging.config.fileConfig("logging.ini")
+logger = logging.getLogger("genplot")
 
 
 def find_nodes(nodename):
@@ -26,8 +30,8 @@ class Node:
     def read_node(self):
         nodeparts = self.fullid.split(".")
         if len(nodeparts) != 3:
-            print("Incorrect NODEFULLID argument")
-            exit()
+            logger.error("Incorrect NODEFULLID argument")
+            sys.exit()
 
         self.gridtype = nodeparts[0]
         self.gridname = nodeparts[1]
@@ -46,10 +50,10 @@ class Node:
 
         self.clb_file = os.path.join(self.path, f"{self.fullid}.clb")
         if os.path.exists(self.clb_file):
-            setattr(self, "CLB", read_clb(self.clb_file))
+            self.CLB = read_clb(self.clb_file)
         else:
-            print(f"{self.clb_file} not found!")
-            setattr(self, "CLB", {})
+            logger.warning(f"{self.clb_file} not found!")
+            self.CLB = {}
 
     def __repr__(self):
         attrs = ", ".join(f"\n  {k}={repr(v)}" for k, v in self.__dict__.items())

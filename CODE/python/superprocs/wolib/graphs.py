@@ -1,4 +1,6 @@
 import getpass
+import logging
+import logging.config
 import os
 import re
 import sys
@@ -12,10 +14,10 @@ from matplotlib.ticker import FuncFormatter
 
 from wolib.config import WEBOBS
 from wolib.read_proc import get_last_data
-from wolib.utils import fmt_float
-from wolib.utils import get_events
-from wolib.utils import is_ok
-from wolib.utils import timestamp_to_date
+from wolib.utils import fmt_float, get_events, is_ok, timestamp_to_date
+
+logging.config.fileConfig("logging.ini")
+logger = logging.getLogger("genplot")
 
 
 def fmt_local_hour_minute(x, pos):
@@ -57,7 +59,7 @@ def plot_logos(proc):
 def plot_logo(name, size=None, pos="right"):
     if name:
         if not os.path.exists(name):
-            print(f"This logo file does not exist: {name}")
+            logger.warning(f"Logo file does not exist: {name}")
             return
         if not size:
             size = 0.04

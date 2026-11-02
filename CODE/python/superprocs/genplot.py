@@ -1,3 +1,5 @@
+import logging
+import logging.config
 import os
 import sys
 import time
@@ -7,37 +9,37 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from wolib.config import WEBOBS
-from wolib.graphs import channel_height_ratios
-from wolib.graphs import create_events_map_files
-from wolib.graphs import get_date_formatter
-from wolib.graphs import get_paper_size
-from wolib.graphs import plot_copyright
-from wolib.graphs import plot_events
-from wolib.graphs import plot_infos
-from wolib.graphs import plot_logos
-from wolib.graphs import plot_nodata
-from wolib.graphs import plot_status
-from wolib.graphs import plot_time_axis_label
-from wolib.graphs import plot_timestamp
-from wolib.graphs import plot_title
-from wolib.graphs import save_plot
-from wolib.processings import filter_node_data
-from wolib.processings import smooth
-from wolib.read_proc import Proc
-from wolib.read_proc import get_data_stats
-from wolib.utils import export_csv
-from wolib.utils import graph_parameters
-from wolib.utils import is_ok
-from wolib.utils import str_to_int
+from wolib.graphs import (
+    channel_height_ratios,
+    create_events_map_files,
+    get_date_formatter,
+    get_paper_size,
+    plot_copyright,
+    plot_events,
+    plot_infos,
+    plot_logos,
+    plot_nodata,
+    plot_status,
+    plot_time_axis_label,
+    plot_timestamp,
+    plot_title,
+    save_plot,
+)
+from wolib.processings import filter_node_data, smooth
+from wolib.read_proc import Proc, get_data_stats
+from wolib.utils import export_csv, graph_parameters, is_ok, str_to_int
 
-start = time.time()
+logging.config.fileConfig("logging.ini")
+logger = logging.getLogger("genplot")
+
+start_proc_time = time.time()
 
 if len(sys.argv) < 2:
-    print("No proc name specified! Operation canceled.")
-    exit()
+    logger.info("No proc name specified! Operation canceled.")
+    sys.exit()
 
 # gets PROC's configuration, associated nodes for any TSCALE
-print(sys.argv[1])
+logger.info(sys.argv[1])
 proc = Proc(sys.argv[1])
 
 if len(sys.argv) >= 4:
@@ -75,7 +77,7 @@ pc = 0.35  # Blending parameter between the colormap and white.
 
 graph = graph_parameters(proc)
 for timescale in graph.keys():
-    print(timescale)
+    logger.info(timescale)
     gopts = {k: graph[timescale][k] for k in ("linewidth", "markersize")}
     gopts["linestyle"] = pernode_linestyle
     date_form = get_date_formatter(timescale)
@@ -182,4 +184,5 @@ for timescale in graph.keys():
             create_events_map_files(events_html, filename, proc)
         save_plot(filename, proc)
 
-print("Executed in:", round(time.time() - start, 1), "seconds")
+end_proc_time = round(time.time() - start_proc_time, 1)
+logger.info(f"Executed in {end_proc_time} seconds")

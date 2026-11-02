@@ -1,10 +1,13 @@
+import logging
+import logging.config
+
 import numpy as np
 from scipy import signal
 
-from wolib.utils import graph_parameters
-from wolib.utils import is_ok
-from wolib.utils import str_to_float
-from wolib.utils import str_to_int
+from wolib.utils import graph_parameters, is_ok, str_to_float, str_to_int
+
+logging.config.fileConfig("logging.ini")
+logger = logging.getLogger("genplot")
 
 
 def filter_signal(data, proc):
@@ -13,7 +16,7 @@ def filter_signal(data, proc):
         data = data.astype(float)
         k = np.argwhere(np.diff(data) == 0)
         data[k + 1] = np.nan
-        print("FLAT_IS_NAN")
+        logger.info("FLAT_IS_NAN")
 
     # cleanpicks filters
     data = cleanpicks(data, proc)
@@ -22,7 +25,7 @@ def filter_signal(data, proc):
     kernel_size = str_to_int(getattr(proc, "MEDIAN_FILTER_SAMPLES", ""))
     if isinstance(kernel_size, int) and kernel_size > 1:
         if kernel_size % 2 == 0:
-            print(f"Even kernel size {kernel_size} resized to {kernel_size + 1}")
+            logger.info(f"Even kernel size {kernel_size} resized to {kernel_size + 1}")
             kernel_size = kernel_size + 1
         data = signal.medfilt(data, kernel_size)
     return data
@@ -59,7 +62,9 @@ def cleanpicks(data, proc):
     # median min/max filter
     if n1:
         if n1 < 0 or n1 >= 100:
-            print(f"Input must be a percentage >= 0 and < 100 for filter {filter1}")
+            logger.warning(
+                f"Input must be a percentage >= 0 and < 100 for filter {filter1}"
+            )
         else:
             data = data.astype(float)
             mn = np.nanmin(data) * (100 + n1) / 100
@@ -69,7 +74,7 @@ def cleanpicks(data, proc):
     # STD filter
     if n2:
         if n2 <= 0:
-            print(f"Input must be a positive number for filter {filter2}")
+            logger.warning(f"Input must be a positive number for filter {filter2}")
         else:
             data = data.astype(float)
             data[np.abs(data) > n2 * np.nanstd(data)] = np.nan

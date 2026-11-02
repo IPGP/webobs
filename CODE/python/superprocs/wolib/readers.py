@@ -1,21 +1,27 @@
+import logging
+import logging.config
 import re
+import sys
 
+import numexpr
 import numpy as np
 from csiio import CSIDataFile
-from obspy import Stream
-from obspy import Trace
-from obspy import UTCDateTime
-from obspy import read
+from obspy import Stream, Trace, UTCDateTime, read
 from obspy.clients.fdsn import Client as Client_FDSN
 from obspy.clients.fdsn.header import FDSNNoDataException
 from obspy.clients.seedlink import Client as Client_Seedlink
 
 from wolib.processings import decimate
-from wolib.utils import is_ok
-from wolib.utils import str_to_int
-from wolib.utils import str_to_float
-from wolib.utils import str_to_timestamp
-from wolib.utils import timestamp_to_date
+from wolib.utils import (
+    is_ok,
+    str_to_float,
+    str_to_int,
+    str_to_timestamp,
+    timestamp_to_date,
+)
+
+logging.config.fileConfig("logging.ini")
+logger = logging.getLogger("genplot")
 
 
 def get_stream_sampling_rates(streams):
@@ -50,7 +56,7 @@ def calib(time, data, clb):
         cn = int(n) - 1
         for ii in range(len(dates[n]) - 1):
             if v["dt"] == dates[n][ii]:
-                # print(f'Calibration of {v["nm"]} between {dates[n][ii]} and {dates[n][ii+1]}.')
+                # logger.info(f'Calibration of {v["nm"]} between {dates[n][ii]} and {dates[n][ii+1]}.')
                 k = (time >= dates[n][ii]) & (time < dates[n][ii + 1])
                 clip = (data[k, cn] < v["vn"]) | (data[k, cn] > v["vm"])
                 data[clip, cn] = np.nan
@@ -59,7 +65,7 @@ def calib(time, data, clb):
                     data[k, cn] = x * str_to_float(v["et"])
                 else:
                     formula = re.sub(r"[^\w\d\.+-\/\*^xE\ \(\)]", "", v["et"])
-                    data[k, cn] = ne.evaluate(formula)
+                    data[k, cn] = numexpr.evaluate(formula)
                 if isinstance(v["ga"], float) and isinstance(v["of"], float):
                     data[k, cn] = data[k, cn] * v["ga"] + v["of"]
 
@@ -77,14 +83,14 @@ def read_miniseed(proc, node_id, timescale):
     clb = node.CLB
     # checks correct definition of codes and calibration for the node
     if not net:
-        print(f"No FDSN code defined for node {node_id}!")
-        exit()
+        logger.error(f"No FDSN code defined for node {node_id}!")
+        sys.exit()
     if not sta:
-        print(f"No FID code defined for node {node_id}!")
-        exit()
+        logger.error(f"No FID code defined for node {node_id}!")
+        sys.exit()
     if not clb:
-        print(f"No CLB file for node {node_id}! Cannot import data.")
-        exit()
+        logger.error(f"No CLB file for node {node_id}! Cannot import data.")
+        sys.exit()
 
     st_node_dic = {}
     for val in clb.values():
@@ -102,8 +108,7 @@ def read_miniseed(proc, node_id, timescale):
                 st = client.get_waveforms(net, sta, loc, cha, start, end)
         except (FDSNNoDataException, OSError) as ex:
             st = Stream(Trace(data=np.full(shape=2, fill_value=np.nan)))
-            print(net, sta, loc, cha, start, end, ex)
-            pass
+            logger.info(f"{net} {sta} {loc} {cha}, {start}, {end}, {ex}")
         st_node_dic[cha] += st
 
     sampling_rates = get_stream_sampling_rates(st_node_dic.values())
@@ -123,7 +128,7 @@ def read_miniseed(proc, node_id, timescale):
         node.data = d
         node.error = e
     else:
-        print("No data")
+        logger.info("No data")
 
 
 def read_dsv(proc, node_id, timescale):
@@ -142,8 +147,8 @@ def read_dsv(proc, node_id, timescale):
     flag_col = str_to_int(getattr(node, "FID_FLAGCOL", None))
     flag_action = getattr(node, "FID_FLAGACTION", None)
 
-    print(rawformat, header)
-    print(decimal_comma, data_decim, flag_col, flag_action)
+    logger.info(rawformat, header)
+    logger.info(decimal_comma, data_decim, flag_col, flag_action)
 
     rows = []
     with open(rawdata, newline="") as fp:
@@ -178,11 +183,11 @@ def read_dsv(proc, node_id, timescale):
 
 
 def read_campbell(proc, node_id, timescale):
-    print("Reading Campbell Scientific data files")
+    logger.info("Reading Campbell Scientific data files")
     node = proc.find_node(node_id)
     reader = CSIDataFile(node.RAWDATA)
     reader.read()
-    print(reader.data.head())
+    logger.info(reader.data.head())
 
     t = reader.data.index.values.astype("int64")
     d = reader.data.values.astype("float")

@@ -1,13 +1,18 @@
 import getpass
+import logging
+import logging.config
 import os
 import re
 import sqlite3
-from datetime import datetime
-from datetime import timedelta
+import sys
+from datetime import datetime, timedelta
 
 import numpy as np
 import pendulum
 import roman
+
+logging.config.fileConfig("logging.ini")
+logger = logging.getLogger("genplot")
 
 
 def is_ok(value):
@@ -28,7 +33,7 @@ def str_to_int(x, nan=False, verbose=False):
         if nan:
             return np.nan
         elif verbose:
-            print(f"Unable to convert: {x} to int")
+            logger.error(f"Unable to convert: {x} to int")
 
 
 def str_to_float(x, nan=False, verbose=False):
@@ -38,7 +43,7 @@ def str_to_float(x, nan=False, verbose=False):
         if nan:
             return np.nan
         elif verbose:
-            print(f"Unable to convert: {x} to float")
+            logger.error(f"Unable to convert: {x} to float")
 
 
 def str_to_date(x, timezone=None, nan=False, verbose=False):
@@ -50,7 +55,7 @@ def str_to_date(x, timezone=None, nan=False, verbose=False):
         if nan:
             return np.nan
         elif verbose:
-            print(f"Unable to parse string: {x} to datetime")
+            logger.error(f"Unable to parse string: {x} to datetime")
 
 
 def str_to_timestamp(x, timezone=None, nan=False, verbose=False):
@@ -63,7 +68,7 @@ def str_to_timestamp(x, timezone=None, nan=False, verbose=False):
         if nan:
             return np.nan
         elif verbose:
-            print(f"Unable to convert: {x} to timestamp")
+            logger.error(f"Unable to convert: {x} to timestamp")
 
 
 def timestamp_to_date(x, utc=False, nan=False, verbose=False):
@@ -77,7 +82,7 @@ def timestamp_to_date(x, utc=False, nan=False, verbose=False):
         if nan:
             return np.nan
         elif verbose:
-            print(f"Unable to convert: {x} to datetime")
+            logger.error(f"Unable to convert: {x} to datetime")
 
 
 def safe_eval(expression):
@@ -98,8 +103,8 @@ def get_timescale(code, timezone=None):
     """
     num = re.match(r"\d+", code)
     if not num or re.search(r"\W+", code):
-        print("invalid duration")
-        exit()
+        logger.error("invalid duration")
+        sys.exit()
 
     num = int(num[0])
     if "s" in code:
@@ -124,8 +129,8 @@ def get_timescale(code, timezone=None):
         duration = timedelta(days=365.25 * num)
         human_unit = "year"
     else:
-        print("invalid timescale string")
-        exit()
+        logger.error("invalid timescale string")
+        sys.exit()
 
     if timezone is None:
         timezone = pendulum.local_timezone()
@@ -173,7 +178,7 @@ def update_db_status(proc, node_id):
                 cursor.execute(f"REPLACE INTO status VALUES ({values})")
             conn.commit()
     except Exception as e:
-        print(e)
+        logger.error(e)
 
 
 def graph_parameters(proc):
@@ -203,8 +208,7 @@ def graph_parameters(proc):
             graph[ts]["linewidth"] = linewidthlist[t]
             graph[ts]["status"] = statuslist[t]
         except IndexError as iex:
-            print(iex)
-            pass
+            logger.warning(iex)
     return graph
 
 
