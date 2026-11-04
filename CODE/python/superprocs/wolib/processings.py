@@ -7,7 +7,7 @@ from scipy import signal
 from wolib.utils import graph_parameters, is_ok, str_to_float, str_to_int
 
 logging.config.fileConfig("logging.ini")
-logger = logging.getLogger("genplot")
+logger = logging.getLogger("webobs")
 
 
 def filter_signal(data, proc):

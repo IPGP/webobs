@@ -17,7 +17,7 @@ from wolib.read_proc import get_last_data
 from wolib.utils import fmt_float, get_events, is_ok, timestamp_to_date
 
 logging.config.fileConfig("logging.ini")
-logger = logging.getLogger("genplot")
+logger = logging.getLogger("webobs")
 
 
 def fmt_local_hour_minute(x, pos):

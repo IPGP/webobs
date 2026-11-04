@@ -12,7 +12,7 @@ import pendulum
 import roman
 
 logging.config.fileConfig("logging.ini")
-logger = logging.getLogger("genplot")
+logger = logging.getLogger("webobs")
 
 
 def is_ok(value):

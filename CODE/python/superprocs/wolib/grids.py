@@ -9,7 +9,7 @@ from wolib.config import NODES, read_clb, read_config
 from wolib.utils import safe_eval
 
 logging.config.fileConfig("logging.ini")
-logger = logging.getLogger("genplot")
+logger = logging.getLogger("webobs")
 
 
 def find_nodes(nodename):

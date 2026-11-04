@@ -21,7 +21,7 @@ from wolib.utils import (
 )
 
 logging.config.fileConfig("logging.ini")
-logger = logging.getLogger("genplot")
+logger = logging.getLogger("webobs")
 
 
 def get_stream_sampling_rates(streams):
@@ -107,8 +107,10 @@ def read_miniseed(proc, node_id, timescale):
                 client = Client_FDSN(rawdata)
                 st = client.get_waveforms(net, sta, loc, cha, start, end)
         except (FDSNNoDataException, OSError) as ex:
+            exception_type = type(ex).__name__
             st = Stream(Trace(data=np.full(shape=2, fill_value=np.nan)))
-            logger.info(f"{net} {sta} {loc} {cha}, {start}, {end}, {ex}")
+            logger.warning(f"{exception_type}: {net} {sta} {loc} {cha} {start} - {end}")
+            logger.debug(str(ex).replace("\n", " "))
         st_node_dic[cha] += st
 
     sampling_rates = get_stream_sampling_rates(st_node_dic.values())

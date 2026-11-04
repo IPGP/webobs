@@ -1,4 +1,5 @@
 setuptools<82.0.0
+csiio-py
 obspy
 pendulum
 roman

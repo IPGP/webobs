@@ -8,7 +8,7 @@ import pendulum
 from wolib.utils import str_to_float
 
 logging.config.fileConfig("logging.ini")
-logger = logging.getLogger("genplot")
+logger = logging.getLogger("webobs")
 
 
 def read_config(filename, encoding="ISO-8859-1", sep="|"):

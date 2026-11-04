@@ -15,7 +15,7 @@ from wolib.readers import read_campbell, read_dsv, read_miniseed
 from wolib.utils import get_timescale, str_to_date, str_to_timestamp, update_db_status
 
 logging.config.fileConfig("logging.ini")
-logger = logging.getLogger("genplot")
+logger = logging.getLogger("webobs")
 
 
 def set_status(proc):

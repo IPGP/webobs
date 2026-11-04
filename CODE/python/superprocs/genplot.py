@@ -30,7 +30,7 @@ from wolib.read_proc import Proc, get_data_stats
 from wolib.utils import export_csv, graph_parameters, is_ok, str_to_int
 
 logging.config.fileConfig("logging.ini")
-logger = logging.getLogger("genplot")
+logger = logging.getLogger("webobs")
 
 start_proc_time = time.time()
 
