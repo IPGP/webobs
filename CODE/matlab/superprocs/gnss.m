@@ -1443,7 +1443,7 @@ for r = 1:numel(P.GTABLE)
 		% adds subplot horizontal amplitude vs distance
 		if ~isempty(targetll)
             pos = plotboxpos(gca);
-			axes('Position',[.5,.07,.45,pos(2)])
+			axes('Position',[.5,.05,.45,pos(2)-.03])
 			plot(0,0)
 			hold on
 			sta_dist = greatcircle(targetll(1),targetll(2),geo(knv,1),geo(knv,2));
@@ -1466,7 +1466,7 @@ for r = 1:numel(P.GTABLE)
         OPT.STATUS = 0;
 		OPT.GSTATUS = [];
 		OPT.FIXEDPP = true;
-        OPT.INFOLINES = 9;
+        OPT.INFOLINES = 20;
         OPT.IMAP = [];
 		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
 		close
