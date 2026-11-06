@@ -250,6 +250,17 @@ def csv_comments(filename, title, proc, node_id):
     else:
         comments.append("# TIMESPAN: all data")
     comments.append("#")
+
+    node_keylist = getattr(proc, "EXPORT_HEADER_NODE_KEYLIST", "").split(",")
+    for k in node_keylist:
+        val = getattr(node, k, "")
+        comments.append(f"# NODE.{k}: {val}")
+
+    proc_keylist = getattr(proc, "EXPORT_HEADER_PROC_KEYLIST", "").split(",")
+    for k in proc_keylist:
+        val = getattr(proc, k, "")
+        comments.append(f"# PROC.{k}: {val}")
+
     comments.append("#")
     username, hostname = (getpass.getuser(), os.uname().nodename)
     date = datetime.now().strftime("%d-%b-%Y %H:%M:%S")

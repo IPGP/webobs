@@ -25,6 +25,7 @@ def find_nodes(nodename):
 class Node:
     def __init__(self, fullid):
         self.fullid = fullid
+        self.URL = f"/cgi-bin/showNODE.pl?node={fullid}"
         self.read_node()
 
     def read_node(self):
