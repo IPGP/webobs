@@ -11,10 +11,11 @@
 #
 # Author: Francois Beauducel <beauducel@ipgp.fr>
 # Created: 2024-03-14
-# Updated: 2026-03-04
+# Updated: 2026-11-19
 
 SCRIPT_DIR="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 PWD=$(pwd)
+USER=$(whoami)
 
 # Script argument: version of the release
 RELEASE_VERSION="$1"
@@ -23,6 +24,8 @@ if [ -z "$MCC_OPT" ]
 then
 	MCC_OPT="all"
 fi
+
+echo "== Make WebObs packing v$RELEASE_VERSION under user $USER =="
 
 function ask() {
 	# Usage: ask "prompt question [y/n] ?" [default answer] [pattern for returning true]
@@ -50,11 +53,11 @@ then
 	cd "$PWD"
 fi
 
-if ask "--> Compile LaTeX documentation [y/N]" "n"
+fman="WebObs_Manual.tex"
+ver=$(grep '\\newcommand{\\release}{' $SCRIPT_DIR/../DOC/user-manual/$fman | sed -e 's/.*{\(.*\)}/\1/')
+if ask "--> Compile LaTeX documentation (v$ver) [y/N]" "n"
 then
 	cd "$SCRIPT_DIR/../DOC/user-manual"
-	fman="WebObs_Manual.tex"
-	ver=$(grep '\\newcommand{\\release}{' $fman | sed -e 's/.*{\(.*\)}/\1/')
 	echo -n "    The current doc release is '$ver'. "
 	if [[ $RELEASE_VERSION != "" && $ver != $RELEASE_VERSION ]]
 	then
