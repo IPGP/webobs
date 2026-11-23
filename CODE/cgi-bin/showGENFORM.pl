@@ -466,8 +466,8 @@ my %colspan;
 
 $csvTxt .= (isok($FORM{QUALITY_CHECK}) ? $dlm.qq(Quality) : "")
            .$dlm.($starting_date ? qq(Start Date).$dlm.qq(End Date) : qq(Sampling Date))
-           .$dlm.qq(Site Alias)
-           .$dlm.qq(Site Name)
+           .$dlm.qq(Node ID)
+           .$dlm.qq(Site Alias: Name)
            .$dlm.qq(Operators);
 
 for (my $i = 0; $i <= $#fs_names; $i++) {
@@ -601,7 +601,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
     }
     $text .= "<TD nowrap align=center onMouseOut=\"nd()\" onmouseover=\"overlib('".js($nameNode)."',CAPTION,'node $site')\">$nodelink&nbsp;</TD>\n";
     $text .= "<TD align=center onMouseOut=\"nd()\" onmouseover=\"overlib('".js(join('<br>',@nameOper))."')\">".join(', ',@operators)."</TD>\n";
-    $csvTxt .= "$id".(isok($FORM{QUALITY_CHECK}) ? $dlm.$quality : "").($starting_date ? $dlm.$sdate : "").$dlm.$edate.$dlm."$aliasSite".$dlm."$nameSite".$dlm.join(', ',@namOper).$dlm;
+    $csvTxt .= "$id".(isok($FORM{QUALITY_CHECK}) ? $dlm.$quality : "").($starting_date ? $dlm.$sdate : "").$dlm.$edate.$dlm."$site".$dlm."$aliasSite: $nameSite".$dlm.join(', ',@namOper).$dlm;
     for (my $f = 0; $f <= $#fieldsets; $f++) {
         my $fs = $fieldsets[$f];
         my $nb_fields = $#{$field_names[$f]} + 1;
@@ -619,7 +619,7 @@ for (my $j = 0; $j <= $#rows; $j++) {
                     $hlp = "<B>$fields{$field}</B>: ".($v{name} ? $v{name} : $v{value});
                     $val = $v{name} if ($v{name});
                     $val = "<IMG src=\"$v{icon}\">" if ($v{icon});
-                    $csvTxt .= "$v{name}".$dlm;
+                    $csvTxt .= $val.$dlm;
                 } else {
                     $hlp = "<I>$__{'unknown key list!'}</I>" if ($val ne "");
                     $csvTxt .= $dlm;
