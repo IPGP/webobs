@@ -172,7 +172,7 @@ sub update_grid2domains {
 sub get_inputs {
     my %inputs;
     foreach(@_) {
-        if ($_ =~ /^(INPUT[0-9]{2}_NAME)/) {
+        if ($_ =~ /^(INPUT[0-9]{2,3}_NAME)/) {
             $inputs{$_} = 1;
         }
     }
