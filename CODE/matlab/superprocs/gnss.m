@@ -40,7 +40,7 @@ function DOUT=gnss(varargin)
 %   Authors: François Beauducel, Aline Peltier, Patrice Boissier, Antoine Villié,
 %            Jean-Marie Saurel, Pierre Sakic / WEBOBS, IPGP
 %   Created: 2010-06-12 in Paris (France)
-%   Updated: 2026-10-12
+%   Updated: 2026-11-25
 
 WO = readcfg;
 
@@ -266,8 +266,8 @@ resarrcol = field2num(P,'MODELLING_RESIDUAL_COLOR',[0,.5,0]); % color of residua
 plotnancomp = isok(P,'MODELLING_PLOT_NAN_COMPONENT',1);
 modelling_title = field2str(P,'MODELLING_TITLE','{\fontsize{14}{\bf$name - Source modelling} ($timescale)}');
 plotbest = isok(P,'MODELLING_PLOT_BEST');
-plotbest_col = field2num(P,'MODELLING_PLOT_BEST_COLOR',.5*ones(1,3));
-plotbest_opt = {'p','MarkerSize',15,'LineWidth',1};
+plotbest_opt = field2cell(P,'MODELLING_PLOT_BEST_TARGET',20,'none','p',1,'LineWidth',1.2,'MarkerEdgeColor','k');
+plotbest2_opt = field2cell(P,'MODELLING_PLOT_BEST_SECONDARY_TARGET',20,'none','p',1,'LineWidth',.5);
 modelling_vmax_mm = field2num(P,'MODELLING_VMAX_MM',0);
 modelling_vmax_ratio = field2num(P,'MODELLING_VMAX_RATIO',.25);
 plotresidual = isok(P,'MODELLING_PLOT_RESIDUAL',1);
@@ -277,7 +277,6 @@ else
 	vclip = 'off';
 end
 modelling_shape = field2shape(P,'MODELLING_SHAPE_FILE');
-
 modelling_source_type = field2str(P,'MODELLING_SOURCE_TYPE','isotropic','notempty');
 
 tickfactorlim = 5e3; % above 5 km width/depth axis will be in km
@@ -2192,11 +2191,10 @@ for r = 1:numel(P.GTABLE)
 		end
 		%axis equal; axis tight
 		if plotbest && any(~isnan(m0))
-			switch lower(mt)
-			case 'pcdm'
-				plotpcdm(pbest(:,[1:6,8,9]),wbest,'xy','EdgeColor',plotbest_col);
-			otherwise
-				plot(pbest(:,1),pbest(:,2),plotbest_opt{:},'MarkerEdgeColor',plotbest_col)
+			% plotpcdm(pbest(:,[1:6,8,9]),wbest,'xy','EdgeColor',plotbest_col);
+			target(pbest(1,1),pbest(1,2),plotbest_opt{:})
+            if modelopt.multi > 1
+                target(pbest(2:end,1),pbest(2:end,2),plotbest2_opt{:})
 			end
 		end
 		hold off
@@ -2239,11 +2237,10 @@ for r = 1:numel(P.GTABLE)
 			plot(repmat(-modelopt.apriori_depth(1),1,2),ylim([1,end]),':k')
 		end
 		if plotbest && any(~isnan(m0))
-			switch lower(mt)
-			case 'pcdm'
-				plotpcdm(pbest(:,[1:6,8,9]),wbest,'zy','EdgeColor',plotbest_col);
-			otherwise
-				plot(pbest(:,3),pbest(:,2),plotbest_opt{:},'MarkerEdgeColor',plotbest_col)
+			% plotpcdm(pbest(:,[1:6,8,9]),wbest,'zy','EdgeColor',plotbest_col);
+            target(pbest(1,3),pbest(1,2),plotbest_opt{:})
+            if modelopt.multi > 1
+                target(pbest(2:end,3),pbest(2:end,2),plotbest2_opt{:})
 			end
 		end
 		plot(max(max(zdem,[],3),[],2)',ylim,'-k')
@@ -2286,11 +2283,10 @@ for r = 1:numel(P.GTABLE)
 			plot(xlim([1,end]),repmat(-modelopt.apriori_depth(1),1,2),':k')
 		end
 		if plotbest && any(~isnan(m0))
-			switch lower(mt)
-			case 'pcdm'
-				plotpcdm(pbest(:,[1:6,8,9]),wbest,'xz','EdgeColor',plotbest_col);
-			otherwise
-				plot(pbest(:,1),pbest(:,3),plotbest_opt{:},'MarkerEdgeColor',plotbest_col)
+            % plotpcdm(pbest(:,[1:6,8,9]),wbest,'xz','EdgeColor',plotbest_col);
+            target(pbest(1,1),pbest(1,3),plotbest_opt{:})
+            if modelopt.multi > 1
+                target(pbest(2:end,1),pbest(2:end,3),plotbest2_opt{:})
 			end
 		end
 		plot(xlim,max(max(zdem,[],3),[],1),'-k')
@@ -2469,510 +2465,523 @@ for r = 1:numel(P.GTABLE)
 
 	% --- Modelling in time
 	summary = 'MODELTIME';
-	if any(strcmp(P.SUMMARYLIST,summary))
+    if any(strcmp(P.SUMMARYLIST,summary))
         modelopt.verbose = 'quiet';
-		% rebuilds the model space if necessary
-		if modeltime_gridsize ~= rr
-			rr = modeltime_gridsize;
-			xlim = linspace(0,wid,rr) - wid/2 - (lon0 - mean(lonlim))*degkm(lat0)*1e3;
-			ylim = linspace(0,wid,rr) - wid/2 - (lat0 - mean(latlim))*degkm*1e3;
-			zlim = linspace(-maxdep,roundsd(double(max(DEM.z(:))),2,'ceil'),rr);
-			[xdem,ydem] = meshgrid(xlim,ylim);
-			zdem = interp2((DEM.lon-lon0)*degm*cosd(lat0),(DEM.lat-lat0)*degm,double(DEM.z),xdem,ydem);
-			[xx,yy,zz] = meshgrid(xlim,ylim,zlim);
-		end
-		dt = max(modeltime_sampling,ceil(numel(modeltime_period)*diff(tlim)/modeltime_max/modeltime_sampling)*modeltime_sampling);
+        % rebuilds the model space if necessary
+        if modeltime_gridsize ~= rr
+            rr = modeltime_gridsize;
+            xlim = linspace(0,wid,rr) - wid/2 - (lon0 - mean(lonlim))*degkm(lat0)*1e3;
+            ylim = linspace(0,wid,rr) - wid/2 - (lat0 - mean(latlim))*degkm*1e3;
+            zlim = linspace(-maxdep,roundsd(double(max(DEM.z(:))),2,'ceil'),rr);
+            [xdem,ydem] = meshgrid(xlim,ylim);
+            zdem = interp2((DEM.lon-lon0)*degm*cosd(lat0),(DEM.lat-lat0)*degm,double(DEM.z),xdem,ydem);
+            [xx,yy,zz] = meshgrid(xlim,ylim,zlim);
+        end
+        dt = max(modeltime_sampling,ceil(numel(modeltime_period)*diff(tlim)/modeltime_max/modeltime_sampling)*modeltime_sampling);
 
-		% loop on the model source type
+        % loop on the model source type
         for mst = split(modeltime_source_type,',')
-			mt = lower(char(mst));
+            mt = lower(char(mst));
 
-			switch mt
-			case 'pcdm'
-				summary = 'MODELTIME_pCDM';
-				PCDM.random_sampling = field2num(P,'MODELTIME_PCDM_RANDOM_SAMPLING',PCDM.random_sampling);
-			otherwise
-				summary = 'MODELTIME';
-			end
-
-		info = { ...
-			' ', ...
-			sprintf('model type = {\\bf%s}',mst{1}), ...
-			sprintf('model space = {\\bf%s}',num2tex(rr^3)), ...
-			sprintf('misfit norm = {\\bf%s}',modelopt.misfitnorm), ...
-			sprintf('uncertainty = {\\bf%g \\sigma (%1.1f%%)}',modelopt.msig,modelopt.msigp*100), ...
-		};
-		if modelopt.horizonly
-			info = cat(2,info,'misfit mode = {\bfhorizontal only}');
-		end
-		if numel(modelopt.apriori_depth) == 2
-			info = cat(2,info,sprintf('a priori depth = {\\bf%g \\pm %g km}',roundsd(modelopt.apriori_depth/1e3,2)));
-		end
-		if modelopt.apriori_horizontal > 0
-			info = cat(2,info,sprintf('a priori horiz. STD = {\\bf%g km}',modelopt.apriori_horizontal));
-		end
-
-		mtlabel = cell(1,numel(modeltime_period));
-        clear M
-		for m = 1:numel(modeltime_period)
-			mtp = modeltime_period(m);
-			if mtp > 0
-				mtlabel{m} = days2h(mtp,'round');
-			else
-				mtlabel{m} = 't_0 ref.';
-			end
-			M(m).mtp = mtp;
-
-			M(m).t = (fliplr(tlim(2):-dt:tlim(1)))';
-			% last time must contain data
-			tlast = max(max(cat(1,D.tfirstlast)));
-			M(m).t(M(m).t > tlast) = [];
-			wolog('computing %d %s models (%s @ %s) ',numel(M(m).t),mst{1},mtlabel{m},days2h(dt));
-
-			% initiates the model result matrix
-			M(m).d = nan(numel(M(m).t),5 + 5*strcmp(mt,'pcdm'));
-			M(m).e = nan(numel(M(m).t),5);
-			M(m).o = nan(numel(M(m).t),1);
-			M(m).type = cell(numel(M(m).t),1);
-
-            % initiates the vectors matrix
-            M(m).v = nan(numel(M(m).t),numel(kn),6); % time x station x components
-
-			for w = 1:numel(M(m).t)
-				t2 = M(m).t(w);
-				if modeltime_period(m) > 0
-					wlim = t2 - [modeltime_period(m),0];
-				else
-					wlim = [tlim(1),t2];
-				end
-
-                P.dtlim = diff(wlim);
-				% computes linear trends (mm/yr)
-				tr = nan(numel(kn),3); % trends per station per component
-				tre = nan(numel(kn),3); % trends error per station per component
-				tro = zeros(numel(kn),1); % inits to best orbit per station
-				for j = 1:numel(kn)
-					n = kn(j);
-					k = find(isinto(D(n).t,wlim));
-					for i = 1:3
-						if ~isempty(k) && ~all(isnan(D(n).d(k,i+4)))
-							ke = k(find(~isnan(D(n).d(k,i+4)),1,'last'));
-							[tk,dk,lr,trd] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),D(n).e(k,i),P.GTABLE(r).DECIMATE,P,1);
-							tr(j,i) = trd(1);
-                            tre(j,i) = trd(2);
-							% sets a lower orbit if there is not enough data
-							%if D(n).t(D(n).G(r).ke) >= M(m).t(w)
-							if (D(n).t(ke) + 1) < M(m).t(w)
-								tro(j) = 2;
-							end
-						end
-					end
-				end
-
-				% computes reference (auto, fixed or station)
-				if numel(kn) > 1
-					mvv = rsum(tr./tre)./rsum(1./tre);
-				else
-					mvv = tr;
-				end
-				if vrelmode
-					voffset = [mvv(1:2),0];
-					if ~isempty(vref) && ismember(vref,{N.FID})
-						voffset = tr(strcmp(vref,{N.FID}),:);
-						if any(isnan(voffset))
-							voffset = [0,0,0];
-						end
-					end
-					if numel(sstr2num(vref)) == 3
-						voffset = sstr2num(vref)*P.trendfact/365250;
-					end
-					tr = tr - repmat(voffset,numel(kn),1);
-				end
-
-				% makes (or not) the relative data array
-				d = [tr,tre];
-				knn = find(~isnan(d(:,1)));
-				modrelforced = 0;
-				if ~isempty(knn) && (modelling_force_relative || (modrelauto && (azgap(xs(knn),ys(knn)) < 150 || numel(knn) > 2)))
-					% computes a mean velocity vector (horizontal only)
-					if numel(knn) > 1
-						mvv = rsum(tr(knn,:)./tre(knn,:))./rsum(1./tre(knn,:));
-					else
-						mvv = tr(knn,:);
-					end
-					d(:,1:3) = d(:,1:3) - repmat([mvv(1:2),0],size(d,1),1);
-					modrelforced = 1;
-				end
-				% computes absolute displacement in mm (from velocity in mm/yr or TREND_FACTOR)
-				d = d*diff(wlim)*1e3/P.trendfact;
-
-				% --- computes the model (and stores only the source #1) !
-				switch mt
-				case 'pcdm'
-					MM = invpcdm(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt,PCDM);
-					M(m).d(w,:) = [MM(1).pbest(1:3),MM(1).pbest(7)*1e6,MM(1).pbest([8,9,4:6]),sign(MM(1).pbest(7))*mean(sqrt(MM(1).ux.^2+MM(1).uy.^2+MM(1).uz.^2))];
-				otherwise
-					MM = invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt);
-					M(m).d(w,:) = [MM(1).pbest(1:3),MM(1).pbest(4)*1e6,sign(MM(1).pbest(4))*mean(sqrt(MM(1).ux.^2+MM(1).uy.^2+MM(1).uz.^2))];
-				end
-				%M(m).e(w,:) = [MM(1).ws,MM(1).ws,diff(MM(1).ez),diff(MM(1).ev),MM(1).m0];
-				M(m).e(w,:) = [diff(MM(1).ex)/2,diff(MM(1).ey)/2,diff(MM(1).ez)/2,diff(MM(1).ev)*1e6/2,MM(1).m0];
-				M(m).o(w,1) = median(tro); % model worst orbit
-				M(m).type{w} = MM(1).type;
-
-				if isok(P,'DEBUG')
-                    fprintf('\n%s,%s: %+g 10e6 m3 / %g km',datestr(wlim(1)),datestr(wlim(2)),roundsd([MM(1).pbest(4),MM(1).pbest(3)/1e3],3));
-					if modrelforced
-						fprintf(' / relative mode forced by (%g,%g)',mvv(1:2));
-					end
-				else
-					fprintf('.');
-				end
-			end
-
-			% converts vv into Q (volumetric flux) in m3/s)
-			if modeltime_flowrate
-				if modeltime_period(m) == 0
-					dtf = (M(m).t - tlim(1))*86400;
-				else
-					dtf = modeltime_period(m)*86400;
-				end
-				M(m).d(:,4) = M(m).d(:,4)./dtf;
-				M(m).e(:,4) = M(m).e(:,4)./dtf;
-				vtype = 'Flow rate';
-				vunit = 'm^3/s';
-			else
-				vtype = '\DeltaV';
-				vunit = 'm^3';
-			end
-			% puts NaN where vv is NaN (no model)
-			M(m).d((isnan(M(m).d(:,4)) | M(m).e(:,5) > 1e3*modeltime_maxmisfit),:) = NaN;
-			M(m).vmedian = median(M(m).d(:,4));
-			M(m).vmax = max(M(m).d(:,4));
-			M(m).vmin = min(M(m).d(:,4));
-
-			fprintf(' done!\n');
-		end
-
-		% adjusts unit
-		vmaxs = max(abs(cat(1,M.vmax)));
-		if all(isfinite(vmaxs)) && any(vmaxs > 0.5e6)
-			vfactor = 1e6;
-			vunit = ['M',vunit];
-		else
-			vfactor = 1;
-		end
-
-		figure, orient tall
-
-		% -- volumetric flow rate from volume variation (moving)
-		subplot(10,1,1:3), extaxes(gca,[.08,.04])
-
-		plot(tlim,[0,0],'-k','LineWidth',1)
-		hold on
-		for m = 1:numel(M)
-			col = scolor(m);
-            if ~isempty(M(m).t)
-                errorbar(M(m).t,M(m).d(:,4)/vfactor,M(m).e(:,4)/vfactor,'-','LineWidth',P.GTABLE(r).LINEWIDTH/3,'Color',col/3 + 2/3)
-                %errorarea(M(m).t,M(m).d(:,4)/vfactor,M(m).e(:,4)/vfactor,col);
-                plotorbit(M(m).t,M(m).d(:,4)/vfactor,M(m).o,modeltime_linestyle,P.GTABLE(r).LINEWIDTH,P.GTABLE(r).MARKERSIZE,col)
+            switch mt
+            case 'pcdm'
+                summary = 'MODELTIME_pCDM';
+                PCDM.random_sampling = field2num(P,'MODELTIME_PCDM_RANDOM_SAMPLING',PCDM.random_sampling);
+            otherwise
+                summary = 'MODELTIME';
             end
-		end
-		hold off
-		if numel(modeltime_flim)==2
-			set(gca,'YLim',modeltime_flim);
-		end
-		ylim2 = get(gca,'YLim');
-		if ylim2(2) > 0
-			text(tlim(2),0,{'',' \rightarrow Inflation'},'rotation',90,'Color','k', ...
-				'HorizontalAlignment','left','VerticalAlignment','middle','Fontsize',8,'FontWeight','bold')
-		end
-		if ylim2(1) < 0
-			text(tlim(2),0,{'','Deflation \leftarrow '},'rotation',90,'Color','k', ...
-				'HorizontalAlignment','right','VerticalAlignment','middle','Fontsize',8,'FontWeight','bold')
-		end
-		set(gca,'XLim',tlim,'FontSize',fontsize)
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel(['Source ',vtype,' (',vunit,')'])
 
-		% legend for periods
-		for m = 1:numel(M)
-			text(tlim(1)+m*diff(tlim)/(numel(M)+1),ylim2(2),mtlabel{m},'Color',scolor(m), ...
-				'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',8,'FontWeight','bold')
-		end
-		set(gca,'YLim',ylim2);
+            info = { ...
+                ' ', ...
+                sprintf('model type = {\\bf%s}',mst{1}), ...
+                sprintf('model space = {\\bf%s}',num2tex(rr^3)), ...
+                sprintf('misfit norm = {\\bf%s}',modelopt.misfitnorm), ...
+                sprintf('uncertainty = {\\bf%g \\sigma (%1.1f%%)}',modelopt.msig,modelopt.msigp*100), ...
+            };
+            if modelopt.horizonly
+                info = cat(2,info,'misfit mode = {\bfhorizontal only}');
+            end
+            if numel(modelopt.apriori_depth) == 2
+                info = cat(2,info,sprintf('a priori depth = {\\bf%g \\pm %g km}',roundsd(modelopt.apriori_depth/1e3,2)));
+            end
+            if modelopt.apriori_horizontal > 0
+                info = cat(2,info,sprintf('a priori horiz. STD = {\\bf%g km}',modelopt.apriori_horizontal));
+            end
 
-		% -- depth
-		subplot(10,1,4:5), extaxes(gca,[.08,.04])
-		plot(tlim,[0,0],'-k','LineWidth',1)
-		hold on
-		for m = 1:numel(M)
-			col = scolor(m);
-			errorbar(M(m).t,M(m).d(:,3)/1e3,M(m).e(:,3)/1e3,'-','LineWidth',P.GTABLE(r).LINEWIDTH/3,'Color',col/3 + 2/3)
-			%errorarea(M(m).t,M(m).d(:,3)/1e3,M(m).e(:,3)/1e3,col);
-			plotorbit(M(m).t,M(m).d(:,3)/1e3,M(m).o,modeltime_linestyle,P.GTABLE(r).LINEWIDTH,P.GTABLE(r).MARKERSIZE,col)
-		end
-		hold off
-		set(gca,'XLim',tlim,'FontSize',fontsize,'YLim',minmax(zz)/1e3)
-		datetick2('x',P.GTABLE(r).DATESTR)
-		ylabel('Source Elevation (km asl)')
-		pos = get(gca,'Position');
-
-		tlabel(tlim,P.TZ,'FontSize',fontsize)
-
-		% -- 3D map
-		[~,plist] = ismember(modeltime_map_period,modeltime_period);
-		vlim = minmax(abs(cat(1,M(plist).vmax,M(plist).vmin)),'finite')/vfactor;
-
-		set(gcf,'PaperUnits','inches');
-		ppos = get(gcf,'PaperPosition');
-		prxy = ppos(4)/ppos(3);
-		mpos = [pos(1),.18,.3*prxy,.3];
-
-		% X-Y top view
-		axes('Position',mpos)
-		hold on
-		[~,h] = contour(xlim,ylim,zdem,0:200:mmz(2));
-		set(h,'Color',modelling_topo_rgb,'LineWidth',.1);
-		[~,h] = contour(xlim,ylim,zdem,[0:1000:mmz(2),0:-1000:mmz(1)]);
-		set(h,'Color',modelling_topo_rgb,'LineWidth',.75);
-		plot(xsta,ysta,'^k','MarkerSize',4,'MarkerFaceColor','k')
-		if ~isempty(targetll)
-			plot(repmat(modelopt.targetxy(1),1,2),ylim([1,end]),':k')
-			plot(xlim([1,end]),repmat(modelopt.targetxy(2),1,2),':k')
-			if modelopt.apriori_horizontal > 0
-				acircle = linspace(0,2*pi);
-				plot(modelopt.targetxy(1)+modelopt.apriori_horizontal*1e3*cos(acircle), ...
-				     modelopt.targetxy(2)+modelopt.apriori_horizontal*1e3*sin(acircle), ...
-				     ':k')
-			end
-		end
-        % plot fault
-        if faultcorr
-            plotfault(lat0,lon0,P,'xy')
-        end
-		for m = plist
-			col = scolor(m);
-			mks = max((abs(M(m).d(:,4))/vfactor-vlim(1))/diff(vlim),0)*modeltime_markersize + 2;
-			scatter(M(m).d(:,1),M(m).d(:,2),mks,'MarkerEdgeColor',col,'LineWidth',modeltime_marker_linewidth)
-			scatter(M(m).d(:,1),M(m).d(:,2),mks,M(m).t,'fill','MarkerEdgeColor','none','LineWidth',.01)
-		end
-		hold off
-		set(gca,'XLim',minmax(xlim),'YLim',minmax(ylim),'XTickLabel',[],'FontSize',6);
-		tickfactor(distfactor)
-		ylabel(sprintf('Distances in %s',distunit),'FontSize',8)
-		box on
-		colormap(modeltime_cmap)
-		caxis(tlim)
-		nimap = 1;
-		for m = plist
-			IMAP(nimap).d = [M(m).d(:,1),M(m).d(:,2),sqrt(mks/pi)+modeltime_marker_linewidth/2];
-			IMAP(nimap).gca = gca;
-			IMAP(nimap).s = cell(size(M(m).t));
-			IMAP(nimap).l = cell(size(M(m).t));
-			for n = 1:numel(IMAP(nimap).s)
-				IMAP(nimap).s{n} = sprintf('''depth = %g km (%s)<br>%s = %g %s<br>misfit = %g mm'',CAPTION,''%s (%s)''', ...
-					roundsd(-M(m).d(n,3)/1e3,2), M(m).type{n}, ...
-					regexprep(vtype,'\','\\'),roundsd(M(m).d(n,4)/vfactor,2), ...
-					regexprep(vunit,'\^3','<sup>3</sup>'),roundsd(M(m).e(n,5),2), ...
-					datestr(M(m).t(n),'dd-mmm-yyyy HH:MM'),mtlabel{m});
-			end
-			nimap = nimap + 1;
-		end
-
-		% Z-Y profile view
-		axes('Position',[mpos(1)+mpos(3),mpos(2),.15*prxy,mpos(4)])
-		plot(max(max(zdem,[],3),[],2)',ylim,'-','Color',modelling_topo_rgb)
-		hold on
-		%plot(zsta,ysta,'^k','MarkerSize',stasize,'MarkerFaceColor','k')
-		if ~isempty(targetll)
-			plot(zlim([1,end]),repmat(modelopt.targetxy(2),1,2),':k')
-		end
-		if numel(modelopt.apriori_depth) == 2
-			plot(repmat(-modelopt.apriori_depth(1),1,2),ylim([1,end]),':k')
-		end
-        % plot fault
-        if faultcorr
-            plotfault(lat0,lon0,P,'zy')
-        end
-		for m = plist
-			col = scolor(m);
-			mks = max((abs(M(m).d(:,4))/vfactor-vlim(1))/diff(vlim),0)*modeltime_markersize + 2;
-			scatter(M(m).d(:,3),M(m).d(:,2),mks,'MarkerEdgeColor',col,'LineWidth',modeltime_marker_linewidth)
-			scatter(M(m).d(:,3),M(m).d(:,2),mks,M(m).t,'fill','MarkerEdgeColor','none','LineWidth',.01)
-		end
-		hold off
-		set(gca,'XLim',minmax(zlim),'YLim',minmax(ylim),'XDir','reverse','YTickLabel',[],'YAxisLocation','right','FontSize',6);
-		tickfactor(distfactor)
-		xlabel(sprintf('Depth (%s)',distunit),'FontSize',8)
-		box on
-		colormap(modeltime_cmap)
-		caxis(tlim)
-		for m = plist
-			IMAP(nimap).d = [M(m).d(:,3),M(m).d(:,2),sqrt(mks/pi)+modeltime_marker_linewidth/2];
-			IMAP(nimap).gca = gca;
-			IMAP(nimap).s = IMAP(mod(nimap-1,numel(plist))+1).s; % uses the labels for X-Y top view
-			IMAP(nimap).l = cell(size(M(m).t));
-			nimap = nimap + 1;
-		end
-
-		% X-Z profile view
-		axes('Position',[mpos(1),mpos(2)-.15,mpos(3),.15])
-		plot(xlim,max(max(zdem,[],3),[],1),'-','Color',modelling_topo_rgb)
-		hold on
-		%plot(xsta,zsta,'^k','MarkerSize',stasize,'MarkerFaceColor','k')
-		if ~isempty(targetll)
-			plot(repmat(modelopt.targetxy(1),1,2),zlim([1,end]),':k')
-		end
-		if numel(modelopt.apriori_depth) == 2
-			plot(xlim([1,end]),repmat(-modelopt.apriori_depth(1),1,2),':k')
-		end
-        % plot fault
-        if faultcorr
-            plotfault(lat0,lon0,P,'xz')
-        end
-		for m = plist
-			col = scolor(m);
-			mks = max((abs(M(m).d(:,4))/vfactor-vlim(1))/diff(vlim),0)*modeltime_markersize + 2;
-			scatter(M(m).d(:,1),M(m).d(:,3),mks,'MarkerEdgeColor',col,'LineWidth',modeltime_marker_linewidth)
-			scatter(M(m).d(:,1),M(m).d(:,3),mks,M(m).t,'fill','MarkerEdgeColor','none','LineWidth',.01)
-		end
-		hold off
-		set(gca,'XLim',minmax(xlim),'YLim',minmax(zlim),'FontSize',6);
-		tickfactor(distfactor)
-		ylabel(sprintf('Depth (%s)',distunit),'FontSize',8)
-		box on
-		colormap(modeltime_cmap)
-		caxis(tlim)
-		for m = plist
-			IMAP(nimap).d = [M(m).d(:,1),M(m).d(:,3),sqrt(mks/pi)+modeltime_marker_linewidth/2];
-			IMAP(nimap).gca = gca;
-			IMAP(nimap).s = IMAP(mod(nimap-1,numel(plist))+1).s; % uses the labels for X-Y top view
-			IMAP(nimap).l = cell(size(M(m).t));
-			nimap = nimap + 1;
-		end
-
-
-		% legend
-		axes('position',[mpos(1)+mpos(3),0.07,pos(3)-mpos(3),0.4]);
-
-		text(.6,1,info,'HorizontalAlignment','left','VerticalAlignment','top','FontSize',8)
-		hold on
-
-		% volume scale
-		x = .2 + zeros(size(vlim));
-		y = .1 - .05*(vlim-vlim(1))/diff(vlim);
-		scatter(x,y,(vlim - vlim(1))/diff(vlim)*modeltime_markersize + 2,'MarkerEdgeColor','k','LineWidth',modeltime_marker_linewidth)
-		text(x + .05,y,num2str(roundsd(vlim',2)),'FontSize',7)
-		text(.15,.15,['{\bf',vtype,'} (',vunit,')'],'HorizontalAlignment','left','FontSize',8)
-		hold off
-
-		set(gca,'XLim',[0,1],'YLim',[0,1])
-		axis off
-
-		% time color scale
-		axes('position',[.8,0.06,0.17,0.3]);
-		timecolorbar(.1,0,.15,.8,tlim,modeltime_cmap,8)
-		set(gca,'XLim',[0,1],'YLim',[0,1])
-		axis off
-
-		% -- displacements module
-		%subplot(10,1,6:7), extaxes(gca,[.08,.04])
-		%plot(tlim,[0,0],'-k','LineWidth',1)
-		%hold on
-		%for m = 1:numel(M)
-		%	col = scolor(m);
-		%	errorbar(M(m).t,M(m).d(:,5),M(m).e(:,5),'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',col/2 + 1/2)
-		%	plotorbit(M(m).t,M(m).d(:,5),M(m).o,modeltime_linestyle,P.GTABLE(r).LINEWIDTH/2,P.GTABLE(r).MARKERSIZE,col)
-		%end
-		%hold off
-		%ylim = get(gca,'YLim');
-		%if ylim(2) > 0
-		%	text(tlim(2),0,{'',' \rightarrow Inflation'},'rotation',90,'Color','k', ...
-		%		'HorizontalAlignment','left','VerticalAlignment','top','Fontsize',8,'FontWeight','bold')
-		%end
-		%if ylim(1) < 0
-		%	text(tlim(2),0,{'','Deflation \leftarrow'},'rotation',90,'Color','k', ...
-		%		'HorizontalAlignment','right','VerticalAlignment','top','Fontsize',8,'FontWeight','bold')
-		%end
-		%set(gca,'XLim',tlim,'FontSize',fontsize)
-		%datetick2('x',P.GTABLE(r).DATESTR)
-		%ylabel('Displ. Amplitude (mm)')
-
-		% -- volume variation (cumulative normalized)
-		%subplot(10,1,8:10), extaxes(gca,[.08,.04])
-
-		%plot(tlim,[0,0],'-k','LineWidth',1)
-		%hold on
-		%for m = 1:numel(M)
-		%	col = scolor(m);
-		%	errorbar(M(m).t,rcumsum(M(m).d(:,4)),sqrt(rcumsum(M(m).e(:,4).^2)),'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',col/2 + 1/2)
-		%	plot(M(m).t,rcumsum(M(m).d(:,4)),'o-','Color',col,'MarkerFaceColor',col, ...
-		%		'MarkerSize',P.GTABLE(r).MARKERSIZE,'LineWidth',P.GTABLE(r).MARKERSIZE/5)
-		%end
-		%hold off
-		%text(tlim(2),0,' \rightarrow Inflation','rotation',90,'Color','k', ...
-		%	'HorizontalAlignment','left','VerticalAlignment','top','Fontsize',8,'FontWeight','bold')
-		%text(tlim(2),0,'Deflation \leftarrow ','rotation',90,'Color','k', ...
-		%	'HorizontalAlignment','right','VerticalAlignment','top','Fontsize',8,'FontWeight','bold')
-		%set(gca,'XLim',tlim,'FontSize',fontsize)
-		%datetick2('x',P.GTABLE(r).DATESTR)
-		%ylabel('Absolute pressure source (experimental)')
-
-		axes('Position',[0,0,1,1])
-		axis off
-		if ~isok(P,'MODELTIME_NOWARNING')
-			twarning = {'{\bfWarning:} This graph is experimental. Use results with caution.', ...
-				'Processing and modelling by Beauducel et al./IPGP',' '};
-				text(.99,.01,twarning,'HorizontalAlignment','right','VerticalAlignment','bottom','FontSize',8)
-		end
-
-		OPT.GTITLE = varsub(modeltime_title,V);
-        OPT.STATUS = 0;
-		OPT.GSTATUS = [];
-		OPT.INFOS = {' '};
-		OPT.IMAP = IMAP;
-        OPT.FIXEDPP = true;
-		mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
-		close
-		clear IMAP
-
-		% exports data
-        if isok(P,'EXPORTS')
-			E.t = M(1).t;
-
-            % modeltime results
-			n = size(M(1).d,2) + size(M(1).e,2);
-			E.d = nan(size(M(1).d,1),numel(M)*n);
-			E.header = cell(size(M(1).d,1),numel(M)*size(M(1).d,2)*2);
-			[e0,n0,z0] = ll2utm(lat0,lon0);
-			for m = 1:numel(M)
-				k = (m-1)*n + (1:n);
-				[lats,lons] = utm2ll(e0+M(m).d(:,1),n0+M(m).d(:,2),z0);
-				E.d(:,k) = cat(2,lats,lons,M(m).d(:,3:end),M(m).e);
-				switch mt
-				case 'pcdm'
-					E.header(k) = strcat({'LAT','LON','Z_(m)',sprintf('dV_(%s)',vunit),'A','B','Ox','Oy','Oz','dD_(m)','s_X','s_Y','s_Z','s_dV','s_dD'},sprintf('_%d',m));
-				otherwise
-					E.header(k) = strcat({'LAT','LON','Z_(m)',sprintf('dV_(%s)',vunit),'dD_(m)','s_X','s_Y','s_Z','s_dV','s_dD'},sprintf('_%d',m));
-				end
-			end
-			E.title = sprintf('%s {%s}',OPT.GTITLE,upper(sprintf('%s_%s',proc,summary)));
-			E.infos = {sprintf('Source type: %s',mt)};
+            mtlabel = cell(1,numel(modeltime_period));
+            clear M
             for m = 1:numel(modeltime_period)
-                E.infos = cat(2,E.infos,sprintf('Time period #%d = %g days (%s)',m,modeltime_period(m),days2h(modeltime_period(m),'round')));
-            end
-            mkexport(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),E,P,r);
-        end
+                mtp = modeltime_period(m);
+                if mtp > 0
+                    mtlabel{m} = days2h(mtp,'round');
+                else
+                    mtlabel{m} = 't_0 ref.';
+                end
 
-        if isok(P,'MODELTIME_EXPORT_MAT')
-            f = sprintf('%s_%s.mat',summary,P.GTABLE(r).TIMESCALE);
-            wolog('saving workspace in %s...',f);
-            save(sprintf('%s/%s/%s',P.OUTDIR,WO.PATH_OUTG_EXPORT,f),'-v6')
-            fprintf(' done.\n');
+                t = (fliplr(tlim(2):-dt:tlim(1)))';
+                % last time must contain data
+                tlast = max(max(cat(1,D.tfirstlast)));
+                t(t > tlast) = [];
+                wolog('computing %d %s models (%s @ %s) ',numel(t),mst{1},mtlabel{m},days2h(dt));
+
+                for i = 1:modelopt.multi
+                    M(m,i).mtp = mtp;
+                    M(m,i).t = t;
+                    % initiates the model result matrix
+                    sz = [numel(t),5 + 5*strcmp(mt,'pcdm')];
+                    M(m,i).d = nan(sz);
+                    M(m,i).e = nan(sz);
+                    M(m,i).o = nan(sz(1),1);
+                    M(m,i).type = cell(sz(1),1);
+
+                    % initiates the vectors matrix
+                    M(m,1).v = nan(sz(1),numel(kn),6); % time x station x components
+                end
+
+                for w = 1:numel(t)
+                    t2 = t(w);
+                    if modeltime_period(m) > 0
+                        wlim = t2 - [modeltime_period(m),0];
+                    else
+                        wlim = [tlim(1),t2];
+                    end
+
+                    P.dtlim = diff(wlim);
+                    % computes linear trends (mm/yr)
+                    tr = nan(numel(kn),3); % trends per station per component
+                    tre = nan(numel(kn),3); % trends error per station per component
+                    tro = zeros(numel(kn),1); % inits to best orbit per station
+                    for j = 1:numel(kn)
+                        n = kn(j);
+                        k = find(isinto(D(n).t,wlim));
+                        for i = 1:3
+                            if ~isempty(k) && ~all(isnan(D(n).d(k,i+4)))
+                                ke = k(find(~isnan(D(n).d(k,i+4)),1,'last'));
+                                [tk,dk,lr,trd] = treatsignal(D(n).t(k),D(n).d(k,i+4) - rmedian(D(n).d(k,i+4)),D(n).e(k,i),P.GTABLE(r).DECIMATE,P,1);
+                                tr(j,i) = trd(1);
+                                tre(j,i) = trd(2);
+                                % sets a lower orbit if there is not enough data
+                                %if D(n).t(D(n).G(r).ke) >= M(m).t(w)
+                                if (D(n).t(ke) + 1) < M(m).t(w)
+                                    tro(j) = 2;
+                                end
+                            end
+                        end
+                    end
+
+                    % computes reference (auto, fixed or station)
+                    if numel(kn) > 1
+                        mvv = rsum(tr./tre)./rsum(1./tre);
+                    else
+                        mvv = tr;
+                    end
+                    if vrelmode
+                        voffset = [mvv(1:2),0];
+                        if ~isempty(vref) && ismember(vref,{N.FID})
+                            voffset = tr(strcmp(vref,{N.FID}),:);
+                            if any(isnan(voffset))
+                                voffset = [0,0,0];
+                            end
+                        end
+                        if numel(sstr2num(vref)) == 3
+                            voffset = sstr2num(vref)*P.trendfact/365250;
+                        end
+                        tr = tr - repmat(voffset,numel(kn),1);
+                    end
+
+                    % makes (or not) the relative data array
+                    d = [tr,tre];
+                    knn = find(~isnan(d(:,1)));
+                    modrelforced = 0;
+                    if ~isempty(knn) && (modelling_force_relative || (modrelauto && (azgap(xs(knn),ys(knn)) < 150 || numel(knn) > 2)))
+                        % computes a mean velocity vector (horizontal only)
+                        if numel(knn) > 1
+                            mvv = rsum(tr(knn,:)./tre(knn,:))./rsum(1./tre(knn,:));
+                        else
+                            mvv = tr(knn,:);
+                        end
+                        d(:,1:3) = d(:,1:3) - repmat([mvv(1:2),0],size(d,1),1);
+                        modrelforced = 1;
+                    end
+                    % computes absolute displacement in mm (from velocity in mm/yr or TREND_FACTOR)
+                    d = d*diff(wlim)*1e3/P.trendfact;
+
+                    % --- computes the model
+                    switch mt
+                    case 'pcdm'
+                        MM = invpcdm(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt,PCDM);
+                        for i = 1:modelopt.multi
+                            M(m,i).d(w,:) = [MM(i).pbest(1:3),MM(i).pbest(7)*1e6,MM(i).pbest([8,9,4:6]),sign(MM(i).pbest(7))*mean(sqrt(MM(i).ux.^2+MM(i).uy.^2+MM(i).uz.^2))];
+                        end
+                    otherwise
+                        MM = invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,modelopt);
+                        for i = 1:modelopt.multi
+                            M(m,i).d(w,:) = [MM(i).pbest(1:3),MM(i).pbest(4)*1e6,sign(MM(i).pbest(4))*mean(sqrt(MM(i).ux.^2+MM(i).uy.^2+MM(i).uz.^2))];
+                        end
+                    end
+                    for i = 1:modelopt.multi
+                        %M(m,i).e(w,:) = [MM(i).ws,MM(i).ws,diff(MM(i).ez),diff(MM(i).ev),MM(i).m0];
+                        M(m,i).e(w,:) = [diff(MM(i).ex)/2,diff(MM(i).ey)/2,diff(MM(i).ez)/2,diff(MM(i).ev)*1e6/2,MM(i).m0];
+                        M(m,i).o(w,1) = median(tro); % model worst orbit
+                        M(m,i).type{w} = MM(i).type;
+
+                        if isok(P,'DEBUG')
+                            fprintf('\n%s,%s #%d: %+g 10e6 m3 / %g km',datestr(wlim(1)),datestr(wlim(2)),i,roundsd([MM(i).pbest(4),MM(i).pbest(3)/1e3],3));
+                            if modrelforced
+                                fprintf(' / relative mode forced by (%g,%g)',mvv(1:2));
+                            end
+                        else
+                            fprintf('.');
+                        end
+                    end
+                end
+
+                for i = 1:modelopt.multi
+                    % converts vv into Q (volumetric flux) in m3/s)
+                    if modeltime_flowrate
+                        if modeltime_period(m) == 0
+                            dtf = (M(m,i).t - tlim(1))*86400;
+                        else
+                            dtf = modeltime_period(m)*86400;
+                        end
+                        M(m,i).d(:,4) = M(m,i).d(:,4)./dtf;
+                        M(m,i).e(:,4) = M(m,i).e(:,4)./dtf;
+                        vtype = 'Flow rate';
+                        vunit = 'm^3/s';
+                    else
+                        vtype = '\DeltaV';
+                        vunit = 'm^3';
+                    end
+                    % puts NaN where vv is NaN (no model)
+                    M(m,i).d((isnan(M(m,i).d(:,4)) | M(m,i).e(:,5) > 1e3*modeltime_maxmisfit),:) = NaN;
+                    M(m,i).vmedian = median(M(m,i).d(:,4));
+                    M(m,i).vmax = max(M(m,i).d(:,4));
+                    M(m,i).vmin = min(M(m,i).d(:,4));
+                end
+
+                fprintf(' done!\n');
+            end
+
+            % adjusts unit
+            vmaxs = max(abs(cat(1,M.vmax)));
+            if all(isfinite(vmaxs)) && any(vmaxs > 0.5e6)
+                vfactor = 1e6;
+                vunit = ['M',vunit];
+            else
+                vfactor = 1;
+            end
+
+            figure, orient tall
+
+            % -- volumetric flow rate from volume variation (moving)
+            subplot(10,1,1:3), extaxes(gca,[.08,.04])
+
+            % -- plots only the first source
+            plot(tlim,[0,0],'-k','LineWidth',1)
+            hold on
+            for m = 1:size(M,1)
+                col = scolor(m);
+                if ~isempty(M(m,1).t)
+                    errorbar(M(m,1).t,M(m,1).d(:,4)/vfactor,M(m,1).e(:,4)/vfactor,'-','LineWidth',P.GTABLE(r).LINEWIDTH/3,'Color',col/3 + 2/3)
+                    %errorarea(M(m,1).t,M(m,1).d(:,4)/vfactor,M(m,1).e(:,4)/vfactor,col);
+                    plotorbit(M(m,1).t,M(m,1).d(:,4)/vfactor,M(m,1).o,modeltime_linestyle,P.GTABLE(r).LINEWIDTH,P.GTABLE(r).MARKERSIZE,col)
+                end
+            end
+            hold off
+            if numel(modeltime_flim)==2
+                set(gca,'YLim',modeltime_flim);
+            end
+            ylim2 = get(gca,'YLim');
+            if ylim2(2) > 0
+                text(tlim(2),0,{'',' \rightarrow Inflation'},'rotation',90,'Color','k', ...
+                    'HorizontalAlignment','left','VerticalAlignment','middle','Fontsize',8,'FontWeight','bold')
+            end
+            if ylim2(1) < 0
+                text(tlim(2),0,{'','Deflation \leftarrow '},'rotation',90,'Color','k', ...
+                    'HorizontalAlignment','right','VerticalAlignment','middle','Fontsize',8,'FontWeight','bold')
+            end
+            set(gca,'XLim',tlim,'FontSize',fontsize)
+            datetick2('x',P.GTABLE(r).DATESTR)
+            ylabel(['Source ',vtype,' (',vunit,')'])
+
+            % legend for periods
+            for m = 1:size(M,1)
+                text(tlim(1)+m*diff(tlim)/(size(M,1)+1),ylim2(2),mtlabel{m},'Color',scolor(m), ...
+                    'HorizontalAlignment','center','VerticalAlignment','bottom','FontSize',8,'FontWeight','bold')
+            end
+            set(gca,'YLim',ylim2);
+
+            % -- depth
+            subplot(10,1,4:5), extaxes(gca,[.08,.04])
+            plot(tlim,[0,0],'-k','LineWidth',1)
+            hold on
+            for m = 1:size(M,1)
+                col = scolor(m);
+                errorbar(M(m,1).t,M(m,1).d(:,3)/1e3,M(m,1).e(:,3)/1e3,'-','LineWidth',P.GTABLE(r).LINEWIDTH/3,'Color',col/3 + 2/3)
+                %errorarea(M(m,1).t,M(m,1).d(:,3)/1e3,M(m,1).e(:,3)/1e3,col);
+                plotorbit(M(m,1).t,M(m,1).d(:,3)/1e3,M(m,1).o,modeltime_linestyle,P.GTABLE(r).LINEWIDTH,P.GTABLE(r).MARKERSIZE,col)
+            end
+            hold off
+            set(gca,'XLim',tlim,'FontSize',fontsize,'YLim',minmax(zz)/1e3)
+            datetick2('x',P.GTABLE(r).DATESTR)
+            ylabel('Source Elevation (km asl)')
+            pos = get(gca,'Position');
+
+            tlabel(tlim,P.TZ,'FontSize',fontsize)
+
+            % -- 3D map
+            [~,plist] = ismember(modeltime_map_period,modeltime_period);
+            vlim = minmax(abs(cat(1,M(plist,1).vmax,M(plist,1).vmin)),'finite')/vfactor;
+
+            set(gcf,'PaperUnits','inches');
+            ppos = get(gcf,'PaperPosition');
+            prxy = ppos(4)/ppos(3);
+            mpos = [pos(1),.18,.3*prxy,.3];
+
+            % X-Y top view
+            axes('Position',mpos)
+            hold on
+            [~,h] = contour(xlim,ylim,zdem,0:200:mmz(2));
+            set(h,'Color',modelling_topo_rgb,'LineWidth',.1);
+            [~,h] = contour(xlim,ylim,zdem,[0:1000:mmz(2),0:-1000:mmz(1)]);
+            set(h,'Color',modelling_topo_rgb,'LineWidth',.75);
+            plot(xsta,ysta,'^k','MarkerSize',4,'MarkerFaceColor','k')
+            if ~isempty(targetll)
+                plot(repmat(modelopt.targetxy(1),1,2),ylim([1,end]),':k')
+                plot(xlim([1,end]),repmat(modelopt.targetxy(2),1,2),':k')
+                if modelopt.apriori_horizontal > 0
+                    acircle = linspace(0,2*pi);
+                    plot(modelopt.targetxy(1)+modelopt.apriori_horizontal*1e3*cos(acircle), ...
+                        modelopt.targetxy(2)+modelopt.apriori_horizontal*1e3*sin(acircle), ...
+                        ':k')
+                end
+            end
+            % plot fault
+            if faultcorr
+                plotfault(lat0,lon0,P,'xy')
+            end
+            for m = plist
+                col = scolor(m);
+                mks = max((abs(M(m,1).d(:,4))/vfactor-vlim(1))/diff(vlim),0)*modeltime_markersize + 2;
+                scatter(M(m,1).d(:,1),M(m,1).d(:,2),mks,'MarkerEdgeColor',col,'LineWidth',modeltime_marker_linewidth)
+                scatter(M(m,1).d(:,1),M(m,1).d(:,2),mks,M(m,1).t,'fill','MarkerEdgeColor','none','LineWidth',.01)
+            end
+            hold off
+            set(gca,'XLim',minmax(xlim),'YLim',minmax(ylim),'XTickLabel',[],'FontSize',6);
+            tickfactor(distfactor)
+            ylabel(sprintf('Distances in %s',distunit),'FontSize',8)
+            box on
+            colormap(modeltime_cmap)
+            caxis(tlim)
+            nimap = 1;
+            for m = plist
+                IMAP(nimap).d = [M(m,1).d(:,1),M(m,1).d(:,2),sqrt(mks/pi)+modeltime_marker_linewidth/2];
+                IMAP(nimap).gca = gca;
+                IMAP(nimap).s = cell(size(M(m,1).t));
+                IMAP(nimap).l = cell(size(M(m,1).t));
+                for n = 1:numel(IMAP(nimap).s)
+                    IMAP(nimap).s{n} = sprintf('''depth = %g km (%s)<br>%s = %g %s<br>misfit = %g mm'',CAPTION,''%s (%s)''', ...
+                        roundsd(-M(m,1).d(n,3)/1e3,2), M(m,1).type{n}, ...
+                        regexprep(vtype,'\','\\'),roundsd(M(m,1).d(n,4)/vfactor,2), ...
+                        regexprep(vunit,'\^3','<sup>3</sup>'),roundsd(M(m,1).e(n,5),2), ...
+                        datestr(M(m,1).t(n),'dd-mmm-yyyy HH:MM'),mtlabel{m});
+                end
+                nimap = nimap + 1;
+            end
+
+            % Z-Y profile view
+            axes('Position',[mpos(1)+mpos(3),mpos(2),.15*prxy,mpos(4)])
+            plot(max(max(zdem,[],3),[],2)',ylim,'-','Color',modelling_topo_rgb)
+            hold on
+            %plot(zsta,ysta,'^k','MarkerSize',stasize,'MarkerFaceColor','k')
+            if ~isempty(targetll)
+                plot(zlim([1,end]),repmat(modelopt.targetxy(2),1,2),':k')
+            end
+            if numel(modelopt.apriori_depth) == 2
+                plot(repmat(-modelopt.apriori_depth(1),1,2),ylim([1,end]),':k')
+            end
+            % plot fault
+            if faultcorr
+                plotfault(lat0,lon0,P,'zy')
+            end
+            for m = plist
+                col = scolor(m);
+                mks = max((abs(M(m,1).d(:,4))/vfactor-vlim(1))/diff(vlim),0)*modeltime_markersize + 2;
+                scatter(M(m,1).d(:,3),M(m,1).d(:,2),mks,'MarkerEdgeColor',col,'LineWidth',modeltime_marker_linewidth)
+                scatter(M(m,1).d(:,3),M(m,1).d(:,2),mks,M(m,1).t,'fill','MarkerEdgeColor','none','LineWidth',.01)
+            end
+            hold off
+            set(gca,'XLim',minmax(zlim),'YLim',minmax(ylim),'XDir','reverse','YTickLabel',[],'YAxisLocation','right','FontSize',6);
+            tickfactor(distfactor)
+            xlabel(sprintf('Depth (%s)',distunit),'FontSize',8)
+            box on
+            colormap(modeltime_cmap)
+            caxis(tlim)
+            for m = plist
+                IMAP(nimap).d = [M(m,1).d(:,3),M(m,1).d(:,2),sqrt(mks/pi)+modeltime_marker_linewidth/2];
+                IMAP(nimap).gca = gca;
+                IMAP(nimap).s = IMAP(mod(nimap-1,numel(plist))+1).s; % uses the labels for X-Y top view
+                IMAP(nimap).l = cell(size(M(m,1).t));
+                nimap = nimap + 1;
+            end
+
+            % X-Z profile view
+            axes('Position',[mpos(1),mpos(2)-.15,mpos(3),.15])
+            plot(xlim,max(max(zdem,[],3),[],1),'-','Color',modelling_topo_rgb)
+            hold on
+            %plot(xsta,zsta,'^k','MarkerSize',stasize,'MarkerFaceColor','k')
+            if ~isempty(targetll)
+                plot(repmat(modelopt.targetxy(1),1,2),zlim([1,end]),':k')
+            end
+            if numel(modelopt.apriori_depth) == 2
+                plot(xlim([1,end]),repmat(-modelopt.apriori_depth(1),1,2),':k')
+            end
+            % plot fault
+            if faultcorr
+                plotfault(lat0,lon0,P,'xz')
+            end
+            for m = plist
+                col = scolor(m);
+                mks = max((abs(M(m,1).d(:,4))/vfactor-vlim(1))/diff(vlim),0)*modeltime_markersize + 2;
+                scatter(M(m,1).d(:,1),M(m,1).d(:,3),mks,'MarkerEdgeColor',col,'LineWidth',modeltime_marker_linewidth)
+                scatter(M(m,1).d(:,1),M(m,1).d(:,3),mks,M(m,1).t,'fill','MarkerEdgeColor','none','LineWidth',.01)
+            end
+            hold off
+            set(gca,'XLim',minmax(xlim),'YLim',minmax(zlim),'FontSize',6);
+            tickfactor(distfactor)
+            ylabel(sprintf('Depth (%s)',distunit),'FontSize',8)
+            box on
+            colormap(modeltime_cmap)
+            caxis(tlim)
+            for m = plist
+                IMAP(nimap).d = [M(m,1).d(:,1),M(m,1).d(:,3),sqrt(mks/pi)+modeltime_marker_linewidth/2];
+                IMAP(nimap).gca = gca;
+                IMAP(nimap).s = IMAP(mod(nimap-1,numel(plist))+1).s; % uses the labels for X-Y top view
+                IMAP(nimap).l = cell(size(M(m,1).t));
+                nimap = nimap + 1;
+            end
+
+
+            % legend
+            axes('position',[mpos(1)+mpos(3),0.07,pos(3)-mpos(3),0.4]);
+
+            text(.6,1,info,'HorizontalAlignment','left','VerticalAlignment','top','FontSize',8)
+            hold on
+
+            % volume scale
+            x = .2 + zeros(size(vlim));
+            y = .1 - .05*(vlim-vlim(1))/diff(vlim);
+            scatter(x,y,(vlim - vlim(1))/diff(vlim)*modeltime_markersize + 2,'MarkerEdgeColor','k','LineWidth',modeltime_marker_linewidth)
+            text(x + .05,y,num2str(roundsd(vlim',2)),'FontSize',7)
+            text(.15,.15,['{\bf',vtype,'} (',vunit,')'],'HorizontalAlignment','left','FontSize',8)
+            hold off
+
+            set(gca,'XLim',[0,1],'YLim',[0,1])
+            axis off
+
+            % time color scale
+            axes('position',[.8,0.06,0.17,0.3]);
+            timecolorbar(.1,0,.15,.8,tlim,modeltime_cmap,8)
+            set(gca,'XLim',[0,1],'YLim',[0,1])
+            axis off
+
+            % -- displacements module
+            %subplot(10,1,6:7), extaxes(gca,[.08,.04])
+            %plot(tlim,[0,0],'-k','LineWidth',1)
+            %hold on
+            %for m = 1:numel(M)
+            %	col = scolor(m);
+            %	errorbar(M(m).t,M(m).d(:,5),M(m).e(:,5),'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',col/2 + 1/2)
+            %	plotorbit(M(m).t,M(m).d(:,5),M(m).o,modeltime_linestyle,P.GTABLE(r).LINEWIDTH/2,P.GTABLE(r).MARKERSIZE,col)
+            %end
+            %hold off
+            %ylim = get(gca,'YLim');
+            %if ylim(2) > 0
+            %	text(tlim(2),0,{'',' \rightarrow Inflation'},'rotation',90,'Color','k', ...
+            %		'HorizontalAlignment','left','VerticalAlignment','top','Fontsize',8,'FontWeight','bold')
+            %end
+            %if ylim(1) < 0
+            %	text(tlim(2),0,{'','Deflation \leftarrow'},'rotation',90,'Color','k', ...
+            %		'HorizontalAlignment','right','VerticalAlignment','top','Fontsize',8,'FontWeight','bold')
+            %end
+            %set(gca,'XLim',tlim,'FontSize',fontsize)
+            %datetick2('x',P.GTABLE(r).DATESTR)
+            %ylabel('Displ. Amplitude (mm)')
+
+            % -- volume variation (cumulative normalized)
+            %subplot(10,1,8:10), extaxes(gca,[.08,.04])
+
+            %plot(tlim,[0,0],'-k','LineWidth',1)
+            %hold on
+            %for m = 1:numel(M)
+            %	col = scolor(m);
+            %	errorbar(M(m).t,rcumsum(M(m).d(:,4)),sqrt(rcumsum(M(m).e(:,4).^2)),'-','LineWidth',P.GTABLE(r).MARKERSIZE/5,'Color',col/2 + 1/2)
+            %	plot(M(m).t,rcumsum(M(m).d(:,4)),'o-','Color',col,'MarkerFaceColor',col, ...
+            %		'MarkerSize',P.GTABLE(r).MARKERSIZE,'LineWidth',P.GTABLE(r).MARKERSIZE/5)
+            %end
+            %hold off
+            %text(tlim(2),0,' \rightarrow Inflation','rotation',90,'Color','k', ...
+            %	'HorizontalAlignment','left','VerticalAlignment','top','Fontsize',8,'FontWeight','bold')
+            %text(tlim(2),0,'Deflation \leftarrow ','rotation',90,'Color','k', ...
+            %	'HorizontalAlignment','right','VerticalAlignment','top','Fontsize',8,'FontWeight','bold')
+            %set(gca,'XLim',tlim,'FontSize',fontsize)
+            %datetick2('x',P.GTABLE(r).DATESTR)
+            %ylabel('Absolute pressure source (experimental)')
+
+            axes('Position',[0,0,1,1])
+            axis off
+            if ~isok(P,'MODELTIME_NOWARNING')
+                twarning = {'{\bfWarning:} This graph is experimental. Use results with caution.', ...
+                    'Processing and modelling by Beauducel et al./IPGP',' '};
+                    text(.99,.01,twarning,'HorizontalAlignment','right','VerticalAlignment','bottom','FontSize',8)
+            end
+
+            OPT.GTITLE = varsub(modeltime_title,V);
+            OPT.STATUS = 0;
+            OPT.GSTATUS = [];
+            OPT.INFOS = {' '};
+            OPT.IMAP = IMAP;
+            OPT.FIXEDPP = true;
+            mkgraph(WO,sprintf('%s_%s',summary,P.GTABLE(r).TIMESCALE),P,OPT)
+            close
+            clear IMAP
+
+            % exports data: one file per period with multiple sources
+            if isok(P,'EXPORTS')
+                for m = 1:numel(modeltime_period)
+                    E.infos = {sprintf('Sliding window = %g days (%s)',modeltime_period(m),days2h(modeltime_period(m),'round'))};
+                    E.t = M(m,1).t;
+
+                    % modeltime results
+                    n = (size(M(m,1).d,2) + size(M(m,1).e,2));
+                    E.d = nan(size(M(m,1).d,1),numel(M(m,1))*modelopt.multi);
+                    E.header = cell(size(M(m,1).d,1),modelopt.multi*size(M(m,1).d,2)*2);
+                    [e0,n0,z0] = ll2utm(lat0,lon0);
+                    for i = 1:modelopt.multi
+                        k = (i-1)*n + (1:n);
+                        [lats,lons] = utm2ll(e0+M(m,i).d(:,1),n0+M(m,i).d(:,2),z0);
+                        E.d(:,k) = cat(2,lats,lons,M(m,i).d(:,3:end),M(m,i).e);
+                        switch mt
+                        case 'pcdm'
+                            E.header(k) = strcat({'LAT','LON','Z_(m)',sprintf('dV_(%s)',vunit),'A','B','Ox','Oy','Oz','dD_(m)','s_X','s_Y','s_Z','s_dV','s_dD'},sprintf('_%d',i));
+                        otherwise
+                            E.header(k) = strcat({'LAT','LON','Z_(m)',sprintf('dV_(%s)',vunit),'dD_(m)','s_X','s_Y','s_Z','s_dV','s_dD'},sprintf('_%d',i));
+                        end
+                    end
+                    E.title = sprintf('%s {%s}',OPT.GTITLE,upper(sprintf('%s_%s',proc,summary)));
+                    E.infos = cat(2,E.infos,sprintf('Source type: %d x %s',modelopt.multi,mt));
+                    mkexport(WO,sprintf('%s_%dd_%s',summary,modeltime_period(m),P.GTABLE(r).TIMESCALE),E,P,r);
+                end
+            end
+
+            if isok(P,'MODELTIME_EXPORT_MAT')
+                f = sprintf('%s_%s.mat',summary,P.GTABLE(r).TIMESCALE);
+                wolog('saving workspace in %s...',f);
+                save(sprintf('%s/%s/%s',P.OUTDIR,WO.PATH_OUTG_EXPORT,f),'-v6')
+                fprintf(' done.\n');
+            end
         end
     end
-end
 end
 
 
