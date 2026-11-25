@@ -8,6 +8,8 @@ function M = invpcdm(d,xx,yy,zz,xsta,ysta,zsta,zdem,opt,PCDM)
 %	            zdem: topographic elevation matrix (in m)
 %	   opt.horizonly: flag to use only horizontal components
 %	       opt.msigp: number of sigma for best model uncertainty
+%          opt.multi: number of multiple sources
+% opt.multithreshold: threshold on misfit gain to accept the secondary source
 %	            PCDM: structure of additional parameters (see gnss.m)
 %
 %
@@ -28,7 +30,7 @@ function M = invpcdm(d,xx,yy,zz,xsta,ysta,zsta,zdem,opt,PCDM)
 %
 %	Authors: Antoine Villié and François Beauducel
 %	Created: 2018-07-11 in Yogyakarta (Indonesia)
-%	Updated: 2026-10-06
+%	Updated: 2026-11-24
 
 if all(length(PCDM.random_sampling) ~= [1,PCDM.iterations])
 	error('MODELLING_PCDM_RANDOM_SAMPLING must be scalar or vector of MODELLING_PCDM_ITERATIONS length.')
@@ -159,7 +161,7 @@ for m = 1:opt.multi
         M(m).uy(:) = 0;
         M(m).uz(:) = 0;
         M(m).pbest = nan(1,9);
-		fprintf(' #%d rejected ',m)
+		fprintf('#%d rejected',m)
     else
         M(m).mm = M(m).mm/m; % divides mm by m to reduce importance of secondary source (graphically)
 	end

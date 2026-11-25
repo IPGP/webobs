@@ -16,6 +16,7 @@ function M=invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,opt)
 %	                  .apriori_horizontal = a priori horizontal std (km) from target
 %	                  .apriori_depth = a priori depth,std (km)
 %	                  .multi = number of sources to compute recursively on residuals
+%                     .multithreshold = threshold on misfit gain to accept the secondary source
 %	                  .nu = Poisson's ratio
 %
 %	Output paramaters as structure with fields:
@@ -32,7 +33,7 @@ function M=invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,opt)
 %
 %	Author: François Beauducel
 %	Created: 2010 in Paris (France)
-%	Updated: 2026-10-06
+%	Updated: 2026-11-24
 
 sz = size(xx);
 nn = length(xsta);
@@ -196,7 +197,7 @@ for m = 1:opt.multi
         M(m).uy(:) = 0;
         M(m).uz(:) = 0;
         M(m).pbest = nan(1,4);
-		fprintf(' #%d rejected ',m)
+		fprintf('#%d rejected',m)
     else
         M(m).mm = M(m).mm/m; % divides mm by m to reduce importance of secondary source (graphically)
 	end
