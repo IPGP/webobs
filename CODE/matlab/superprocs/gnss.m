@@ -2530,7 +2530,7 @@ for r = 1:numel(P.GTABLE)
                     % initiates the model result matrix
                     sz = [numel(t),5 + 5*strcmp(mt,'pcdm')];
                     M(m,i).d = nan(sz);
-                    M(m,i).e = nan(sz);
+                    M(m,i).e = nan(sz(1),5);
                     M(m,i).o = nan(sz(1),1);
                     M(m,i).type = cell(sz(1),1);
 

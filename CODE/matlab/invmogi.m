@@ -33,7 +33,7 @@ function M=invmogi(d,xx,yy,zz,xsta,ysta,zsta,zdem,opt)
 %
 %	Author: François Beauducel
 %	Created: 2010 in Paris (France)
-%	Updated: 2026-11-24
+%	Updated: 2026-11-26
 
 sz = size(xx);
 nn = length(xsta);
@@ -54,7 +54,6 @@ for m = 1:opt.multi
 
 	% selects data vectors without NaN
 	kk = find(~any(isnan(d(:,1:3)),2));
-	kr = length(kk);
 	kx = find(~isnan(d(:,1)));
 	ky = find(~isnan(d(:,2)));
 	kz = find(~isnan(d(:,3)));

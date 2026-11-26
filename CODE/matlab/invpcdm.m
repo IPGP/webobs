@@ -30,7 +30,7 @@ function M = invpcdm(d,xx,yy,zz,xsta,ysta,zsta,zdem,opt,PCDM)
 %
 %	Authors: Antoine Villié and François Beauducel
 %	Created: 2018-07-11 in Yogyakarta (Indonesia)
-%	Updated: 2026-11-24
+%	Updated: 2026-11-26
 
 if all(length(PCDM.random_sampling) ~= [1,PCDM.iterations])
 	error('MODELLING_PCDM_RANDOM_SAMPLING must be scalar or vector of MODELLING_PCDM_ITERATIONS length.')
@@ -72,7 +72,6 @@ for m = 1:opt.multi
 
 	% removes NaN data
 	k = find(any(~isnan(d(:,1:3)),2));
-	kr = length(k);
 	MM = pCDM_inversion(TOPO,xsta(k)/1e3,ysta(k)/1e3,zsta(k)/1e3,d(k,1)/1e6,d(k,2)/1e6,d(k,3)/1e6,...
 		d(k,4:6)/1e6,first_limits,opt,PCDM);
 
